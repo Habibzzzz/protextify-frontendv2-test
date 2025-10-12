@@ -1,7 +1,6 @@
-// src/pages/instructor/TransactionHistory.jsx
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import toast from "react-hot-toast"; // ✅ Fix: Change from react-toastify to react-hot-toast
+import toast from "react-hot-toast";
 import {
   CreditCard,
   Filter,
@@ -10,7 +9,7 @@ import {
   Calendar,
   Search,
   RefreshCw,
-  Plus, // Add this
+  Plus,
 } from "lucide-react";
 
 import {
@@ -22,7 +21,7 @@ import {
   Button,
   Input,
   Select,
-  DataTable, // ✅ Changed from Table to DataTable
+  DataTable,
   Pagination,
   LoadingSpinner,
   Alert,
@@ -33,6 +32,14 @@ import {
 import { paymentsService } from "../../services";
 import { PAYMENT_STATUS } from "../../utils/constants";
 import { formatCurrency, formatDate } from "../../utils/helpers";
+
+const statusOptions = [
+  { value: "ALL", label: "🔄 Semua Status" },
+  { value: PAYMENT_STATUS.PENDING, label: "⏳ Pending" },
+  { value: PAYMENT_STATUS.SUCCESS, label: "✅ Success" },
+  { value: PAYMENT_STATUS.FAILED, label: "❌ Failed" },
+  { value: PAYMENT_STATUS.CANCELLED, label: "🚫 Cancelled" },
+];
 
 export default function TransactionHistory() {
   const navigate = useNavigate();
@@ -47,15 +54,13 @@ export default function TransactionHistory() {
     totalPages: 0,
   });
 
-  // Filters
   const [filters, setFilters] = useState({
-    status: searchParams.get("status") || "",
+    status: searchParams.get("status") || "ALL",
     startDate: searchParams.get("startDate") || "",
     endDate: searchParams.get("endDate") || "",
     search: searchParams.get("search") || "",
   });
 
-  // Fetch transactions
   const fetchTransactions = async (page = 1) => {
     try {
       setLoading(true);
@@ -66,9 +71,12 @@ export default function TransactionHistory() {
         ...filters,
       };
 
+      if (params.status === "ALL") {
+        delete params.status;
+      }
+
       const response = await paymentsService.getTransactionHistory(params);
 
-      // Backend sekarang mengembalikan format yang benar
       setTransactions(response.data || []);
       setPagination({
         page: response.page || 1,
@@ -77,7 +85,6 @@ export default function TransactionHistory() {
         totalPages: response.totalPages || 1,
       });
 
-      // Update URL params
       const newParams = new URLSearchParams();
       Object.entries(params).forEach(([key, value]) => {
         if (value) newParams.set(key, value);
@@ -92,23 +99,20 @@ export default function TransactionHistory() {
   };
 
   useEffect(() => {
-    fetchTransactions(pagination.page);
+    fetchTransactions(parseInt(searchParams.get("page")) || 1);
   }, []);
 
-  // Handle filter change
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  // Apply filters
   const applyFilters = () => {
     fetchTransactions(1);
   };
 
-  // Reset filters
   const resetFilters = () => {
     setFilters({
-      status: "",
+      status: "ALL",
       startDate: "",
       endDate: "",
       search: "",
@@ -117,7 +121,6 @@ export default function TransactionHistory() {
     fetchTransactions(1);
   };
 
-  // Status badge variant
   const getStatusVariant = (status) => {
     switch (status) {
       case PAYMENT_STATUS.SUCCESS:
@@ -133,17 +136,29 @@ export default function TransactionHistory() {
     }
   };
 
-  // Export transactions
   const handleExport = async () => {
-    try {
-      // Implementation for exporting transactions
-      console.log("Exporting transactions...");
-    } catch (error) {
-      console.error("Error exporting transactions:", error);
+    const exportFilters = { ...filters };
+    if (exportFilters.status === "ALL") {
+      delete exportFilters.status;
     }
+
+    await toast.promise(paymentsService.exportTransactions(exportFilters), {
+      loading: "Mengekspor data transaksi...",
+      success: (response) => {
+        window.open(response.downloadUrl, "_blank");
+        return "File ekspor berhasil dibuat dan siap diunduh!";
+      },
+      error: (err) => {
+        if (err.response?.status === 404) {
+          return "Tidak ada data untuk diekspor sesuai filter yang dipilih.";
+        }
+        return (
+          err.response?.data?.message || "Gagal mengekspor data transaksi."
+        );
+      },
+    });
   };
 
-  // Ganti columns definition (baris 98-138) dengan enhanced version
   const enhancedColumns = [
     {
       key: "orderId",
@@ -239,7 +254,6 @@ export default function TransactionHistory() {
     },
   ];
 
-  // Helper function untuk status label
   const getStatusLabel = (status) => {
     switch (status) {
       case PAYMENT_STATUS.SUCCESS:
@@ -257,11 +271,9 @@ export default function TransactionHistory() {
 
   return (
     <Container className="py-8">
-      {/* Enhanced Header Section with Gradient Background */}
       <div className="relative overflow-hidden mb-12">
         <div className="absolute inset-0 bg-gradient-to-br from-[#23407a] via-[#1a2f5c] to-[#162849] rounded-2xl"></div>
         <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent rounded-2xl"></div>
-
         <div className="relative px-8 py-10">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div className="mb-6 lg:mb-0">
@@ -276,13 +288,11 @@ export default function TransactionHistory() {
               </h1>
               <p className="text-white/80 text-lg leading-relaxed max-w-2xl">
                 Kelola dan monitor riwayat pembayaran assignment Anda.
-                {transactions?.length > 0
-                  ? ` Total ${transactions.length} transaksi ditemukan.`
+                {pagination.total > 0
+                  ? ` Total ${pagination.total} transaksi ditemukan.`
                   : " Belum ada transaksi pembayaran."}
               </p>
             </div>
-
-            {/* Enhanced Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 variant="outline"
@@ -307,10 +317,8 @@ export default function TransactionHistory() {
         </div>
       </div>
 
-      {/* Breadcrumb - moved after header */}
       <Breadcrumb />
 
-      {/* Enhanced Filters & Search */}
       <div className="mb-8">
         <div className="flex items-center mb-6">
           <div className="w-1 h-8 bg-gradient-to-b from-[#23407a] to-[#3b5fa4] rounded-full mr-4"></div>
@@ -318,11 +326,8 @@ export default function TransactionHistory() {
             Filter & Pencarian
           </h2>
         </div>
-
         <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden">
-          {/* Decorative background elements */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#23407a]/10 to-blue-500/10 rounded-full transform translate-x-16 -translate-y-16"></div>
-
           <CardHeader className="relative z-10 pb-4">
             <div className="flex items-center space-x-4">
               <div className="p-3 bg-[#23407a]/10 rounded-2xl">
@@ -338,10 +343,8 @@ export default function TransactionHistory() {
               </div>
             </div>
           </CardHeader>
-
           <CardContent className="relative z-10 space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-              {/* Enhanced Search */}
               <div>
                 <label className="flex items-center text-sm font-semibold text-gray-900 mb-3">
                   <Search className="h-4 w-4 mr-2 text-[#23407a]" />
@@ -355,8 +358,6 @@ export default function TransactionHistory() {
                   leftElement={<Search className="h-5 w-5 text-gray-400" />}
                 />
               </div>
-
-              {/* Enhanced Status Filter */}
               <div>
                 <label className="flex items-center text-sm font-semibold text-gray-900 mb-3">
                   <CreditCard className="h-4 w-4 mr-2 text-[#23407a]" />
@@ -364,18 +365,11 @@ export default function TransactionHistory() {
                 </label>
                 <Select
                   value={filters.status}
-                  onChange={(e) => handleFilterChange("status", e.target.value)}
+                  onChange={(value) => handleFilterChange("status", value)}
+                  options={statusOptions}
                   className="h-12 border-2 border-gray-300 focus:border-[#23407a] rounded-xl"
-                >
-                  <option value="">🔄 Semua Status</option>
-                  <option value={PAYMENT_STATUS.PENDING}>⏳ Pending</option>
-                  <option value={PAYMENT_STATUS.SUCCESS}>✅ Success</option>
-                  <option value={PAYMENT_STATUS.FAILED}>❌ Failed</option>
-                  <option value={PAYMENT_STATUS.CANCELLED}>🚫 Cancelled</option>
-                </Select>
+                />
               </div>
-
-              {/* Enhanced Date Filters */}
               <div>
                 <label className="flex items-center text-sm font-semibold text-gray-900 mb-3">
                   <Calendar className="h-4 w-4 mr-2 text-[#23407a]" />
@@ -390,7 +384,6 @@ export default function TransactionHistory() {
                   className="h-12 border-2 border-gray-300 focus:border-[#23407a] rounded-xl"
                 />
               </div>
-
               <div>
                 <label className="flex items-center text-sm font-semibold text-gray-900 mb-3">
                   <Calendar className="h-4 w-4 mr-2 text-[#23407a]" />
@@ -406,8 +399,6 @@ export default function TransactionHistory() {
                 />
               </div>
             </div>
-
-            {/* Enhanced Action Buttons */}
             <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-200">
               <Button
                 variant="outline"
@@ -430,11 +421,8 @@ export default function TransactionHistory() {
         </Card>
       </div>
 
-      {/* Enhanced Transactions Table */}
       <Card className="border-0 shadow-xl hover:shadow-2xl transition-all duration-300 relative overflow-hidden">
-        {/* Decorative background */}
         <div className="absolute top-0 left-0 w-40 h-40 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-full transform -translate-x-20 -translate-y-20"></div>
-
         <CardHeader className="relative z-10 pb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -448,15 +436,13 @@ export default function TransactionHistory() {
                 <p className="text-gray-600 text-sm mt-1">
                   {loading
                     ? "Memuat transaksi..."
-                    : transactions.length > 0
+                    : pagination.total > 0
                     ? `Menampilkan ${transactions.length} dari ${pagination.total} transaksi`
                     : "Tidak ada transaksi yang ditemukan"}
                 </p>
               </div>
             </div>
-
-            {/* Quick Stats */}
-            {!loading && transactions.length > 0 && (
+            {!loading && pagination.total > 0 && (
               <div className="hidden lg:flex space-x-4">
                 <div className="text-center p-3 bg-white/70 rounded-xl border border-gray-200/50">
                   <div className="text-lg font-bold text-gray-900">
@@ -482,7 +468,6 @@ export default function TransactionHistory() {
             )}
           </div>
         </CardHeader>
-
         <CardContent className="relative z-10">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-16">
@@ -491,7 +476,6 @@ export default function TransactionHistory() {
             </div>
           ) : transactions.length > 0 ? (
             <div className="space-y-6">
-              {/* Enhanced DataTable with better styling */}
               <div className="bg-white rounded-xl border border-gray-200/50 overflow-hidden">
                 <DataTable
                   columns={enhancedColumns}
@@ -499,8 +483,6 @@ export default function TransactionHistory() {
                   className="w-full"
                 />
               </div>
-
-              {/* Enhanced Pagination */}
               <div className="flex justify-center">
                 <Pagination
                   currentPage={pagination.page}
@@ -517,16 +499,16 @@ export default function TransactionHistory() {
                 <CreditCard className="h-12 w-12 text-gray-500" />
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                {Object.values(filters).some((f) => f)
+                {Object.values(filters).some((f) => f && f !== "ALL")
                   ? "Tidak ada transaksi yang sesuai"
                   : "Belum ada transaksi"}
               </h3>
               <p className="text-gray-600 mb-6 max-w-md mx-auto leading-relaxed">
-                {Object.values(filters).some((f) => f)
+                {Object.values(filters).some((f) => f && f !== "ALL")
                   ? "Coba ubah filter atau kata kunci pencarian untuk menemukan transaksi yang Anda cari."
-                  : "Transaksi akan muncul di sini setelah Anda membuat assignment berbayar dan ada pembayaran dari siswa."}
+                  : "Transaksi akan muncul di sini setelah Anda membuat assignment berbayar."}
               </p>
-              {!Object.values(filters).some((f) => f) && (
+              {!Object.values(filters).some((f) => f && f !== "ALL") && (
                 <Button
                   onClick={() => navigate("/instructor/create-class")}
                   className="bg-[#23407a] hover:bg-[#1a2f5c] shadow-lg hover:shadow-xl transition-all duration-300"

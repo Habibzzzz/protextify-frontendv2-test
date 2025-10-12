@@ -88,7 +88,7 @@ SelectSeparator.displayName = SelectPrimitive.Separator.displayName;
 const CustomSelect = ({
   value,
   onChange,
-  options,
+  options = [],
   placeholder = "Pilih...",
   disabled = false,
   className, // Tambahkan className
