@@ -38,9 +38,19 @@ export default function InstructorAnalytics() {
     setLoading(true);
     setError(null);
     try {
+      console.log("Fetching analytics data for range:", range);
+      console.log("Token:", localStorage.getItem("token"));
       const data = await analyticsService.getInstructorAnalytics(range);
+      console.log("Analytics data received:", data);
       setAnalyticsData(data);
     } catch (err) {
+      console.error("Analytics API Error:", err);
+      console.error("Error details:", {
+        message: err.message,
+        response: err.response,
+        status: err.response?.status,
+        data: err.response?.data
+      });
       const errorMessage =
         err.response?.data?.message ||
         "Gagal memuat data analytics. Silakan coba lagi.";
@@ -77,6 +87,7 @@ export default function InstructorAnalytics() {
     }
 
     if (!analyticsData) {
+      console.log("analyticsData is null/undefined:", analyticsData);
       return (
         <div className="text-center py-12">
           <p className="text-gray-500">Data tidak tersedia.</p>
