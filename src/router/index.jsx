@@ -245,6 +245,10 @@ const router = createBrowserRouter([
       },
       { path: "transactions", element: <TransactionHistory /> },
       { path: "transactions/:transactionId", element: <TransactionDetail /> },
+      {
+        path: "settings",
+        element: <InstructorSettings />,
+      },
     ],
   },
 
