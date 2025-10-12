@@ -67,3 +67,6 @@ export { default as LoadingSpinner } from "./LoadingSpinner";
 export { Switch } from "./Switch";
 export { DatePicker } from "./DatePicker";
 export { default as AnimatedCounter } from "./AnimatedCounter";
+
+// Floating Components
+export { default as FloatingWhatsApp } from "./FloatingWhatsApp";
