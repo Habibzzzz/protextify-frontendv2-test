@@ -38,7 +38,6 @@ const statusOptions = [
   { value: PAYMENT_STATUS.PENDING, label: "⏳ Pending" },
   { value: PAYMENT_STATUS.SUCCESS, label: "✅ Success" },
   { value: PAYMENT_STATUS.FAILED, label: "❌ Failed" },
-  { value: PAYMENT_STATUS.CANCELLED, label: "🚫 Cancelled" },
 ];
 
 export default function TransactionHistory() {
@@ -129,8 +128,6 @@ export default function TransactionHistory() {
         return "warning";
       case PAYMENT_STATUS.FAILED:
         return "error";
-      case PAYMENT_STATUS.CANCELLED:
-        return "secondary";
       default:
         return "secondary";
     }
@@ -262,8 +259,6 @@ export default function TransactionHistory() {
         return "⏳ Pending";
       case PAYMENT_STATUS.FAILED:
         return "❌ Gagal";
-      case PAYMENT_STATUS.CANCELLED:
-        return "🚫 Dibatalkan";
       default:
         return status;
     }

@@ -416,8 +416,6 @@ export const PAYMENT_STATUS = {
   PENDING: "PENDING",
   SUCCESS: "SUCCESS",
   FAILED: "FAILED",
-  CANCELLED: "CANCELLED",
-  EXPIRED: "EXPIRED",
 };
 
 // Payment Methods

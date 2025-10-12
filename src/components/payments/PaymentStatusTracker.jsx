@@ -29,21 +29,27 @@ export default function PaymentStatusTracker({
   onPaymentSuccess,
   onPaymentFailure,
   showActions = true,
+  isActive,
 }) {
   const [showDetails, setShowDetails] = useState(false);
 
   const { status, loading, error, attempts, refreshStatus, isPolling } =
-    usePaymentTracker(transaction.orderId, {
-      onStatusChange: (newStatus) => {
-        // Logging status change (opsional)
+    usePaymentTracker(
+      transaction.orderId,
+      transaction.status, // Teruskan status awal di sini
+      {
+        onStatusChange: (newStatus) => {
+          // Logging status change (opsional)
+        },
+        onSuccess: (response) => {
+          if (onPaymentSuccess) onPaymentSuccess(response);
+        },
+        onFailure: (response) => {
+          if (onPaymentFailure) onPaymentFailure(response);
+        },
       },
-      onSuccess: (response) => {
-        if (onPaymentSuccess) onPaymentSuccess(response);
-      },
-      onFailure: (response) => {
-        if (onPaymentFailure) onPaymentFailure(response);
-      },
-    });
+      isActive
+    );
 
   // Status configuration sesuai BE
   const getStatusConfig = (status) => {
@@ -78,26 +84,6 @@ export default function PaymentStatusTracker({
           badge: "error",
           title: "Pembayaran Gagal",
           description: "Pembayaran tidak dapat diproses. Silakan coba lagi",
-        };
-      case PAYMENT_STATUS.CANCELLED:
-        return {
-          icon: XCircle,
-          color: "text-gray-600",
-          bgColor: "bg-gray-50",
-          borderColor: "border-gray-200",
-          badge: "secondary",
-          title: "Pembayaran Dibatalkan",
-          description: "Transaksi telah dibatalkan",
-        };
-      case PAYMENT_STATUS.EXPIRED:
-        return {
-          icon: AlertTriangle,
-          color: "text-orange-600",
-          bgColor: "bg-orange-50",
-          borderColor: "border-orange-200",
-          badge: "warning",
-          title: "Pembayaran Kadaluarsa",
-          description: "Waktu pembayaran telah habis",
         };
       default:
         return {

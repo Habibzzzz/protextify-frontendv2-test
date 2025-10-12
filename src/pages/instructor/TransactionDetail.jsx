@@ -51,10 +51,6 @@ export default function TransactionDetail() {
         return "warning";
       case PAYMENT_STATUS.FAILED:
         return "error";
-      case PAYMENT_STATUS.CANCELLED:
-        return "secondary";
-      case PAYMENT_STATUS.EXPIRED:
-        return "warning";
       default:
         return "secondary";
     }
@@ -295,6 +291,7 @@ export default function TransactionDetail() {
             paymentHistory={transaction.paymentHistory}
             onPaymentSuccess={refetch}
             onPaymentFailure={refetch}
+            isActive={activeTab === "status"}
           />
         )}
       </div>
