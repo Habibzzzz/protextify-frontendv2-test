@@ -233,57 +233,52 @@ export default function TransactionDetail() {
       {/* Tab Content */}
       <div className="mt-6">
         {activeTab === "overview" && (
-          <Card className="border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle>Rincian</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-4">
-                    Informasi Assignment
-                  </h4>
-                  <div className="space-y-3 text-sm">
-                    <InfoRow
-                      label="Judul"
-                      value={transaction.assignment?.title}
-                    />
-                    <InfoRow
-                      label="Kelas"
-                      value={transaction.assignment?.class?.name}
-                    />
-                    <InfoRow
-                      label="Deadline"
-                      value={formatDate(
-                        transaction.assignment?.deadline,
-                        "dd MMMM yyyy"
-                      )}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-4">
-                    Detail Pembayaran
-                  </h4>
-                  <div className="space-y-3 text-sm">
-                    <InfoRow
-                      label="Jumlah Siswa"
-                      value={transaction.expectedStudentCount}
-                    />
-                    <InfoRow
-                      label="Harga per Siswa"
-                      value={formatCurrency(2500)}
-                    />
-                    <InfoRow
-                      label="Total"
-                      value={formatCurrency(transaction.amount)}
-                      isBold
-                    />
-                  </div>
+          <div className="p-6 bg-white rounded-lg border border-gray-200 shadow-lg">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-4">
+                  Informasi Assignment
+                </h4>
+                <div className="space-y-3 text-sm">
+                  <InfoRow
+                    label="Judul"
+                    value={transaction.assignment?.title}
+                  />
+                  <InfoRow
+                    label="Kelas"
+                    value={transaction.assignment?.class?.name}
+                  />
+                  <InfoRow
+                    label="Deadline"
+                    value={formatDate(
+                      transaction.assignment?.deadline,
+                      "dd MMMM yyyy"
+                    )}
+                  />
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-4">
+                  Detail Pembayaran
+                </h4>
+                <div className="space-y-3 text-sm">
+                  <InfoRow
+                    label="Jumlah Siswa"
+                    value={transaction.expectedStudentCount}
+                  />
+                  <InfoRow
+                    label="Harga per Siswa"
+                    value={formatCurrency(2500)}
+                  />
+                  <InfoRow
+                    label="Total"
+                    value={formatCurrency(transaction.amount)}
+                    isBold
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
         {activeTab === "invoice" && (
