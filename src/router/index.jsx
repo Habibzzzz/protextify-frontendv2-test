@@ -67,6 +67,7 @@ import {
   PlagiarismAnalysis,
   TransactionHistory,
   TransactionDetail,
+  ClassHistory,
 } from "../pages/instructor";
 
 const router = createBrowserRouter([
@@ -206,6 +207,10 @@ const router = createBrowserRouter([
       {
         path: "classes/:classId",
         element: <ClassDetail />,
+      },
+      {
+        path: "classes/:classId/history",
+        element: <ClassHistory />,
       },
       {
         path: "classes/:classId/settings",

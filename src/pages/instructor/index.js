@@ -15,3 +15,4 @@ export { default as PlagiarismAnalysis } from "./PlagiarismAnalysis";
 export { default as TransactionHistory } from "./TransactionHistory";
 export { default as TransactionDetail } from "./TransactionDetail";
 export { default as InstructorAssignmentDetail } from "./AssignmentDetail";
+export { default as ClassHistory } from "./ClassHistory";

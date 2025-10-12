@@ -240,6 +240,7 @@ export default function ClassDetail() {
           </TabsTrigger>
           <TabsTrigger value="members">Anggota ({studentsCount})</TabsTrigger>
           <TabsTrigger value="activity">Aktivitas</TabsTrigger>
+          <TabsTrigger value="history">Riwayat</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
@@ -256,6 +257,28 @@ export default function ClassDetail() {
 
         <TabsContent value="activity">
           <ActivityTab classDetail={classDetail} />
+        </TabsContent>
+
+        <TabsContent value="history">
+          <Card>
+            <CardHeader>
+              <CardTitle>Riwayat Submission Lengkap</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">
+                Lihat semua submission dari semua tugas di kelas ini dalam satu
+                halaman.
+              </p>
+              <Button
+                onClick={() =>
+                  navigate(`/instructor/classes/${classId}/history`)
+                }
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Buka Riwayat Submission
+              </Button>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </Container>

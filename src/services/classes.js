@@ -214,11 +214,14 @@ const getClassAssignments = async (classId) => {
 /**
  * Mendapat riwayat submission di kelas (instructor only)
  * @param {string} classId
- * @returns {Array} array submission sesuai BE
+ * @param {object} params - Query params for pagination, filtering, sorting
+ * @returns {Promise<object>} { data, page, limit, total, totalPages }
  */
-const getClassHistory = async (classId) => {
+const getClassHistory = async (classId, params) => {
   try {
-    const response = await api.get(`/classes/${classId}/history`);
+    // The api instance will automatically handle the params object.
+    // The response is now an object, so we return it directly.
+    const response = await api.get(`/classes/${classId}/history`, { params });
     return response;
   } catch (error) {
     throw error;

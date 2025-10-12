@@ -10,3 +10,4 @@ export { default as useFileManager } from "./useFileManager";
 export { useDraftManager } from "./useDraftManager";
 export { useTextAnalytics } from "./useTextAnalytics";
 export { useCopyPasteMonitor } from "./useCopyPasteMonitor";
+export { default as useDebounce } from "./useDebounce";
