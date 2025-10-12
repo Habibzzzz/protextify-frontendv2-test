@@ -300,7 +300,7 @@ export default function GradeSubmission() {
             <CardContent>
               <div
                 className="prose max-w-none bg-gray-50 rounded-lg p-6 border border-gray-200 h-96 overflow-y-auto"
-                dangerouslySetInnerHTML={{ __html: submission.content }}
+                dangerouslySetInnerHTML={{ __html: submission.content || "Tidak ada konten." }}
               />
             </CardContent>
           </Card>

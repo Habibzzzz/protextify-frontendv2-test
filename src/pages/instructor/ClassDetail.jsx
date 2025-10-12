@@ -418,10 +418,14 @@ function AssignmentsTab({ classDetail }) {
                         </Badge>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 mb-4">
-                      {assignment.instructions?.substring(0, 150)}
-                      {assignment.instructions?.length > 150 ? "..." : ""}
-                    </p>
+                    <div 
+                      className="text-sm text-gray-600 mb-4"
+                      dangerouslySetInnerHTML={{ 
+                        __html: assignment.instructions ? 
+                          assignment.instructions.substring(0, 150) + (assignment.instructions.length > 150 ? "..." : "") :
+                          "Tidak ada instruksi."
+                      }}
+                    />
                     <div className="flex items-center space-x-6 text-sm">
                       <div className="flex items-center text-gray-600">
                         <Calendar className="h-4 w-4 mr-2 text-[#23407a]" />

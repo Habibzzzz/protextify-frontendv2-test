@@ -123,9 +123,10 @@ export default function AssignmentDetail() {
         <div className="flex justify-between items-start">
           <div className="flex-1">
             <h1 className="text-3xl font-bold mb-2">{assignment.title}</h1>
-            <p className="text-white/80 text-lg mb-4 max-w-3xl">
-              {assignment.instructions}
-            </p>
+            <div 
+              className="text-white/80 text-lg mb-4 max-w-3xl"
+              dangerouslySetInnerHTML={{ __html: assignment.instructions || "Tidak ada instruksi." }}
+            />
             <div className="flex items-center gap-6 text-white/90">
               <div className="flex items-center">
                 <Calendar className="h-5 w-5 mr-2" />

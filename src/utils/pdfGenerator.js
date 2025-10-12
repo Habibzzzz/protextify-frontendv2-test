@@ -2,6 +2,24 @@
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
+// Helper function to strip HTML tags and get clean text
+const stripHtmlTags = (html) => {
+  if (!html) return "";
+  
+  // Check if we're in browser environment
+  if (typeof document === 'undefined') {
+    // Fallback: simple regex-based HTML stripping for server-side
+    return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+  }
+  
+  // Create a temporary div to parse HTML
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = html;
+  
+  // Get text content and preserve line breaks
+  return tempDiv.textContent || tempDiv.innerText || "";
+};
+
 export const pdfGenerator = {
   // Generate PDF from HTML content
   generateFromHTML: async (htmlContent, options = {}) => {
@@ -128,7 +146,7 @@ export const pdfGenerator = {
         }
         
         <div style="margin-bottom: 30px;">
-          ${submission.content || "No content available"}
+          ${stripHtmlTags(submission.content) || "No content available"}
         </div>
 
         ${
@@ -256,10 +274,8 @@ export const pdfGenerator = {
 
         // Add submission content (simplified)
         pdf.setFontSize(12);
-        const lines = pdf.splitTextToSize(
-          submission.content || "No content",
-          170
-        );
+        const cleanContent = stripHtmlTags(submission.content) || "No content";
+        const lines = pdf.splitTextToSize(cleanContent, 170);
         pdf.text(lines, 20, 50);
       }
 
