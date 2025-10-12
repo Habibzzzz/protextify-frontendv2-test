@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, BookOpen, Save, DollarSign, Info } from "lucide-react";
+import { ArrowLeft, BookOpen, Save, DollarSign, Info, MessageCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 
@@ -30,6 +30,7 @@ import DateTimePicker from "../../components/forms/DateTimePicker";
 import RichTextEditor from "../../components/forms/RichTextEditor";
 import PaymentStatusTracker from "../../components/payments/PaymentStatusTracker";
 import { PAYMENT_CONFIG } from "../../utils/constants";
+import { WHATSAPP_CONFIG, generateWhatsAppUrl } from "../../utils/whatsappConfig";
 
 export default function CreateAssignment() {
   const { classId } = useParams();
@@ -281,19 +282,41 @@ function PaymentSection({
   const handlePayment = async () => {
     setPaymentLoading(true);
     try {
+      // Simpan data transaksi ke database (tetap diperlukan untuk tracking)
       const paymentResponse = await paymentsService.createTransaction(
         assignmentData.paymentData
       );
       setTransactionData(paymentResponse);
 
-      if (paymentResponse.paymentUrl) {
-        window.open(paymentResponse.paymentUrl, "_blank");
-        toast.success(
-          "Halaman pembayaran telah dibuka. Sistem akan memantau status secara otomatis."
-        );
-      }
+      // Buat pesan WhatsApp dengan detail pembayaran
+      const whatsappMessage = `Halo! Saya ingin melakukan pembayaran untuk assignment Protextify.
+
+📋 *Detail Assignment:*
+• Judul: ${assignmentData.assignment.title}
+• Jumlah Siswa: ${assignmentData.assignment.expectedStudentCount}
+• Total Pembayaran: Rp ${assignmentData.totalPrice.toLocaleString("id-ID")}
+• ID Transaksi: ${paymentResponse.transactionId || 'N/A'}
+
+Mohon bantuan untuk proses pembayaran. Terima kasih!`;
+
+      // Buka WhatsApp dengan pesan yang sudah diformat
+      const whatsappUrl = generateWhatsAppUrl(whatsappMessage);
+      window.open(whatsappUrl, "_blank");
+
+      toast.success(
+        "Data transaksi telah disimpan. WhatsApp telah dibuka untuk konfirmasi pembayaran."
+      );
+
+      // KOMENTAR: Kode Midtrans di bawah ini dinonaktifkan sementara
+      // if (paymentResponse.paymentUrl) {
+      //   window.open(paymentResponse.paymentUrl, "_blank");
+      //   toast.success(
+      //     "Halaman pembayaran telah dibuka. Sistem akan memantau status secara otomatis."
+      //   );
+      // }
     } catch (error) {
       console.error("Error creating payment:", error);
+      toast.error("Gagal menyimpan data transaksi. Silakan coba lagi.");
     } finally {
       setPaymentLoading(false);
     }
@@ -357,7 +380,7 @@ function PaymentSection({
                 loading={paymentLoading}
                 className="bg-green-600 hover:bg-green-700"
               >
-                <DollarSign className="h-4 w-4 mr-2" />
+                <MessageCircle className="h-4 w-4 mr-2" />
                 Bayar Sekarang
               </Button>
             </div>
