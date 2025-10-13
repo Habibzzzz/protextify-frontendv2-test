@@ -10,6 +10,7 @@ import {
   Clock,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 import {
   Container,
@@ -33,6 +34,7 @@ export default function InstructorAnalytics() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [analyticsData, setAnalyticsData] = useState(null);
+  const navigate = useNavigate();
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -49,7 +51,7 @@ export default function InstructorAnalytics() {
         message: err.message,
         response: err.response,
         status: err.response?.status,
-        data: err.response?.data
+        data: err.response?.data,
       });
       const errorMessage =
         err.response?.data?.message ||
@@ -244,7 +246,19 @@ export default function InstructorAnalytics() {
         </Container>
       </div>
 
-      <Container className="pb-12">{renderContent()}</Container>
+      <Container className="pb-12">
+        {renderContent()}
+        <div className="mt-8 flex justify-end">
+          <Button
+            size="sm"
+            className="bg-[#23407a] hover:bg-[#1a2f5c] text-white"
+            onClick={() => navigate("/instructor/classes")}
+          >
+            <Users className="h-4 w-4 mr-2" />
+            Lihat Kelas
+          </Button>
+        </div>
+      </Container>
     </Container>
   );
 }
