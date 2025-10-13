@@ -10,9 +10,10 @@ import {
   $isRangeSelection,
   $getRoot,
   $insertNodes,
-  // Hapus UNDO_COMMAND karena kita tidak akan menggunakannya lagi
+  PASTE_COMMAND, // 1. Tambahkan PASTE_COMMAND
 } from "lexical";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext"; // 2. Tambahkan hook ini
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
@@ -162,6 +163,31 @@ const setEditorContent = (editor, html) => {
   });
 };
 
+// 3. Buat plugin baru untuk mengontrol paste
+function PasteControlPlugin({ disablePaste }) {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    // Menggunakan prioritas tinggi (1) untuk memastikan listener ini berjalan pertama
+    return editor.registerCommand(
+      PASTE_COMMAND,
+      (event) => {
+        if (disablePaste) {
+          event.preventDefault();
+          toast.error("Menyalin dan menempelkan konten tidak diizinkan.", {
+            icon: "🚫",
+          });
+          return true; // Mengindikasikan event telah ditangani dan menghentikan propagasi
+        }
+        return false; // Membiarkan event paste berjalan jika tidak dinonaktifkan
+      },
+      1
+    );
+  }, [editor, disablePaste]);
+
+  return null; // Plugin ini tidak me-render apapun
+}
+
 const RichTextEditor = forwardRef(
   (
     {
@@ -182,6 +208,7 @@ const RichTextEditor = forwardRef(
       enableImages = true,
       enableDragDrop = true,
       enableMarkdownShortcuts = true,
+      disablePaste = false,
     },
     ref
   ) => {
@@ -472,6 +499,7 @@ const RichTextEditor = forwardRef(
                       placeholder={
                         <div className="editor-placeholder">{placeholder}</div>
                       }
+                      // 5. Hapus prop onPaste dari sini
                     />
                   }
                   placeholder={null}
@@ -531,6 +559,9 @@ const RichTextEditor = forwardRef(
                 {enableMarkdownShortcuts && (
                   <MarkdownShortcutPlugin transformers={[]} />
                 )}
+
+                {/* 6. Tambahkan plugin baru di sini */}
+                <PasteControlPlugin disablePaste={disablePaste} />
 
                 {showFloatingToolbar && <FloatingTextFormatToolbarPlugin />}
               </div>
