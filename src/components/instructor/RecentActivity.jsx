@@ -110,7 +110,7 @@ const RecentActivity = ({ submissions, transactions }) => {
                 </div>
               </div>
               {activity.type === "submission" && (
-                <Link to={`/instructor/submissions/${activity.id}`}>
+                <Link to={`/instructor/submissions/${activity.id}/grade`}>
                   <Button variant="ghost" size="sm">
                     <Eye className="h-4 w-4" />
                   </Button>
