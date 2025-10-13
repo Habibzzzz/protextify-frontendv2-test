@@ -117,15 +117,28 @@ export default function AssignmentDetail() {
           { label: "Detail Tugas" },
         ]}
       />
-
+      {/* Back Button */}
+      <div className="mb-4">
+        <Button
+          variant="outline"
+          size="lg"
+          onClick={() => navigate(`/instructor/classes/${assignment.classId}`)}
+          className="border-2 border-white/30 text-[#23407a] hover:bg-white/10 backdrop-blur-sm transition-all duration-300"
+        >
+          <ArrowLeft className="h-5 w-5 mr-2" />
+          Kembali ke Kelas
+        </Button>
+      </div>
       {/* Header */}
       <div className="bg-gradient-to-r from-[#23407a] to-[#1a2f5c] rounded-2xl p-8 text-white shadow-2xl">
         <div className="flex justify-between items-start">
           <div className="flex-1">
             <h1 className="text-3xl font-bold mb-2">{assignment.title}</h1>
-            <div 
+            <div
               className="text-white/80 text-lg mb-4 max-w-3xl"
-              dangerouslySetInnerHTML={{ __html: assignment.instructions || "Tidak ada instruksi." }}
+              dangerouslySetInnerHTML={{
+                __html: assignment.instructions || "Tidak ada instruksi.",
+              }}
             />
             <div className="flex items-center gap-6 text-white/90">
               <div className="flex items-center">
@@ -148,7 +161,31 @@ export default function AssignmentDetail() {
           )}
         </div>
       </div>
-
+      {/* --- Analytics & Monitoring Buttons --- */}
+      <div className="mb-8 flex gap-4">
+        <Button
+          variant="outline"
+          size="lg"
+          className="rounded-xl text-[#23407a] border-[#23407a] hover:bg-[#23407a]/10 flex items-center gap-2"
+          onClick={() =>
+            navigate(`/instructor/assignments/${assignmentId}/analytics`)
+          }
+        >
+          <TrendingUp className="h-5 w-5" />
+          Analytics
+        </Button>
+        <Button
+          variant="outline"
+          size="lg"
+          className="rounded-xl text-[#23407a] border-[#23407a] hover:bg-[#23407a]/10 flex items-center gap-2"
+          onClick={() =>
+            navigate(`/instructor/assignments/${assignmentId}/monitor`)
+          }
+        >
+          <Eye className="h-5 w-5" />
+          Monitoring
+        </Button>
+      </div>
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <StatCard
@@ -176,7 +213,6 @@ export default function AssignmentDetail() {
           color="purple"
         />
       </div>
-
       {/* Filters & Search */}
       <Card className="border-0 shadow-md">
         <CardContent className="p-6">
@@ -223,7 +259,6 @@ export default function AssignmentDetail() {
           </div>
         </CardContent>
       </Card>
-
       {/* Submissions List */}
       <Card className="border-0 shadow-lg">
         <CardHeader>
