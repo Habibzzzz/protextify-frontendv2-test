@@ -43,7 +43,13 @@ const getClasses = async () => {
             // Hapus instructions dan createdAt karena tidak ada di response
           }))
         : [],
-      // Hapus currentUserEnrollment karena tidak ada di response
+      // Selaraskan dengan Swagger: sertakan info enrollment user saat ini jika tersedia
+      currentUserEnrollment: classObj.currentUserEnrollment
+        ? {
+            id: classObj.currentUserEnrollment.id,
+            joinedAt: classObj.currentUserEnrollment.joinedAt,
+          }
+        : undefined,
     }));
   } catch (error) {
     console.error("Error fetching classes:", error);
