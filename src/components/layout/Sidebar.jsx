@@ -50,12 +50,6 @@ export default function Sidebar() {
           path: "/instructor/analytics",
           disabled: false,
         },
-        {
-          label: "Pengaturan",
-          icon: Settings,
-          path: "/instructor/settings",
-          disabled: true, // Tidak ada endpoint di BE
-        },
       ];
     } else {
       // Student

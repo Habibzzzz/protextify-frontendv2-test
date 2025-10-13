@@ -11,6 +11,7 @@ import {
   Building2,
   Phone,
   Info,
+  Mail,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
