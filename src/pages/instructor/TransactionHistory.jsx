@@ -197,7 +197,7 @@ export default function TransactionHistory() {
             {formatCurrency(transaction.amount)}
           </div>
           <div className="text-xs text-gray-500">
-            @ {formatCurrency(2500)} × {transaction.expectedStudentCount}
+            @ {formatCurrency(2700)} × {transaction.expectedStudentCount}
           </div>
           <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
             {transaction.expectedStudentCount} siswa

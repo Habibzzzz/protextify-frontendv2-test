@@ -264,7 +264,7 @@ export default function TransactionDetail() {
                   />
                   <InfoRow
                     label="Harga per Siswa"
-                    value={formatCurrency(2500)}
+                    value={formatCurrency(2700)}
                   />
                   <InfoRow
                     label="Total"
