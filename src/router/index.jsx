@@ -67,6 +67,7 @@ import {
   PlagiarismAnalysis,
   TransactionHistory,
   TransactionDetail,
+  ClassHistory,
 } from "../pages/instructor";
 
 const router = createBrowserRouter([
@@ -192,6 +193,10 @@ const router = createBrowserRouter([
         element: <InstructorDashboard />,
       },
       {
+        path: "analytics",
+        element: <InstructorAnalytics />,
+      },
+      {
         path: "classes",
         element: <InstructorClasses />,
       },
@@ -204,16 +209,20 @@ const router = createBrowserRouter([
         element: <ClassDetail />,
       },
       {
+        path: "classes/:classId/history",
+        element: <ClassHistory />,
+      },
+      {
         path: "classes/:classId/settings",
         element: <ClassSettings />,
       },
       {
-        path: "classes/:classId/assignments/create",
+        path: "classes/:classId/create-assignment",
         element: <CreateAssignment />,
       },
       {
         path: "assignments/:assignmentId",
-        element: <AssignmentDetail />,
+        element: <InstructorAssignmentDetail />,
       },
       {
         path: "assignments/:assignmentId/monitor",
@@ -231,13 +240,20 @@ const router = createBrowserRouter([
         path: "assignments/:assignmentId/submissions",
         element: <MonitorSubmissions />,
       },
-      { path: "assignments/:assignmentId/bulk-grade", element: <BulkGrade /> },
       {
         path: "submissions/:submissionId/plagiarism",
         element: <PlagiarismAnalysis />,
       },
+      {
+        path: "submissions/:submissionId/grade",
+        element: <GradeSubmission />,
+      },
       { path: "transactions", element: <TransactionHistory /> },
       { path: "transactions/:transactionId", element: <TransactionDetail /> },
+      {
+        path: "settings",
+        element: <InstructorSettings />,
+      },
     ],
   },
 

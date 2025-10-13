@@ -111,12 +111,12 @@ export default function InvoiceViewer({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Informasi Perusahaan
+                Informasi Kami
               </h3>
               <div className="space-y-1 text-sm">
-                <div className="font-medium">PT. Protextify Indonesia</div>
-                <div>Jl. Teknologi No. 123</div>
-                <div>Jakarta Selatan, 12345</div>
+                <div className="font-medium">Protextify Indonesia</div>
+                <div>Jl. Prof. Dr. Sumantri Brojonegoro No. 1</div>
+                <div>Bandar Lampung, 35141</div>
                 <div>Indonesia</div>
                 <div>Email: billing@protextify.com</div>
                 <div>Phone: +62 21 1234 5678</div>

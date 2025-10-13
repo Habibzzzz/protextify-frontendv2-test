@@ -109,9 +109,26 @@ export default function PlagiarismReport({
     );
   }
 
-  // Mapping field sesuai BE
+  // Mapping field sesuai BE (dengan fallback agar aman)
   const { detailedResults } = report;
-  const { result, sources = [] } = detailedResults || {};
+  const { result = {}, sources = [] } = detailedResults || {};
+  const totalSources = Array.isArray(sources) ? sources.length : 0;
+  const totalWords =
+    typeof result.textWordCounts === "number"
+      ? result.textWordCounts
+      : typeof report.wordCount === "number"
+      ? report.wordCount
+      : 0;
+  const totalPlagiarism =
+    typeof result.totalPlagiarismWords === "number"
+      ? result.totalPlagiarismWords
+      : 0;
+  const credits =
+    typeof report.creditsUsed === "number"
+      ? report.creditsUsed
+      : typeof report.credits_used === "number"
+      ? report.credits_used
+      : 0;
 
   return (
     <>
@@ -162,16 +179,12 @@ export default function PlagiarismReport({
             </div>
 
             <div className="p-4 bg-blue-100 text-blue-800 rounded-lg">
-              <div className="text-2xl font-bold">
-                {result?.sourceCounts || 0}
-              </div>
+              <div className="text-2xl font-bold">{totalSources}</div>
               <div className="text-sm font-medium">Sumber Ditemukan</div>
             </div>
 
             <div className="p-4 bg-purple-100 text-purple-800 rounded-lg">
-              <div className="text-2xl font-bold">
-                {result?.totalPlagiarismWords || 0}
-              </div>
+              <div className="text-2xl font-bold">{totalPlagiarism}</div>
               <div className="text-sm font-medium">Kata Terdeteksi</div>
             </div>
           </div>
@@ -231,26 +244,24 @@ export default function PlagiarismReport({
           {/* Statistics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t">
             <div className="text-center">
-              <div className="text-lg font-medium text-gray-900">
-                {result?.textWordCounts || 0}
-              </div>
+              <div className="text-lg font-medium text-gray-900">{totalWords}</div>
               <div className="text-sm text-gray-600">Total Kata</div>
             </div>
             <div className="text-center">
               <div className="text-lg font-medium text-red-600">
-                {result?.identicalWordCounts || 0}
+                {result?.identicalWordCounts ?? 0}
               </div>
               <div className="text-sm text-gray-600">Kata Identik</div>
             </div>
             <div className="text-center">
               <div className="text-lg font-medium text-yellow-600">
-                {result?.similarWordCounts || 0}
+                {result?.similarWordCounts ?? 0}
               </div>
               <div className="text-sm text-gray-600">Kata Mirip</div>
             </div>
             <div className="text-center">
               <div className="text-lg font-medium text-blue-600">
-                {report.creditsUsed || 0}
+                {credits}
               </div>
               <div className="text-sm text-gray-600">Kredit Digunakan</div>
             </div>

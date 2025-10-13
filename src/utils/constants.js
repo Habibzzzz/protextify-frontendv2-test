@@ -402,7 +402,7 @@ export const PAYMENT_CONFIG = {
       production: "https://app.midtrans.com/snap/snap.js",
     },
   },
-  ASSIGNMENT_PRICE_PER_STUDENT: 2500,
+  ASSIGNMENT_PRICE_PER_STUDENT: 2700,
   CURRENCY: "IDR",
   MIN_STUDENTS: 1,
   MAX_STUDENTS: 100,
@@ -416,8 +416,6 @@ export const PAYMENT_STATUS = {
   PENDING: "PENDING",
   SUCCESS: "SUCCESS",
   FAILED: "FAILED",
-  CANCELLED: "CANCELLED",
-  EXPIRED: "EXPIRED",
 };
 
 // Payment Methods

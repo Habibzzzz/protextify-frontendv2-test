@@ -122,15 +122,42 @@ export const formatDate = (date, format = "dd/MM/yyyy") => {
 /**
  * Format date and time
  */
-export const formatDateTime = (date) => {
-  if (!date) return "-";
-  
-  const d = new Date(date);
-  return d.toLocaleString("id-ID", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+export const formatDateTime = (dateString) => {
+  if (!dateString) return "-";
+  return new Date(dateString).toLocaleString("id-ID", {
+    dateStyle: "medium",
+    timeStyle: "short",
   });
+};
+
+/**
+ * Formats a date string into a relative time string (e.g., "2 jam yang lalu").
+ * Uses Intl.RelativeTimeFormat for localization.
+ * @param {string | Date} date - The date to format.
+ * @returns {string} The formatted relative time string.
+ */
+export const formatRelativeTime = (date) => {
+  if (!date) return "";
+  const dateObj = new Date(date);
+  const now = new Date();
+  const diffInSeconds = Math.floor((dateObj - now) / 1000);
+
+  const rtf = new Intl.RelativeTimeFormat("id", { numeric: "auto" });
+
+  const units = {
+    year: 31536000,
+    month: 2592000,
+    week: 604800,
+    day: 86400,
+    hour: 3600,
+    minute: 60,
+  };
+
+  for (const unit in units) {
+    const interval = diffInSeconds / units[unit];
+    if (Math.abs(interval) >= 1) {
+      return rtf.format(Math.round(interval), unit);
+    }
+  }
+  return rtf.format(diffInSeconds, "second");
 };

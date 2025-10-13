@@ -49,6 +49,7 @@
     "react-hook-form": "^7.54.2",
     "react-hot-toast": "^2.4.1",
     "react-router-dom": "^7.9.3",
+    "recharts": "^3.2.1",
     "socket.io-client": "^4.8.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss": "^4.1.13",

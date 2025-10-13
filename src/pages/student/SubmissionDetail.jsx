@@ -364,7 +364,7 @@ function ContentPreviewCard({ content }) {
       </CardHeader>
       <CardContent>
         <div className="prose prose-sm max-w-none h-64 overflow-y-auto p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <div dangerouslySetInnerHTML={{ __html: content }} />
+          <div dangerouslySetInnerHTML={{ __html: content || "Tidak ada konten." }} />
         </div>
       </CardContent>
     </Card>

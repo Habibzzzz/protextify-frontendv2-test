@@ -1,7 +1,18 @@
-// src/pages/instructor/Settings.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { Camera, Save, User, Mail, Phone, Building2, Shield } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Camera,
+  Save,
+  User,
+  Shield,
+  Upload,
+  Building2,
+  Phone,
+  Info,
+  Mail,
+} from "lucide-react";
 import toast from "react-hot-toast";
 
 import {
@@ -13,185 +24,236 @@ import {
   Button,
   Input,
   Textarea,
+  Breadcrumb,
 } from "../../components";
-import { Breadcrumb } from "../../components/layout";
+import { storageService } from "../../services";
+import { updateProfileSchema } from "../../utils/validation";
 
 export default function InstructorSettings() {
-  const { user } = useAuth();
-  const [saving, setSaving] = useState(false);
-  const [avatarPreview, setAvatarPreview] = useState("");
-  const [form, setForm] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    institution: "",
-    bio: "",
-    avatarUrl: "",
+  const { user, updateUser } = useAuth();
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(
+    "/src/assets/logo-protextify-warna.png"
+  );
+  const fileInputRef = useRef(null);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isDirty, isSubmitting },
+    reset,
+    setValue,
+  } = useForm({
+    resolver: zodResolver(updateProfileSchema),
   });
 
   useEffect(() => {
-    setForm({
-      fullName: user?.fullName || "Dr. John Smith",
-      email: user?.email || "john.smith@university.ac.id",
-      phone: user?.phone || "+62 812-3456-7890",
-      institution: user?.institution || "Universitas Teknologi Nusantara",
-      bio:
-        user?.bio ||
-        "Dosen program studi Sistem Informasi. Fokus pada tata kelola TI dan analitik data.",
-      avatarUrl: user?.avatarUrl || "/src/assets/logo-protextify-warna.png",
-    });
-    setAvatarPreview(user?.avatarUrl || "/src/assets/logo-protextify-warna.png");
-  }, [user]);
+    if (user) {
+      reset({
+        fullName: user.fullName || "",
+        institution: user.institution || "",
+        phone: user.phone || "",
+        bio: user.bio || "",
+        avatarUrl: user.avatarUrl || "",
+      });
+      setAvatarPreview(
+        user.avatarUrl || "/src/assets/logo-protextify-warna.png"
+      );
+    }
+  }, [user, reset]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        // 2MB limit
+        toast.error("Ukuran file maksimal adalah 2MB.");
+        return;
+      }
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
+    }
   };
 
-  const handleAvatarFile = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setAvatarPreview(String(reader.result));
-    reader.readAsDataURL(file);
-  };
+  const onSubmit = async (data) => {
+    let finalData = { ...data };
 
-  const handleAvatarUrl = () => {
-    if (!form.avatarUrl) return;
-    setAvatarPreview(form.avatarUrl);
-  };
+    if (avatarFile) {
+      const uploadToast = toast.loading("Mengunggah foto profil...");
+      try {
+        const response = await storageService.uploadFile(avatarFile);
+        // Asumsi base URL storage ada di env. Ganti jika perlu.
+        const storageBaseUrl =
+          import.meta.env.VITE_STORAGE_BASE_URL ||
+          "https://your-storage-base-url.com";
+        const fullAvatarUrl = `${storageBaseUrl}/${response.cloudKey}`;
+        finalData.avatarUrl = fullAvatarUrl;
+        toast.dismiss(uploadToast);
+      } catch (error) {
+        toast.dismiss(uploadToast);
+        toast.error("Gagal mengunggah foto profil.");
+        return; // Hentikan proses jika upload gagal
+      }
+    }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
     try {
-      setSaving(true);
-      // Simulasi penyimpanan
-      await new Promise((r) => setTimeout(r, 900));
-      toast.success("Profil berhasil disimpan");
-    } catch (err) {
-      toast.error("Gagal menyimpan profil");
-    } finally {
-      setSaving(false);
+      await updateUser(finalData);
+      // Reset form ke state baru untuk membersihkan status 'isDirty'
+      reset(finalData);
+      setAvatarFile(null); // Hapus state file setelah berhasil
+    } catch (error) {
+      // Error sudah ditangani oleh updateUser di AuthContext
     }
   };
 
   return (
-    <Container className="py-6">
+    <Container className="py-8">
       <Breadcrumb />
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[#23407a]/10 text-[#23407a] flex items-center justify-center">
-            <User className="w-5 h-5" />
+      <div className="flex items-center justify-between my-8">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-[#23407a]/10 text-[#23407a] flex items-center justify-center">
+            <User className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Pengaturan Akun</h1>
-            <p className="text-gray-600 text-sm">Edit profil dan informasi akun Anda</p>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Pengaturan Akun
+            </h1>
+            <p className="text-gray-600">
+              Perbarui profil dan informasi akun Anda.
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Avatar & Keamanan */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Foto Profil</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-start gap-4">
-                <div className="w-24 h-24 aspect-square rounded-2xl overflow-hidden border border-gray-200 bg-white shrink-0 flex items-center justify-center">
-                  {/* Preview */}
-                  <img src={avatarPreview} alt="avatar" className="max-w-full max-h-full object-contain object-center block" />
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column: Avatar & Security */}
+          <div className="space-y-8">
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-lg">Foto Profil</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center text-center">
+                <div className="relative w-32 h-32 mb-4">
+                  <img
+                    src={avatarPreview}
+                    alt="Avatar Preview"
+                    className="w-full h-full rounded-full object-cover border-4 border-white shadow-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute bottom-0 right-0 w-10 h-10 bg-[#23407a] text-white rounded-full flex items-center justify-center hover:bg-[#1a2f5c] transition-all duration-300 shadow-md"
+                    aria-label="Ubah foto profil"
+                  >
+                    <Camera className="w-5 h-5" />
+                  </button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept="image/png, image/jpeg, image/webp"
+                    className="hidden"
+                  />
                 </div>
-                <div className="flex-1 space-y-3">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Unggah File</label>
-                    <div className="mt-1 flex items-center gap-3">
-                      <input type="file" accept="image/*" onChange={handleAvatarFile} />
-                      <Button variant="outline" size="sm">
-                        <Camera className="w-4 h-4 mr-2" />
-                        Pilih
-                      </Button>
-                    </div>
-                  </div>
-                  {/* <div>
-                    <label className="text-sm font-medium text-gray-700">Atau URL Gambar</label>
-                    <div className="mt-1 flex items-center gap-2 w-full max-w-md overflow-hidden">
-                      <Input
-                        name="avatarUrl"
-                        value={form.avatarUrl}
-                        onChange={handleChange}
-                        placeholder="https://.../foto.png"
-                        className="flex-1 min-w-0 w-full focus:outline-none focus:ring-2 focus:ring-[#23407a] focus:ring-offset-0"
-                      />
-                      <Button variant="outline" size="sm" onClick={handleAvatarUrl} className="whitespace-nowrap">Terapkan</Button>
-                    </div>
-                  </div> */}
+                <p className="text-sm text-gray-500">
+                  JPG, PNG, atau WEBP. Ukuran maks 2MB.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center">
+                  <Shield className="w-5 h-5 mr-2 text-[#23407a]" />
+                  Keamanan
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 mb-4">
+                  Fitur ganti kata sandi dan otentikasi dua faktor (2FA) akan
+                  segera tersedia.
+                </p>
+                <Button variant="outline" disabled className="w-full">
+                  Ubah Kata Sandi (Coming Soon)
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column: Profile Form */}
+          <div className="lg:col-span-2">
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-lg">Informasi Profil</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Input
+                    label="Nama Lengkap"
+                    {...register("fullName")}
+                    error={errors.fullName?.message}
+                    icon={User}
+                  />
+                  <Input
+                    label="Email"
+                    value={user?.email || ""}
+                    disabled
+                    readOnly
+                    icon={Mail}
+                  />
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center"><Shield className="w-4 h-4 mr-2"/>Keamanan (Coming Soon)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600">Ganti kata sandi dan atur 2FA akan tersedia di versi berikutnya.</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Form Profil */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Informasi Profil</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-                    <Input name="fullName" value={form.fullName} onChange={handleChange} placeholder="Nama Anda" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <Input name="email" type="email" value={form.email} onChange={handleChange} placeholder="email@kampus.ac.id" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">No. HP</label>
-                    <Input name="phone" value={form.phone} onChange={handleChange} placeholder="+62 ..." />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Institusi</label>
-                    <Input name="institution" value={form.institution} onChange={handleChange} placeholder="Nama institusi" />
-                  </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Input
+                    label="Institusi"
+                    {...register("institution")}
+                    error={errors.institution?.message}
+                    icon={Building2}
+                  />
+                  <Input
+                    label="Nomor Telepon"
+                    {...register("phone")}
+                    error={errors.phone?.message}
+                    placeholder="+62 812-3456-7890"
+                    icon={Phone}
+                  />
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
-                  <Textarea name="bio" rows={5} value={form.bio} onChange={handleChange} placeholder="Ceritakan peran dan keahlian Anda" />
+                  <Textarea
+                    label="Bio"
+                    {...register("bio")}
+                    error={errors.bio?.message}
+                    rows={4}
+                    placeholder="Ceritakan peran dan keahlian Anda..."
+                    icon={Info}
+                  />
                 </div>
 
-                <div className="flex items-center justify-end gap-3 pt-4 border-t">
-                  <Button type="button" variant="outline" onClick={() => window.history.back()}>
+                <div className="flex items-center justify-end gap-4 pt-6 border-t">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate(-1)}
+                  >
                     Batal
                   </Button>
-                  <Button type="submit" disabled={saving} className="bg-[#23407a] hover:bg-[#1a2f5c]">
+                  <Button
+                    type="submit"
+                    disabled={!isDirty && !avatarFile}
+                    loading={isSubmitting}
+                    className="bg-[#23407a] hover:bg-[#1a2f5c]"
+                  >
                     <Save className="w-4 h-4 mr-2" />
-                    {saving ? "Menyimpan..." : "Simpan Perubahan"}
+                    Simpan Perubahan
                   </Button>
                 </div>
-              </form>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
+      </form>
     </Container>
   );
 }
-
-

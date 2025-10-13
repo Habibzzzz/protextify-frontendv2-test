@@ -10,7 +10,7 @@ const getClasses = async () => {
     const response = await api.get("/classes");
     const data = Array.isArray(response) ? response : [];
 
-    // Transform response sesuai struktur BE terbaru
+    // Transform response sesuai struktur BE terbaru dari Postman
     return data.map((classObj) => ({
       id: classObj.id,
       name: classObj.name,
@@ -23,7 +23,7 @@ const getClasses = async () => {
         ? {
             id: classObj.instructor.id,
             fullName: classObj.instructor.fullName,
-            institution: classObj.instructor.institution,
+            // Hapus institution karena tidak ada di response
           }
         : undefined,
       enrollments: Array.isArray(classObj.enrollments)
@@ -38,12 +38,12 @@ const getClasses = async () => {
         ? classObj.assignments.map((a) => ({
             id: a.id,
             title: a.title,
-            instructions: a.instructions,
             deadline: a.deadline,
             active: a.active,
-            createdAt: a.createdAt,
+            // Hapus instructions dan createdAt karena tidak ada di response
           }))
         : [],
+      // Selaraskan dengan Swagger: sertakan info enrollment user saat ini jika tersedia
       currentUserEnrollment: classObj.currentUserEnrollment
         ? {
             id: classObj.currentUserEnrollment.id,
@@ -65,7 +65,7 @@ const getClasses = async () => {
 const getClassById = async (id) => {
   try {
     const response = await api.get(`/classes/${id}`);
-    // Mapping sesuai BE
+    // Mapping disempurnakan sesuai data Postman
     return {
       id: response.id,
       name: response.name,
@@ -83,9 +83,12 @@ const getClassById = async (id) => {
         : undefined,
       enrollments: Array.isArray(response.enrollments)
         ? response.enrollments.map((e) => ({
+            id: e.id,
+            joinedAt: e.joinedAt,
             student: {
               id: e.student?.id,
               fullName: e.student?.fullName,
+              // Hapus email dan institution karena tidak ada di response
             },
           }))
         : [],
@@ -97,6 +100,7 @@ const getClassById = async (id) => {
             deadline: a.deadline,
             active: a.active,
             createdAt: a.createdAt,
+            // Hapus expectedStudentCount dan _count karena tidak ada di response
           }))
         : [],
       currentUserEnrollment: response.currentUserEnrollment
@@ -214,11 +218,14 @@ const getClassAssignments = async (classId) => {
 /**
  * Mendapat riwayat submission di kelas (instructor only)
  * @param {string} classId
- * @returns {Array} array submission sesuai BE
+ * @param {object} params - Query params for pagination, filtering, sorting
+ * @returns {Promise<object>} { data, page, limit, total, totalPages }
  */
-const getClassHistory = async (classId) => {
+const getClassHistory = async (classId, params) => {
   try {
-    const response = await api.get(`/classes/${classId}/history`);
+    // The api instance will automatically handle the params object.
+    // The response is now an object, so we return it directly.
+    const response = await api.get(`/classes/${classId}/history`, { params });
     return response;
   } catch (error) {
     throw error;
@@ -268,6 +275,24 @@ const regenerateClassToken = async (classId) => {
   }
 };
 
+/**
+ * Mendapat feed aktivitas terbaru di kelas (instructor only)
+ * @param {string} classId
+ * @param {number} limit
+ * @returns {Promise<Array>} Array of activity objects.
+ */
+const getClassActivityFeed = async (classId, limit = 20) => {
+  try {
+    const response = await api.get(`/classes/${classId}/activity-feed`, {
+      params: { limit },
+    });
+    return response;
+  } catch (error) {
+    console.error(`Failed to fetch activity feed for class ${classId}:`, error);
+    throw error;
+  }
+};
+
 const classesService = {
   getClasses,
   getClassById,
@@ -279,6 +304,7 @@ const classesService = {
   updateClass,
   deleteClass,
   regenerateClassToken,
+  getClassActivityFeed, // <-- Tambahkan fungsi baru
 };
 
 export default classesService;

@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, BookOpen, Save, DollarSign, Info } from "lucide-react";
+import { ArrowLeft, BookOpen, Save, DollarSign, Info, MessageCircle } from "lucide-react";
 import toast from "react-hot-toast";
+import { motion } from "framer-motion";
 
 import {
   Container,
@@ -18,22 +19,25 @@ import {
   Breadcrumb,
   LoadingSpinner,
 } from "../../components";
-import { assignmentsService, paymentsService } from "../../services";
+import {
+  assignmentsService,
+  classesService,
+  paymentsService,
+} from "../../services";
 import { createAssignmentSchema } from "../../utils/validation";
 import { useAsyncData } from "../../hooks/useAsyncData";
 import DateTimePicker from "../../components/forms/DateTimePicker";
 import RichTextEditor from "../../components/forms/RichTextEditor";
-import PaymentCalculator from "../../components/payments/PaymentCalculator";
 import PaymentStatusTracker from "../../components/payments/PaymentStatusTracker";
+import { PAYMENT_CONFIG } from "../../utils/constants";
+import { WHATSAPP_CONFIG, generateWhatsAppUrl } from "../../utils/whatsappConfig";
 
 export default function CreateAssignment() {
   const { classId } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [paymentLoading, setPaymentLoading] = useState(false);
   const [assignmentData, setAssignmentData] = useState(null);
   const [showPayment, setShowPayment] = useState(false);
-  const [paymentCalculation, setPaymentCalculation] = useState(null);
   const [transactionData, setTransactionData] = useState(null);
 
   const {
@@ -59,19 +63,18 @@ export default function CreateAssignment() {
   );
 
   const watchedValues = watch();
-  const pricePerStudent = 2500;
-  const totalPrice = watchedValues.expectedStudentCount * pricePerStudent;
+  const totalPrice =
+    watchedValues.expectedStudentCount *
+    PAYMENT_CONFIG.ASSIGNMENT_PRICE_PER_STUDENT;
 
   const onSubmit = async (data) => {
+    setLoading(true);
     try {
-      setLoading(true);
-
       // Format deadline to ISO string
       const formattedData = {
         ...data,
         deadline: new Date(data.deadline).toISOString(),
       };
-
       const response = await assignmentsService.createAssignment(
         classId,
         formattedData
@@ -81,7 +84,7 @@ export default function CreateAssignment() {
         setAssignmentData(response);
         setShowPayment(true);
         toast.success(
-          "Assignment berhasil dibuat! Silakan lakukan pembayaran untuk mengaktifkan."
+          "Assignment berhasil dibuat! Lanjutkan ke pembayaran untuk mengaktifkan."
         );
       } else {
         toast.success("Assignment berhasil dibuat dan aktif!");
@@ -89,326 +92,301 @@ export default function CreateAssignment() {
       }
     } catch (error) {
       console.error("Error creating assignment:", error);
+      // Error toast is handled by the API interceptor
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePayment = async () => {
-    try {
-      setPaymentLoading(true);
-
-      const paymentData = {
-        amount: totalPrice,
-        assignmentId: assignmentData.assignment.id,
-      };
-
-      const paymentResponse = await paymentsService.createTransaction(
-        paymentData
-      );
-
-      // Redirect to Midtrans payment page
-      if (paymentResponse.paymentUrl) {
-        window.open(paymentResponse.paymentUrl, "_blank");
-        toast.success(
-          "Halaman pembayaran telah dibuka. Selesaikan pembayaran untuk mengaktifkan assignment."
-        );
-      }
-    } catch (error) {
-      console.error("Error creating payment:", error);
-    } finally {
-      setPaymentLoading(false);
-    }
-  };
-
   if (classLoading) {
     return (
-      <Container className="py-6">
-        <LoadingSpinner />
+      <Container className="py-6 flex justify-center items-center h-screen">
+        <LoadingSpinner size="lg" />
       </Container>
     );
   }
 
   return (
-    <Container className="py-6">
-      {/* Breadcrumb */}
+    <Container className="py-8">
       <Breadcrumb />
 
-      {/* Header */}
-      <div className="flex items-center mb-6">
+      <div className="flex items-center mb-8">
         <Button
           variant="ghost"
-          size="sm"
-          onClick={() => navigate(`/instructor/classes/${classId}`)}
+          size="icon"
+          onClick={() =>
+            showPayment
+              ? setShowPayment(false)
+              : navigate(`/instructor/classes/${classId}`)
+          }
           className="mr-4"
         >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Kembali ke Kelas
+          <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Buat Tugas Baru</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {showPayment ? "Pembayaran Assignment" : "Buat Tugas Baru"}
+          </h1>
           <p className="text-gray-600">Kelas: {classDetail?.name}</p>
         </div>
       </div>
 
-      {!showPayment ? (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <BookOpen className="h-5 w-5 mr-2" />
-                Informasi Tugas
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Input
-                  label="Judul Tugas *"
-                  placeholder="Masukkan judul tugas..."
-                  {...register("title")}
-                  error={errors.title?.message}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Instruksi Tugas *
-                </label>
-                <RichTextEditor
-                  value={watchedValues.instructions}
-                  onChange={(value) => setValue("instructions", value)}
-                  placeholder="Masukkan instruksi detail untuk tugas ini..."
-                  error={errors.instructions?.message}
-                  maxWords={2000}
-                  maxCharacters={10000}
-                  allowedFormats={[
-                    "bold",
-                    "italic",
-                    "underline",
-                    "list",
-                    "heading",
-                    "link",
-                  ]}
-                  enablePasteMonitoring={true}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <DateTimePicker
-                    label="Deadline *"
-                    value={watchedValues.deadline}
-                    onChange={(value) => setValue("deadline", value)}
-                    error={errors.deadline?.message}
-                    minDate={new Date()}
-                    required={true}
-                    timezone="Asia/Jakarta"
-                    showTimezone={true}
-                    presets={[
-                      {
-                        label: "1 minggu dari sekarang",
-                        getValue: () =>
-                          new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-                      },
-                      {
-                        label: "2 minggu dari sekarang",
-                        getValue: () =>
-                          new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-                      },
-                      {
-                        label: "1 bulan dari sekarang",
-                        getValue: () =>
-                          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-                      },
-                    ]}
-                  />
-                </div>
+      <motion.div
+        key={showPayment ? "payment" : "form"}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        {!showPayment ? (
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <BookOpen className="h-5 w-5 mr-2 text-[#23407a]" />
+                  Informasi Tugas
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
                 <div>
                   <Input
-                    label="Jumlah Siswa yang Diharapkan *"
-                    type="number"
-                    min="1"
-                    max="1000"
-                    placeholder="Masukkan jumlah siswa..."
-                    {...register("expectedStudentCount", {
-                      valueAsNumber: true,
-                    })}
-                    error={errors.expectedStudentCount?.message}
+                    label="Judul Tugas *"
+                    placeholder="Contoh: Analisis Puisi Kontemporer"
+                    {...register("title")}
+                    error={errors.title?.message}
                   />
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Payment Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <DollarSign className="h-5 w-5 mr-2" />
-                Informasi Pembayaran
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-blue-50 rounded-lg p-4 mb-4">
-                <div className="flex items-start">
-                  <Info className="h-5 w-5 text-blue-600 mt-0.5 mr-3" />
-                  <div className="text-sm">
-                    <p className="font-medium text-blue-900 mb-1">
-                      Sistem Pembayaran Assignment
-                    </p>
-                    <p className="text-blue-700">
-                      Setiap assignment memerlukan pembayaran berdasarkan jumlah
-                      siswa yang diharapkan mengerjakan. Assignment akan aktif
-                      setelah pembayaran berhasil.
-                    </p>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Instruksi Tugas *
+                  </label>
+                  <RichTextEditor
+                    value={watchedValues.instructions}
+                    onChange={(value) => setValue("instructions", value)}
+                    placeholder="Jelaskan instruksi detail untuk tugas ini..."
+                    error={errors.instructions?.message}
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <DateTimePicker
+                      label="Deadline *"
+                      value={watchedValues.deadline}
+                      onChange={(value) => setValue("deadline", value)}
+                      error={errors.deadline?.message}
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      label="Jumlah Siswa yang Diharapkan *"
+                      type="number"
+                      min="1"
+                      max="100"
+                      placeholder="Masukkan jumlah siswa..."
+                      {...register("expectedStudentCount", {
+                        valueAsNumber: true,
+                      })}
+                      error={errors.expectedStudentCount?.message}
+                    />
                   </div>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
 
-              <div className="space-y-3">
-                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                  <span className="text-sm font-medium text-gray-700">
-                    Harga per siswa:
-                  </span>
-                  <span className="font-semibold text-gray-900">
-                    Rp {pricePerStudent.toLocaleString("id-ID")}
-                  </span>
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <DollarSign className="h-5 w-5 mr-2 text-[#23407a]" />
+                  Informasi Pembayaran
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Alert variant="info" className="mb-6">
+                  <Info className="h-4 w-4" />
+                  <div>
+                    Setiap assignment memerlukan pembayaran berdasarkan jumlah
+                    siswa. Assignment akan aktif setelah pembayaran berhasil.
+                  </div>
+                </Alert>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm font-medium text-gray-700">
+                      Harga per siswa:
+                    </span>
+                    <span className="font-semibold text-gray-900">
+                      Rp{" "}
+                      {PAYMENT_CONFIG.ASSIGNMENT_PRICE_PER_STUDENT.toLocaleString(
+                        "id-ID"
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm font-medium text-gray-700">
+                      Jumlah siswa:
+                    </span>
+                    <span className="font-semibold text-gray-900">
+                      {watchedValues.expectedStudentCount || 0} siswa
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <span className="text-sm font-medium text-blue-700">
+                      Total pembayaran:
+                    </span>
+                    <span className="font-bold text-blue-900 text-lg">
+                      Rp {totalPrice.toLocaleString("id-ID")}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                  <span className="text-sm font-medium text-gray-700">
-                    Jumlah siswa:
-                  </span>
-                  <span className="font-semibold text-gray-900">
-                    {watchedValues.expectedStudentCount} siswa
-                  </span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <span className="text-sm font-medium text-blue-700">
-                    Total pembayaran:
-                  </span>
-                  <span className="font-bold text-blue-900 text-lg">
-                    Rp {totalPrice.toLocaleString("id-ID")}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          {/* Action Buttons */}
-          <div className="flex justify-end space-x-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => navigate(`/instructor/classes/${classId}`)}
-            >
-              Batal
-            </Button>
-            <Button
-              type="submit"
-              loading={loading}
-              className="bg-[#23407a] hover:bg-[#1a2f5c]"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              Buat Assignment
-            </Button>
-          </div>
-        </form>
-      ) : (
-        /* Payment Section */
-        <PaymentSection
-          assignmentData={assignmentData}
-          totalPrice={totalPrice}
-          onPayment={handlePayment}
-          paymentLoading={paymentLoading}
-          onCancel={() => {
-            setShowPayment(false);
-            navigate(`/instructor/classes/${classId}`);
-          }}
-        />
-      )}
+            <div className="flex justify-end space-x-3 pt-4 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate(`/instructor/classes/${classId}`)}
+              >
+                Batal
+              </Button>
+              <Button
+                type="submit"
+                loading={loading}
+                className="bg-[#23407a] hover:bg-[#1a2f5c]"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Lanjutkan ke Pembayaran
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <PaymentSection
+            assignmentData={assignmentData}
+            transactionData={transactionData}
+            setTransactionData={setTransactionData}
+            classId={classId}
+          />
+        )}
+      </motion.div>
     </Container>
   );
 }
 
-// Payment Section Component
 function PaymentSection({
   assignmentData,
-  totalPrice,
-  onPayment,
-  paymentLoading,
-  onCancel,
+  transactionData,
+  setTransactionData,
+  classId,
 }) {
+  const navigate = useNavigate();
+  const [paymentLoading, setPaymentLoading] = useState(false);
+
+  const handlePayment = async () => {
+    setPaymentLoading(true);
+    try {
+      // Simpan data transaksi ke database (tetap diperlukan untuk tracking)
+      const paymentResponse = await paymentsService.createTransaction(
+        assignmentData.paymentData
+      );
+      setTransactionData(paymentResponse);
+
+      // Buat pesan WhatsApp dengan detail pembayaran
+      const whatsappMessage = `Halo! Saya ingin melakukan pembayaran untuk assignment Protextify.
+
+📋 *Detail Assignment:*
+• Judul: ${assignmentData.assignment.title}
+• Jumlah Siswa: ${assignmentData.assignment.expectedStudentCount}
+• Total Pembayaran: Rp ${assignmentData.totalPrice.toLocaleString("id-ID")}
+• ID Transaksi: ${paymentResponse.transactionId || 'N/A'}
+
+Mohon bantuan untuk proses pembayaran. Terima kasih!`;
+
+      // Buka WhatsApp dengan pesan yang sudah diformat
+      const whatsappUrl = generateWhatsAppUrl(whatsappMessage);
+      window.open(whatsappUrl, "_blank");
+
+      toast.success(
+        "Data transaksi telah disimpan. WhatsApp telah dibuka untuk konfirmasi pembayaran."
+      );
+
+      // KOMENTAR: Kode Midtrans di bawah ini dinonaktifkan sementara
+      // if (paymentResponse.paymentUrl) {
+      //   window.open(paymentResponse.paymentUrl, "_blank");
+      //   toast.success(
+      //     "Halaman pembayaran telah dibuka. Sistem akan memantau status secara otomatis."
+      //   );
+      // }
+    } catch (error) {
+      console.error("Error creating payment:", error);
+      toast.error("Gagal menyimpan data transaksi. Silakan coba lagi.");
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Konfirmasi Pembayaran Assignment</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <Alert variant="success">
-            <div className="text-sm">
-              <strong>Assignment berhasil dibuat!</strong> Silakan lakukan
-              pembayaran untuk mengaktifkan assignment ini.
-            </div>
-          </Alert>
-
-          {/* Payment Calculator */}
-          <PaymentCalculator
-            initialStudentCount={assignmentData.assignment.expectedStudentCount}
-            showBreakdown={true}
-            onCalculationChange={setPaymentCalculation}
+    <Card className="border-0 shadow-lg">
+      <CardHeader>
+        <CardTitle>
+          {transactionData
+            ? "Status Pembayaran"
+            : "Konfirmasi Pembayaran Assignment"}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {transactionData ? (
+          <PaymentStatusTracker
+            transaction={transactionData}
+            onPaymentSuccess={() => {
+              toast.success(
+                "Pembayaran berhasil! Assignment telah diaktifkan."
+              );
+              setTimeout(
+                () => navigate(`/instructor/classes/${classId}`),
+                2000
+              );
+            }}
+            onPaymentFailure={() => {
+              toast.error(
+                "Pembayaran gagal atau dibatalkan. Silakan coba lagi."
+              );
+            }}
           />
-
-          {/* Assignment Details */}
-          <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-            <h3 className="font-medium text-gray-900">Detail Assignment:</h3>
-            <div className="text-sm space-y-1">
-              <p>
-                <span className="font-medium">Judul:</span>{" "}
-                {assignmentData.assignment.title}
-              </p>
-              <p>
-                <span className="font-medium">Deadline:</span>{" "}
-                {new Date(
-                  assignmentData.assignment.deadline
-                ).toLocaleDateString("id-ID")}
-              </p>
-              <p>
-                <span className="font-medium">Jumlah Siswa:</span>{" "}
-                {assignmentData.assignment.expectedStudentCount}
-              </p>
+        ) : (
+          <>
+            <Alert variant="success">
+              <strong>Assignment berhasil dibuat!</strong> Silakan lakukan
+              pembayaran untuk mengaktifkan.
+            </Alert>
+            <div className="bg-gray-50 rounded-lg p-4 space-y-3 border">
+              <h3 className="font-semibold text-gray-900">Detail Assignment</h3>
+              <div className="text-sm space-y-1">
+                <p>
+                  <span className="font-medium text-gray-600">Judul:</span>{" "}
+                  {assignmentData.assignment.title}
+                </p>
+                <p>
+                  <span className="font-medium text-gray-600">
+                    Jumlah Siswa:
+                  </span>{" "}
+                  {assignmentData.assignment.expectedStudentCount}
+                </p>
+                <p className="font-bold text-lg text-[#23407a] mt-2">
+                  Total: Rp {assignmentData.totalPrice.toLocaleString("id-ID")}
+                </p>
+              </div>
             </div>
-          </div>
-
-          <div className="flex justify-end space-x-3">
-            <Button variant="outline" onClick={onCancel}>
-              Batal
-            </Button>
-            <Button
-              onClick={onPayment}
-              loading={paymentLoading}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              <DollarSign className="h-4 w-4 mr-2" />
-              Bayar Sekarang
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Payment Status Tracker (if payment initiated) */}
-      {transactionData && (
-        <PaymentStatusTracker
-          transaction={transactionData}
-          onPaymentSuccess={(response) => {
-            toast.success("Pembayaran berhasil! Assignment telah aktif.");
-            navigate(`/instructor/classes/${classId}`);
-          }}
-          onPaymentFailure={(response) => {
-            toast.error("Pembayaran gagal. Silakan coba lagi.");
-          }}
-        />
-      )}
-    </div>
+            <div className="flex justify-end pt-4 border-t">
+              <Button
+                onClick={handlePayment}
+                loading={paymentLoading}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <MessageCircle className="h-4 w-4 mr-2" />
+                Bayar Sekarang
+              </Button>
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
   );
 }

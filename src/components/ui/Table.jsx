@@ -1,9 +1,10 @@
 // src/components/ui/Table.jsx
 import { forwardRef } from "react";
+import { Inbox } from "lucide-react";
 import { cn } from "../../utils/helpers";
 
 const Table = forwardRef(({ className, ...props }, ref) => (
-  <div className="relative w-full overflow-auto">
+  <div className="relative w-full overflow-auto rounded-xl border border-gray-200/80">
     <table
       ref={ref}
       className={cn("w-full caption-bottom text-sm", className)}
@@ -14,7 +15,11 @@ const Table = forwardRef(({ className, ...props }, ref) => (
 Table.displayName = "Table";
 
 const TableHeader = forwardRef(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props} />
+  <thead
+    ref={ref}
+    className={cn("[&_tr]:border-b bg-gray-50/80", className)}
+    {...props}
+  />
 ));
 TableHeader.displayName = "TableHeader";
 
@@ -31,7 +36,7 @@ const TableFooter = forwardRef(({ className, ...props }, ref) => (
   <tfoot
     ref={ref}
     className={cn(
-      "border-t bg-gray-50 font-medium [&>tr]:last:border-b-0",
+      "border-t bg-gray-50/50 font-medium [&>tr]:last:border-b-0",
       className
     )}
     {...props}
@@ -43,7 +48,7 @@ const TableRow = forwardRef(({ className, ...props }, ref) => (
   <tr
     ref={ref}
     className={cn(
-      "border-b transition-colors hover:bg-gray-50 data-[state=selected]:bg-gray-50",
+      "border-b border-gray-200/60 transition-colors hover:bg-gray-50/80 data-[state=selected]:bg-blue-50",
       className
     )}
     {...props}
@@ -55,7 +60,7 @@ const TableHead = forwardRef(({ className, ...props }, ref) => (
   <th
     ref={ref}
     className={cn(
-      "h-10 px-2 text-left align-middle font-medium text-gray-700 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+      "h-12 px-6 text-left align-middle font-medium text-gray-500 uppercase tracking-wider [&:has([role=checkbox])]:pr-0",
       className
     )}
     {...props}
@@ -67,7 +72,7 @@ const TableCell = forwardRef(({ className, ...props }, ref) => (
   <td
     ref={ref}
     className={cn(
-      "p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+      "px-6 py-4 align-middle text-gray-800 [&:has([role=checkbox])]:pr-0",
       className
     )}
     {...props}
@@ -84,27 +89,38 @@ const TableCaption = forwardRef(({ className, ...props }, ref) => (
 ));
 TableCaption.displayName = "TableCaption";
 
-// Enhanced Table Component with column rendering
+// Enhanced DataTable with modern styling and empty state
 const DataTable = ({ columns, data, className, ...props }) => {
   return (
     <Table className={className} {...props}>
       <TableHeader>
-        <TableRow>
+        <TableRow className="hover:bg-transparent border-t-0">
           {columns.map((column, index) => (
             <TableHead key={column.key || index}>{column.label}</TableHead>
           ))}
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data.map((item, index) => (
-          <TableRow key={item.id || index}>
-            {columns.map((column, colIndex) => (
-              <TableCell key={column.key || colIndex}>
-                {column.render ? column.render(item) : item[column.key]}
-              </TableCell>
-            ))}
+        {data && data.length > 0 ? (
+          data.map((item, index) => (
+            <TableRow key={item.id || index}>
+              {columns.map((column, colIndex) => (
+                <TableCell key={column.key || colIndex}>
+                  {column.render ? column.render(item) : item[column.key]}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))
+        ) : (
+          <TableRow className="hover:bg-transparent">
+            <TableCell colSpan={columns.length} className="h-48 text-center">
+              <div className="flex flex-col items-center justify-center gap-4">
+                <Inbox className="h-12 w-12 text-gray-400" />
+                <span className="text-gray-600">Tidak ada data tersedia.</span>
+              </div>
+            </TableCell>
           </TableRow>
-        ))}
+        )}
       </TableBody>
     </Table>
   );
@@ -122,5 +138,5 @@ export {
   DataTable,
 };
 
-// Default export untuk compatibility
+// Default export for compatibility
 export default DataTable;

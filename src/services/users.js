@@ -39,6 +39,8 @@ const updateProfile = async (updateData) => {
       fullName: response.fullName,
       institution: response.institution,
       phone: response.phone,
+      bio: response.bio,
+      avatarUrl: response.avatarUrl,
       role: response.role,
       emailVerified: response.emailVerified,
       updatedAt: response.updatedAt,

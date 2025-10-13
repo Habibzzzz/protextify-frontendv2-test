@@ -1,11 +1,18 @@
 // src/hooks/usePaymentTracker.js
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { paymentsService } from "../services";
 import { PAYMENT_CONFIG, PAYMENT_STATUS } from "../utils/constants";
 
-export const usePaymentTracker = (orderId, options = {}) => {
-  const [status, setStatus] = useState(PAYMENT_STATUS.PENDING);
-  const [loading, setLoading] = useState(true);
+export const usePaymentTracker = (
+  orderId,
+  initialStatus, // 1. Tambahkan initialStatus
+  options = {},
+  isActive = false
+) => {
+  const [status, setStatus] = useState(
+    initialStatus || PAYMENT_STATUS.PENDING // 2. Gunakan initialStatus
+  );
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [attempts, setAttempts] = useState(0);
 
@@ -22,129 +29,117 @@ export const usePaymentTracker = (orderId, options = {}) => {
     onTimeout,
   } = options;
 
-  // Check payment status
-  const checkStatus = async () => {
-    if (!orderId) return;
-
-    try {
-      setLoading(true);
-      const response = await paymentsService.getPaymentStatus(orderId);
-
-      const newStatus = response.status;
-
-      if (newStatus !== status) {
-        setStatus(newStatus);
-
-        // Call status change callback
-        if (onStatusChange) {
-          onStatusChange(newStatus, response);
-        }
-
-        // Handle final states
-        if (newStatus === PAYMENT_STATUS.SUCCESS) {
-          stopPolling();
-          if (onSuccess) onSuccess(response);
-        } else if (
-          [
-            PAYMENT_STATUS.FAILED,
-            PAYMENT_STATUS.CANCELLED,
-            PAYMENT_STATUS.EXPIRED,
-          ].includes(newStatus)
-        ) {
-          stopPolling();
-          if (onFailure) onFailure(response);
-        }
-      }
-
-      setAttempts((prev) => prev + 1);
-
-      // Stop if max attempts reached
-      if (attempts + 1 >= maxAttempts) {
-        stopPolling();
-        setError({
-          statusCode: 408,
-          message: "Maksimum polling attempts tercapai",
-        });
-        if (onTimeout) onTimeout();
-      }
-    } catch (err) {
-      const formattedError = {
-        statusCode: err?.response?.data?.statusCode || err?.statusCode || 400,
-        message:
-          err?.response?.data?.message ||
-          err?.message ||
-          "Gagal cek status pembayaran",
-      };
-      setError(formattedError);
-      if (onFailure) onFailure(formattedError);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Start polling
-  const startPolling = () => {
-    if (intervalRef.current) return; // Already polling
-
-    // Initial check
-    checkStatus();
-
-    // Set up polling interval
-    intervalRef.current = setInterval(checkStatus, pollingInterval);
-
-    // Set up timeout
-    if (timeout > 0) {
-      timeoutRef.current = setTimeout(() => {
-        stopPolling();
-        setError({
-          statusCode: 408,
-          message: "Payment timeout tercapai",
-        });
-        if (onTimeout) onTimeout();
-      }, timeout);
-    }
-  };
-
-  // Stop polling
-  const stopPolling = () => {
+  const stopPolling = useCallback(() => {
     if (intervalRef.current) {
+      console.log(
+        `%c[PaymentTracker] STOP POLLING (Interval ID: ${intervalRef.current})`,
+        "color: red; font-weight: bold;"
+      );
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
-  };
+  }, []);
 
-  // Manual status check
+  const checkStatus = useCallback(async () => {
+    if (!orderId) return;
+
+    console.log(
+      `%c[PaymentTracker] CHECKING STATUS (Attempt: ${
+        attempts + 1
+      }) for Order ID: ${orderId}`,
+      "color: blue;"
+    );
+    setLoading(true);
+
+    try {
+      const response = await paymentsService.getPaymentStatus(orderId);
+      const newStatus = response.status;
+      console.log(`[PaymentTracker] API Response: Status is ${newStatus}`);
+
+      if ([PAYMENT_STATUS.SUCCESS, PAYMENT_STATUS.FAILED].includes(newStatus)) {
+        console.log(
+          `[PaymentTracker] Final status (${newStatus}) received. Stopping polling.`
+        );
+        stopPolling();
+        if (newStatus === PAYMENT_STATUS.SUCCESS && onSuccess) {
+          console.log("[PaymentTracker] Calling onSuccess callback.");
+          onSuccess(response);
+        } else if (newStatus === PAYMENT_STATUS.FAILED && onFailure) {
+          console.log("[PaymentTracker] Calling onFailure callback.");
+          onFailure(response);
+        }
+      }
+
+      if (newStatus !== status) {
+        console.log(
+          `[PaymentTracker] Status changed from ${status} to ${newStatus}. Updating state.`
+        );
+        setStatus(newStatus);
+        if (onStatusChange) onStatusChange(newStatus, response);
+      }
+
+      setAttempts((prev) => prev + 1);
+
+      if (attempts + 1 >= maxAttempts) {
+        stopPolling();
+      }
+    } catch (err) {
+      console.error("[PaymentTracker] API Error:", err.message);
+      setError({ message: "Gagal cek status pembayaran" });
+      stopPolling();
+      if (onFailure) onFailure(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    orderId,
+    status,
+    attempts,
+    maxAttempts,
+    onStatusChange,
+    onSuccess,
+    onFailure,
+    stopPolling,
+  ]);
+
+  const startPolling = useCallback(() => {
+    if (intervalRef.current) return;
+    console.log(
+      `%c[PaymentTracker] START POLLING for Order ID: ${orderId}`,
+      "color: green; font-weight: bold;"
+    );
+    checkStatus();
+    intervalRef.current = setInterval(checkStatus, pollingInterval);
+  }, [checkStatus, orderId, pollingInterval]);
+
   const refreshStatus = () => {
     checkStatus();
   };
 
-  // Cleanup on unmount
   useEffect(() => {
+    console.log(
+      `[PaymentTracker] Effect triggered. isActive: ${isActive}, initialStatus: ${initialStatus}`
+    );
+
+    // 3. Hanya mulai polling jika tab aktif DAN status awal adalah PENDING.
+    if (orderId && isActive && initialStatus === PAYMENT_STATUS.PENDING) {
+      startPolling();
+    }
+
     return () => {
       stopPolling();
     };
-  }, []);
-
-  // Auto-start polling when orderId is available
-  useEffect(() => {
-    if (orderId && !intervalRef.current) {
-      startPolling();
-    }
-    // eslint-disable-next-line
-  }, [orderId]);
+  }, [orderId, isActive, initialStatus, startPolling, stopPolling]);
 
   return {
     status,
     loading,
     error,
     attempts,
-    startPolling,
-    stopPolling,
     refreshStatus,
     isPolling: !!intervalRef.current,
   };

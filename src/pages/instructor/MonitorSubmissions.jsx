@@ -25,12 +25,10 @@ import {
   CardContent,
   Button,
   Input,
-  Alert,
   Breadcrumb,
   LoadingSpinner,
   Badge,
   Dropdown,
-  ExportModal,
 } from "../../components";
 import {
   assignmentsService,
@@ -38,7 +36,7 @@ import {
   plagiarismService,
 } from "../../services";
 import { useAsyncData } from "../../hooks/useAsyncData";
-import { formatDate, formatRelativeTime } from "../../utils/formatters";
+import { formatDate, formatRelativeTime } from "../../utils/helpers";
 
 export default function MonitorSubmissions() {
   const { assignmentId } = useParams();
@@ -51,15 +49,12 @@ export default function MonitorSubmissions() {
   const [sortBy, setSortBy] = useState("submittedAt");
   const [sortOrder, setSortOrder] = useState("desc");
   const [selectedSubmissions, setSelectedSubmissions] = useState([]);
-  const [showExportModal, setShowExportModal] = useState(false);
 
-  // Get assignment detail
   const { data: assignment, loading: assignmentLoading } = useAsyncData(
     () => assignmentsService.getAssignmentById(assignmentId),
     [assignmentId]
   );
 
-  // Fetch submissions (hanya polling dari BE, tidak ada WebSocket)
   const fetchSubmissions = useCallback(async () => {
     if (!assignment?.classId || !assignmentId) return;
     setLoading(true);
@@ -69,50 +64,37 @@ export default function MonitorSubmissions() {
         assignmentId
       );
       setSubmissions(response);
-      setFilteredSubmissions(response);
     } catch (error) {
-      console.error("Error fetching submissions:", error);
       toast.error("Gagal memuat data submission");
     } finally {
       setLoading(false);
     }
   }, [assignmentId, assignment?.classId]);
 
-  // Polling data setiap 30 detik (jika ingin update berkala)
   useEffect(() => {
-    fetchSubmissions();
-    const interval = setInterval(fetchSubmissions, 30000);
-    return () => clearInterval(interval);
-  }, [fetchSubmissions]);
+    if (assignment?.classId) {
+      fetchSubmissions();
+      const interval = setInterval(fetchSubmissions, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [assignment?.classId, fetchSubmissions]);
 
-  // Filter and search
   useEffect(() => {
     let filtered = submissions;
-
-    // Search filter
     if (searchTerm) {
       filtered = filtered.filter(
-        (submission) =>
-          submission.student?.fullName
+        (s) =>
+          s.student?.fullName
             ?.toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
-          submission.student?.email
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase())
+          s.student?.email?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-
-    // Status filter
     if (statusFilter !== "ALL") {
-      filtered = filtered.filter(
-        (submission) => submission.status === statusFilter
-      );
+      filtered = filtered.filter((s) => s.status === statusFilter);
     }
-
-    // Sort
     filtered.sort((a, b) => {
       let aValue, bValue;
-
       switch (sortBy) {
         case "studentName":
           aValue = a.student?.fullName || "";
@@ -123,84 +105,82 @@ export default function MonitorSubmissions() {
           bValue = new Date(b.submittedAt || b.updatedAt);
           break;
         case "grade":
-          aValue = a.grade || 0;
-          bValue = b.grade || 0;
+          aValue = a.grade ?? -1;
+          bValue = b.grade ?? -1;
           break;
         case "plagiarismScore":
-          aValue = a.plagiarismChecks?.score || 0;
-          bValue = b.plagiarismChecks?.score || 0;
+          aValue = a.plagiarismChecks?.score ?? -1;
+          bValue = b.plagiarismChecks?.score ?? -1;
           break;
         default:
-          aValue = a[sortBy];
-          bValue = b[sortBy];
+          return 0;
       }
-
-      if (sortOrder === "asc") {
-        return aValue > bValue ? 1 : -1;
-      } else {
-        return aValue < bValue ? 1 : -1;
-      }
+      if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
+      return 0;
     });
-
     setFilteredSubmissions(filtered);
   }, [submissions, searchTerm, statusFilter, sortBy, sortOrder]);
 
-  const getStatusBadge = (status) => {
-    const variants = {
-      DRAFT: { variant: "secondary", label: "Draft" },
-      SUBMITTED: { variant: "warning", label: "Dikumpulkan" },
-      GRADED: { variant: "success", label: "Dinilai" },
-    };
-
-    return variants[status] || variants.DRAFT;
-  };
-
   const handleSelectSubmission = (submissionId, checked) => {
-    if (checked) {
-      setSelectedSubmissions((prev) => [...prev, submissionId]);
-    } else {
-      setSelectedSubmissions((prev) =>
-        prev.filter((id) => id !== submissionId)
-      );
-    }
+    setSelectedSubmissions((prev) =>
+      checked
+        ? [...prev, submissionId]
+        : prev.filter((id) => id !== submissionId)
+    );
   };
 
   const handleSelectAll = (checked) => {
-    if (checked) {
-      setSelectedSubmissions(filteredSubmissions.map((sub) => sub.id));
-    } else {
-      setSelectedSubmissions([]);
-    }
+    setSelectedSubmissions(
+      checked ? filteredSubmissions.map((sub) => sub.id) : []
+    );
   };
 
   const handleBulkGrade = () => {
     if (selectedSubmissions.length === 0) {
-      toast.error("Pilih minimal satu submission");
+      toast.error("Pilih minimal satu submission untuk dinilai.");
       return;
     }
-    // Navigate to bulk grading interface
     navigate(`/instructor/assignments/${assignmentId}/bulk-grade`, {
       state: { selectedSubmissions },
     });
   };
 
-  const handleExportSubmissions = () => {
-    setShowExportModal(true);
+  const handleBulkDownload = async (format) => {
+    if (selectedSubmissions.length === 0) {
+      toast.error("Pilih minimal satu submission untuk diekspor.");
+      return;
+    }
+    const formatName = format === "zip" ? "ZIP" : "CSV";
+    await toast.promise(
+      submissionsService.bulkDownloadSubmissions(selectedSubmissions, format),
+      {
+        loading: `Membuat file ${formatName}...`,
+        success: (response) => {
+          window.open(response.downloadUrl, "_blank");
+          return `File ${formatName} siap diunduh!`;
+        },
+        error: (err) =>
+          err.response?.data?.message || `Gagal mengekspor file ${formatName}.`,
+      }
+    );
   };
 
   const stats = {
     total: submissions.length,
     submitted: submissions.filter((s) => s.status === "SUBMITTED").length,
     graded: submissions.filter((s) => s.status === "GRADED").length,
-    pending: submissions.filter((s) => s.status === "DRAFT").length,
+    draft: submissions.filter((s) => s.status === "DRAFT").length,
     averageGrade:
-      submissions.filter((s) => s.grade).reduce((acc, s) => acc + s.grade, 0) /
-        submissions.filter((s) => s.grade).length || 0,
+      submissions
+        .filter((s) => typeof s.grade === "number")
+        .reduce((acc, s) => acc + s.grade, 0) /
+        submissions.filter((s) => typeof s.grade === "number").length || 0,
   };
 
   if (assignmentLoading) {
     return (
-      <Container className="py-6">
+      <Container className="py-6 flex justify-center">
         <LoadingSpinner />
       </Container>
     );
@@ -208,11 +188,8 @@ export default function MonitorSubmissions() {
 
   return (
     <Container className="py-6">
-      {/* Breadcrumb */}
       <Breadcrumb />
-
-      {/* Header */}
-      <div className="flex items-center mb-6">
+      <div className="flex items-center my-6">
         <Button
           variant="ghost"
           size="sm"
@@ -220,7 +197,7 @@ export default function MonitorSubmissions() {
           className="mr-4"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Kembali ke Kelas
+          Kembali
         </Button>
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900">
@@ -229,14 +206,32 @@ export default function MonitorSubmissions() {
           <p className="text-gray-600">{assignment?.title}</p>
         </div>
         <div className="flex space-x-3">
-          <Button
-            variant="outline"
-            onClick={handleExportSubmissions}
-            disabled={filteredSubmissions.length === 0}
+          <Dropdown
+            trigger={
+              <Button
+                variant="outline"
+                disabled={selectedSubmissions.length === 0}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export ({selectedSubmissions.length})
+              </Button>
+            }
           >
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
+            <div className="py-1">
+              <button
+                onClick={() => handleBulkDownload("csv")}
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
+                Export Nilai (CSV)
+              </button>
+              <button
+                onClick={() => handleBulkDownload("zip")}
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
+                Download Submissions (ZIP)
+              </button>
+            </div>
+          </Dropdown>
           <Button
             onClick={handleBulkGrade}
             disabled={selectedSubmissions.length === 0}
@@ -248,7 +243,6 @@ export default function MonitorSubmissions() {
         </div>
       </div>
 
-      {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
         <StatCard
           title="Total"
@@ -259,45 +253,41 @@ export default function MonitorSubmissions() {
         <StatCard
           title="Dikumpulkan"
           value={stats.submitted}
-          icon={CheckCircle}
-          color="text-green-600"
+          icon={FileText}
+          color="text-yellow-600"
         />
         <StatCard
           title="Dinilai"
           value={stats.graded}
-          icon={Star}
-          color="text-purple-600"
+          icon={CheckCircle}
+          color="text-green-600"
         />
         <StatCard
           title="Draft"
-          value={stats.pending}
+          value={stats.draft}
           icon={Clock}
-          color="text-yellow-600"
+          color="text-gray-600"
         />
         <StatCard
           title="Rata-rata Nilai"
           value={stats.averageGrade.toFixed(1)}
-          icon={CheckCircle}
+          icon={Star}
           color="text-indigo-600"
         />
       </div>
 
-      {/* Filters */}
       <Card className="mb-6">
         <CardContent className="p-4">
           <div className="flex flex-wrap items-center gap-4">
-            <div className="flex-1 min-w-64">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Cari nama atau email siswa..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+            <div className="flex-1 min-w-64 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Cari nama atau email siswa..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
-
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -308,7 +298,6 @@ export default function MonitorSubmissions() {
               <option value="SUBMITTED">Dikumpulkan</option>
               <option value="GRADED">Dinilai</option>
             </select>
-
             <select
               value={`${sortBy}-${sortOrder}`}
               onChange={(e) => {
@@ -327,7 +316,6 @@ export default function MonitorSubmissions() {
               <option value="plagiarismScore-desc">Plagiarisme Tinggi</option>
               <option value="plagiarismScore-asc">Plagiarisme Rendah</option>
             </select>
-
             <Button
               variant="outline"
               size="sm"
@@ -343,7 +331,6 @@ export default function MonitorSubmissions() {
         </CardContent>
       </Card>
 
-      {/* Submissions Table */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -386,12 +373,13 @@ export default function MonitorSubmissions() {
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3">
                       <input
                         type="checkbox"
                         checked={
                           selectedSubmissions.length ===
-                          filteredSubmissions.length
+                            filteredSubmissions.length &&
+                          filteredSubmissions.length > 0
                         }
                         onChange={(e) => handleSelectAll(e.target.checked)}
                         className="rounded border-gray-300 focus:ring-[#23407a]"
@@ -412,7 +400,7 @@ export default function MonitorSubmissions() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Plagiarisme
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Aksi
                     </th>
                   </tr>
@@ -426,7 +414,6 @@ export default function MonitorSubmissions() {
                       onSelect={(checked) =>
                         handleSelectSubmission(submission.id, checked)
                       }
-                      assignmentId={assignmentId}
                     />
                   ))}
                 </tbody>
@@ -435,21 +422,10 @@ export default function MonitorSubmissions() {
           )}
         </CardContent>
       </Card>
-
-      {/* Export Modal */}
-      {showExportModal && (
-        <ExportModal
-          isOpen={showExportModal}
-          onClose={() => setShowExportModal(false)}
-          submissions={filteredSubmissions}
-          assignmentTitle={assignment?.title}
-        />
-      )}
     </Container>
   );
 }
 
-// Helper Components
 function StatCard({ title, value, icon: Icon, color }) {
   return (
     <Card>
@@ -468,28 +444,26 @@ function StatCard({ title, value, icon: Icon, color }) {
   );
 }
 
-function SubmissionRow({ submission, isSelected, onSelect, assignmentId }) {
+function SubmissionRow({ submission, isSelected, onSelect }) {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handlePlagiarismCheck = async () => {
-    try {
-      setLoading(true);
-      await plagiarismService.checkPlagiarism(submission.id);
-      toast.success("Pengecekan plagiarisme dimulai");
-    } catch (error) {
-      console.error("Error checking plagiarism:", error);
-      toast.error("Gagal memulai pengecekan plagiarisme");
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+    await toast.promise(plagiarismService.checkPlagiarism(submission.id), {
+      loading: "Memulai pengecekan...",
+      success: "Pengecekan plagiarisme berhasil dimulai.",
+      error: (err) =>
+        err.response?.data?.message || "Gagal memulai pengecekan.",
+    });
+    setLoading(false);
   };
 
   const statusBadge = getStatusBadge(submission.status);
 
   return (
     <tr className="hover:bg-gray-50">
-      <td className="px-6 py-4 whitespace-nowrap">
+      <td className="px-6 py-4">
         <input
           type="checkbox"
           checked={isSelected}
@@ -497,7 +471,7 @@ function SubmissionRow({ submission, isSelected, onSelect, assignmentId }) {
           className="rounded border-gray-300 focus:ring-[#23407a]"
         />
       </td>
-      <td className="px-6 py-4 whitespace-nowrap">
+      <td className="px-6 py-4">
         <div>
           <div className="text-sm font-medium text-gray-900">
             {submission.student?.fullName}
@@ -507,10 +481,10 @@ function SubmissionRow({ submission, isSelected, onSelect, assignmentId }) {
           </div>
         </div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap">
+      <td className="px-6 py-4">
         <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      <td className="px-6 py-4 text-sm text-gray-500">
         {submission.submittedAt ? (
           <div>
             <div>{formatDate(submission.submittedAt)}</div>
@@ -522,8 +496,8 @@ function SubmissionRow({ submission, isSelected, onSelect, assignmentId }) {
           <span className="text-gray-400">Belum dikumpulkan</span>
         )}
       </td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        {submission.grade ? (
+      <td className="px-6 py-4">
+        {typeof submission.grade === "number" ? (
           <span className="text-sm font-medium text-gray-900">
             {submission.grade}/100
           </span>
@@ -531,8 +505,8 @@ function SubmissionRow({ submission, isSelected, onSelect, assignmentId }) {
           <span className="text-sm text-gray-400">Belum dinilai</span>
         )}
       </td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        {submission.plagiarismChecks?.score ? (
+      <td className="px-6 py-4">
+        {typeof submission.plagiarismChecks?.score === "number" ? (
           <div className="flex items-center">
             <span
               className={`text-sm font-medium ${
@@ -553,7 +527,7 @@ function SubmissionRow({ submission, isSelected, onSelect, assignmentId }) {
           <span className="text-sm text-gray-400">-</span>
         )}
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+      <td className="px-6 py-4 text-right text-sm font-medium">
         <Dropdown
           trigger={
             <Button variant="ghost" size="sm">
@@ -563,47 +537,26 @@ function SubmissionRow({ submission, isSelected, onSelect, assignmentId }) {
         >
           <div className="py-1">
             <Link
-              to={`/instructor/submissions/${submission.id}`}
+              to={`/instructor/submissions/${submission.id}/grade`}
               className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
             >
-              <Eye className="h-4 w-4 inline mr-2" />
-              Lihat Detail
+              <Eye className="h-4 w-4 inline mr-2" /> Detail & Nilai
             </Link>
-            {submission.status === "SUBMITTED" && (
+            <button
+              onClick={() => handlePlagiarismCheck()}
+              disabled={loading || submission.status === "DRAFT"}
+              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+            >
+              {loading ? "Memeriksa..." : "Cek Plagiarisme"}
+            </button>
+            {typeof submission.plagiarismChecks?.score === "number" && (
               <Link
-                to={`/instructor/submissions/${submission.id}/grade`}
+                to={`/instructor/submissions/${submission.id}/plagiarism`}
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
-                <Star className="h-4 w-4 inline mr-2" />
-                Beri Nilai
+                <FileText className="h-4 w-4 inline mr-2" /> Lihat Laporan
               </Link>
             )}
-            <button
-              onClick={() =>
-                submissionsService.downloadSubmission(submission.id)
-              }
-              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-            >
-              <Download className="h-4 w-4 inline mr-2" />
-              Download
-            </button>
-            <button
-              onClick={() =>
-                navigate(`/instructor/plagiarism/${submission.id}`)
-              }
-              disabled={!submission.plagiarismChecks?.score}
-              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Eye className="h-4 w-4 inline mr-2" />
-              Analisis Plagiarisme
-            </button>
-            <button
-              onClick={handlePlagiarismCheck}
-              disabled={loading || submission.status === "DRAFT"}
-              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-            >
-              {loading ? "Checking..." : "Cek"}
-            </button>
           </div>
         </Dropdown>
       </td>
@@ -617,6 +570,5 @@ function getStatusBadge(status) {
     SUBMITTED: { variant: "warning", label: "Dikumpulkan" },
     GRADED: { variant: "success", label: "Dinilai" },
   };
-
   return variants[status] || variants.DRAFT;
 }

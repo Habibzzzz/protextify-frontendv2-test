@@ -40,21 +40,32 @@ const getSubmissionById = async (submissionId) => {
       studentId: response.studentId,
       content: response.content,
       status: response.status,
-      grade: typeof response.grade === "number" ? response.grade : null,
+      grade: response.grade,
+      feedback: response.feedback,
       createdAt: response.createdAt,
       updatedAt: response.updatedAt,
-      submittedAt: response.submittedAt || null,
+      submittedAt: response.submittedAt,
       assignment: response.assignment
         ? {
             id: response.assignment.id,
             title: response.assignment.title,
             deadline: response.assignment.deadline,
             class: response.assignment.class
-              ? { name: response.assignment.class.name }
+              ? {
+                  id: response.assignment.class.id,
+                  name: response.assignment.class.name,
+                  instructorId: response.assignment.class.instructorId,
+                }
               : undefined,
           }
         : undefined,
       plagiarismChecks: response.plagiarismChecks || null,
+      student: response.student
+        ? {
+            id: response.student.id,
+            fullName: response.student.fullName,
+          }
+        : undefined,
     };
   } catch (error) {
     throw error;
@@ -120,6 +131,41 @@ const gradeSubmission = async (submissionId, gradeData) => {
       updatedAt: response.updatedAt,
     };
   } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Memberikan nilai dan feedback ke beberapa submission sekaligus.
+ * @param {object} bulkData - Payload berisi array grades.
+ * @param {Array<object>} bulkData.grades - Array of { submissionId, grade, feedback }.
+ * @returns {Promise<object>} Response dari backend.
+ */
+const bulkGradeSubmissions = async (bulkData) => {
+  try {
+    const response = await api.patch("/submissions/bulk-grade", bulkData);
+    return response;
+  } catch (error) {
+    console.error("Failed to bulk grade submissions:", error);
+    throw error;
+  }
+};
+
+/**
+ * Mengunduh beberapa submission sekaligus (ZIP/CSV).
+ * @param {string[]} submissionIds - Array of submission IDs.
+ * @param {string} format - "zip" or "csv".
+ * @returns {Promise<object>} Response dari backend { downloadUrl, expiresAt, fileCount, filename }.
+ */
+const bulkDownloadSubmissions = async (submissionIds, format) => {
+  try {
+    const response = await api.post("/submissions/bulk-download", {
+      submissionIds,
+      format,
+    });
+    return response;
+  } catch (error) {
+    console.error("Failed to bulk download submissions:", error);
     throw error;
   }
 };
@@ -297,6 +343,8 @@ const submissionsService = {
   updateSubmissionContent,
   submitSubmission,
   gradeSubmission,
+  bulkGradeSubmissions,
+  bulkDownloadSubmissions, // <-- Tambahkan fungsi baru di sini
   getHistory,
   downloadSubmission,
   getSubmissionVersions,

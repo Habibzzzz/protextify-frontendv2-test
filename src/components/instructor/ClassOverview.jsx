@@ -54,18 +54,18 @@ const ClassOverview = ({ classes, totalClasses, detailed = false }) => {
                       <div className="flex items-center bg-white/70 px-2 py-1 rounded-lg">
                         <Users className="h-3 w-3 mr-1 text-blue-500" />
                         <span className="font-medium">
-                          {Array.isArray(cls.enrollments)
+                          {/* {Array.isArray(cls.enrollments)
                             ? cls.enrollments.length
-                            : 0}{" "}
+                            : 0}{" "} */}
                           siswa
                         </span>
                       </div>
                       <div className="flex items-center bg-white/70 px-2 py-1 rounded-lg">
                         <FileText className="h-3 w-3 mr-1 text-purple-500" />
                         <span className="font-medium">
-                          {Array.isArray(cls.assignments)
+                          {/* {Array.isArray(cls.assignments)
                             ? cls.assignments.length
-                            : 0}{" "}
+                            : 0}{" "} */}
                           tugas
                         </span>
                       </div>

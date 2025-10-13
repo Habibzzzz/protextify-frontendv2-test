@@ -409,6 +409,7 @@ export default function WriteAssignment() {
                   onChange={handleContentChange}
                   onEditorReady={handleEditorReady}
                   disabled={submission.status !== "DRAFT"}
+                  disablePaste={submission.status === "DRAFT"}
                   maxWords={1000}
                   placeholder="Klik untuk memuat draft yang tersedia, atau mulai tulis jawaban Anda di sini..."
                 />

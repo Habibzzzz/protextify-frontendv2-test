@@ -15,11 +15,21 @@ import {
 } from "lucide-react";
 import useAuth from "../../hooks/useAuth";
 import { USER_ROLES } from "../../utils/constants";
+import { MessageCircle } from "lucide-react";
+import { generateWhatsAppUrl, isWithinOperatingHours, WHATSAPP_CONFIG } from "../../utils/whatsappConfig";
 
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { user } = useAuth();
   const location = useLocation();
+  
+  const handleWhatsAppClick = () => {
+    const message = isWithinOperatingHours()
+      ? WHATSAPP_CONFIG.defaultMessage
+      : WHATSAPP_CONFIG.afterHoursMessage;
+    const whatsappUrl = generateWhatsAppUrl(message);
+    window.open(whatsappUrl, "_blank");
+  };
 
   const getMenuItems = () => {
     if (user?.role === USER_ROLES.INSTRUCTOR) {
@@ -48,13 +58,7 @@ export default function Sidebar() {
           label: "Analytics",
           icon: TrendingUp,
           path: "/instructor/analytics",
-          disabled: true, // Tidak ada endpoint di BE
-        },
-        {
-          label: "Pengaturan",
-          icon: Settings,
-          path: "/instructor/settings",
-          disabled: true, // Tidak ada endpoint di BE
+          disabled: false,
         },
       ];
     } else {
@@ -231,24 +235,17 @@ export default function Sidebar() {
 
         <div className="mt-8 pt-6 border-t border-gray-200/50">
           {!isCollapsed && (
-            <div className="bg-gradient-to-r from-[#23407a]/5 to-blue-500/5 rounded-2xl p-4 border border-[#23407a]/10">
-              <div className="flex items-center space-x-3 mb-3">
-                <div className="w-8 h-8 bg-[#23407a]/10 rounded-xl flex items-center justify-center">
-                  <Users className="h-4 w-4 text-[#23407a]" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-900">Protextify</p>
-                  <p className="text-xs text-gray-600">v2.0.0</p>
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 leading-relaxed">
-                Platform deteksi plagiarisme untuk pendidikan yang lebih
-                berkualitas.
-              </p>
-            </div>
+            <button
+              onClick={handleWhatsAppClick}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-green-500 hover:bg-green-600 text-white px-4 py-3 font-semibold shadow-md hover:shadow-lg transition-all"
+            >
+              <MessageCircle className="h-5 w-5" />
+              <span>Chat WhatsApp{isWithinOperatingHours() ? " (Online)" : " (Offline)"}</span>
+            </button>
           )}
         </div>
       </nav>
+
     </div>
   );
 }

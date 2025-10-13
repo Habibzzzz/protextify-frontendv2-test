@@ -64,7 +64,7 @@ const SubmissionMonitor = ({ submissions, pendingCount, assignment }) => {
               </span>
             )}
           </CardTitle>
-          <Link to="/instructor/submissions">
+          <Link to="/instructor/classes">
             <Button variant="ghost" size="sm">
               Lihat Semua
             </Button>
@@ -147,7 +147,7 @@ const SubmissionMonitor = ({ submissions, pendingCount, assignment }) => {
                     )}
                   </div>
                 </div>
-                <Link to={`/instructor/submissions/${submission.id}`}>
+                <Link to={`/instructor/submissions/${submission.id}/grade`}>
                   <Button variant="outline" size="sm">
                     <Eye className="h-4 w-4 mr-1" />
                     {submission.status === "SUBMITTED" ? "Nilai" : "Lihat"}
@@ -170,7 +170,7 @@ const SubmissionMonitor = ({ submissions, pendingCount, assignment }) => {
       </CardContent>
       <div className="space-y-6">
         {/* Bulk Actions */}
-        <Card className="p-6">
+        {/* <Card className="p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-semibold">Bulk Actions</h3>
             <SubmissionActions
@@ -180,14 +180,14 @@ const SubmissionMonitor = ({ submissions, pendingCount, assignment }) => {
                 // Handle completion
               }}
             />
-          </div>
+          </div> */}
 
-          {/* Export Center */}
-          <ExportCenter
+        {/* Export Center */}
+        {/* <ExportCenter
             submissions={submissions}
             assignmentTitle={assignment?.title}
-          />
-        </Card>
+          /> */}
+        {/* </Card> */}
       </div>
     </Card>
   );

@@ -88,6 +88,55 @@ const getPaymentStatus = async (orderId) => {
 };
 
 /**
+ * Menghasilkan dan mengunduh invoice transaksi.
+ * @param {string} transactionId
+ * @returns {Promise<object>} { downloadUrl, expiresAt, filename }
+ */
+const downloadInvoice = async (transactionId) => {
+  try {
+    const response = await api.post(
+      `/payments/transactions/${transactionId}/download-invoice`
+    );
+    return response;
+  } catch (error) {
+    console.error("Failed to download invoice:", error);
+    throw error;
+  }
+};
+
+/**
+ * Mengirim invoice transaksi ke email pengguna.
+ * @param {string} transactionId
+ * @returns {Promise<object>} { message }
+ */
+const emailInvoice = async (transactionId) => {
+  try {
+    const response = await api.post(
+      `/payments/transactions/${transactionId}/email-invoice`
+    );
+    return response;
+  } catch (error) {
+    console.error("Failed to email invoice:", error);
+    throw error;
+  }
+};
+
+/**
+ * Mengekspor riwayat transaksi ke CSV berdasarkan filter.
+ * @param {object} filters { status, startDate, endDate, search }
+ * @returns {Promise<object>} { downloadUrl, expiresAt, filename }
+ */
+const exportTransactions = async (filters) => {
+  try {
+    const response = await api.post("/payments/transactions/export", filters);
+    return response;
+  } catch (error) {
+    console.error("Failed to export transactions:", error);
+    throw error;
+  }
+};
+
+/**
  * Membatalkan transaksi pembayaran
  * @param {string} transactionId
  * @returns {object} response BE
@@ -156,6 +205,9 @@ const paymentsService = {
   getTransactionHistory,
   getTransactionById,
   getPaymentStatus,
+  downloadInvoice,
+  emailInvoice,
+  exportTransactions,
   cancelPayment,
   getPaymentMethods,
   getPaymentStats,

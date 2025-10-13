@@ -15,7 +15,15 @@ import {
   Pagination,
 } from "../ui";
 import { formatDate } from "../../utils/helpers";
-import { Users, Mail, Copy, Download, Search } from "lucide-react";
+import {
+  Users,
+  Mail,
+  Copy,
+  Download,
+  Search,
+  MoreVertical,
+  UserMinus,
+} from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function MemberManagement({ classDetail, onRefresh }) {
@@ -163,8 +171,8 @@ export default function MemberManagement({ classDetail, onRefresh }) {
                         <DropdownMenu>
                           {({ isOpen, setIsOpen }) => (
                             <>
-                              <Button 
-                                variant="ghost" 
+                              <Button
+                                variant="ghost"
                                 size="sm"
                                 onClick={() => setIsOpen(!isOpen)}
                               >
@@ -172,8 +180,12 @@ export default function MemberManagement({ classDetail, onRefresh }) {
                               </Button>
                               {isOpen && (
                                 <DropdownMenuContent align="end">
-                                  <DropdownMenuItem>Lihat Profil</DropdownMenuItem>
-                                  <DropdownMenuItem>Lihat Progress</DropdownMenuItem>
+                                  <DropdownMenuItem>
+                                    Lihat Profil
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem>
+                                    Lihat Progress
+                                  </DropdownMenuItem>
                                   <DropdownMenuItem
                                     className="text-red-600"
                                     onClick={() => {

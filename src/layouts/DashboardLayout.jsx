@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 import Sidebar from "../components/layout/Sidebar";
 import DashboardHeader from "../components/layout/DashboardHeader";
 import MobileBottomNav from "../components/layout/MobileBottomNav";
+// Removed floating WhatsApp to embed in Sidebar instead
 import { cn } from "../utils/helpers";
 
 export default function DashboardLayout() {
@@ -134,6 +135,7 @@ export default function DashboardLayout() {
 
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
+      {/* Floating WhatsApp removed: now embedded in Sidebar */}
     </div>
   );
 }

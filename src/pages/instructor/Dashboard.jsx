@@ -10,6 +10,7 @@ import {
   CheckCircle,
   AlertCircle,
   BarChart3,
+  Star,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import {
@@ -41,11 +42,13 @@ export default function InstructorDashboard() {
   const {
     loading,
     error,
-    stats,
-    recentClasses,
-    recentSubmissions,
-    recentTransactions,
-    analyticsData,
+    data: {
+      stats,
+      recentClasses,
+      recentSubmissions,
+      recentTransactions,
+      analyticsData,
+    },
     refetch,
   } = useInstructorDashboard();
 
@@ -65,8 +68,8 @@ export default function InstructorDashboard() {
     return (
       <Container className="py-6">
         <Breadcrumb />
-        <Alert variant="error" title="Error" className="mb-6">
-          <p>Gagal memuat data dashboard. Silakan coba lagi.</p>
+        <Alert variant="error" title="Gagal Memuat Data" className="mb-6">
+          <p>{error.message || "Terjadi kesalahan. Silakan coba lagi."}</p>
           <Button onClick={refetch} size="sm" className="mt-3">
             Coba Lagi
           </Button>
@@ -77,14 +80,12 @@ export default function InstructorDashboard() {
 
   return (
     <Container className="py-6">
-      {/* Breadcrumb */}
       <Breadcrumb />
 
-      {/* Enhanced Welcome Section with Gradient Background */}
+      {/* Welcome Section */}
       <div className="relative overflow-hidden mb-12">
         <div className="absolute inset-0 bg-gradient-to-br from-[#23407a] via-[#1a2f5c] to-[#162849] rounded-2xl"></div>
         <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent rounded-2xl"></div>
-
         <div className="relative px-8 py-10">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div className="mb-6 lg:mb-0">
@@ -103,8 +104,6 @@ export default function InstructorDashboard() {
                   ` Ada ${stats.pendingGrading} submission menunggu penilaian.`}
               </p>
             </div>
-
-            {/* Enhanced Quick Stats Indicator */}
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex items-center px-4 py-2 rounded-full backdrop-blur-sm border border-white/20 bg-white/10">
                 <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
@@ -142,7 +141,7 @@ export default function InstructorDashboard() {
                   Anda memiliki {stats.pendingGrading} submission yang menunggu
                   penilaian dari siswa.
                 </p>
-                <Link to="/instructor/submissions">
+                <Link to="/instructor/classes">
                   <Button className="bg-orange-500 hover:bg-orange-600 text-white shadow-lg">
                     <FileText className="h-4 w-4 mr-2" />
                     Review Sekarang
@@ -154,36 +153,14 @@ export default function InstructorDashboard() {
         </div>
       )}
 
-      {/* Enhanced Tab Navigation */}
+      {/* Tab Navigation */}
       <div className="mb-8">
-        <div className="flex items-center mb-6">
-          <div className="w-1 h-8 bg-gradient-to-b from-[#23407a] to-[#3b5fa4] rounded-full mr-4"></div>
-          <h2 className="text-2xl font-bold text-gray-900">
-            Dashboard Sections
-          </h2>
-        </div>
-
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200/50 p-2">
           <nav className="flex space-x-2">
             {[
-              {
-                id: "overview",
-                label: "Overview",
-                icon: BarChart3,
-                description: "Ringkasan aktivitas",
-              },
-              {
-                id: "classes",
-                label: "Kelas",
-                icon: BookOpen,
-                description: "Manajemen kelas",
-              },
-              {
-                id: "monitoring",
-                label: "Monitoring",
-                icon: TrendingUp,
-                description: "Monitor submission",
-              },
+              { id: "overview", label: "Overview", icon: BarChart3 },
+              { id: "classes", label: "Kelas", icon: BookOpen },
+              { id: "monitoring", label: "Monitoring", icon: TrendingUp },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -194,7 +171,7 @@ export default function InstructorDashboard() {
                     : "text-gray-600 hover:bg-gray-50 hover:text-[#23407a]"
                 }`}
               >
-                <div className="flex flex-col items-center space-y-2">
+                <div className="flex items-center justify-center space-x-3">
                   <tab.icon
                     className={`h-5 w-5 ${
                       activeTab === tab.id
@@ -203,13 +180,6 @@ export default function InstructorDashboard() {
                     }`}
                   />
                   <span className="font-medium text-sm">{tab.label}</span>
-                  <span
-                    className={`text-xs ${
-                      activeTab === tab.id ? "text-white/80" : "text-gray-400"
-                    }`}
-                  >
-                    {tab.description}
-                  </span>
                 </div>
               </button>
             ))}
@@ -217,55 +187,18 @@ export default function InstructorDashboard() {
         </div>
       </div>
 
-      {/* Enhanced Statistics Cards */}
-      <div className="mb-12">
-        <div className="flex items-center mb-6">
-          <div className="w-1 h-8 bg-gradient-to-b from-[#23407a] to-[#3b5fa4] rounded-full mr-4"></div>
-          <h2 className="text-2xl font-bold text-gray-900">
-            Statistik Performa
-          </h2>
-        </div>
-        <Grid cols={1} mdCols={2} lgCols={3} gap={6}>
-          <StatCard
-            title="Total Kelas"
-            value={stats.totalClasses}
-            icon={BookOpen}
-            color="blue"
-            gradient="from-blue-500 to-blue-600"
-            trend={stats.totalClasses > 0 ? "positive" : "neutral"}
-          />
-          <StatCard
-            title="Total Siswa"
-            value={stats.totalStudents}
-            icon={Users}
-            color="green"
-            gradient="from-green-500 to-emerald-600"
-            trend="positive"
-          />
-          <StatCard
-            title="Tugas Aktif"
-            value={stats.activeAssignments}
-            icon={Clock}
-            color="yellow"
-            gradient="from-yellow-500 to-orange-500"
-            trend={stats.activeAssignments > 0 ? "warning" : "positive"}
-          />
-        </Grid>
-      </div>
-
       {/* Tab Content */}
       {activeTab === "overview" && (
         <Grid cols={1} lgCols={3} gap={8}>
-          {/* Quick Actions */}
           <InstructorQuickActions stats={stats} />
-
-          {/* Class Overview */}
           <ClassOverview
-            classes={recentClasses}
+            classes={recentClasses.map((cls) => ({
+              id: cls.id,
+              name: cls.name,
+              enrollmentsCount: cls._count?.enrollments ?? 0,
+            }))}
             totalClasses={stats.totalClasses}
           />
-
-          {/* Recent Activity */}
           <RecentActivity
             submissions={recentSubmissions}
             transactions={recentTransactions}
@@ -275,47 +208,49 @@ export default function InstructorDashboard() {
 
       {activeTab === "classes" && (
         <Grid cols={1} lgCols={2} gap={8}>
-          {/* Class Management */}
           <ClassOverview
             classes={recentClasses}
             totalClasses={stats.totalClasses}
             detailed={true}
           />
-
-          {/* Analytics Chart */}
           <AnalyticsChart
             data={analyticsData.classActivity}
-            title="Aktivitas Kelas"
+            title="Aktivitas Submission per Kelas"
             type="bar"
+            xAxisKey="name"
+            dataKey="submissions"
           />
         </Grid>
       )}
 
       {activeTab === "monitoring" && (
         <div className="space-y-8">
-          {/* Submission Monitor */}
           <SubmissionMonitor
             submissions={recentSubmissions}
             pendingCount={stats.pendingGrading}
           />
-
-          {/* Analytics Charts */}
           <Grid cols={1} lgCols={2} gap={8}>
             <AnalyticsChart
               data={analyticsData.submissionTrends}
-              title="Trend Submission (7 Hari Terakhir)"
+              title="Tren Submission & Penilaian (7 Hari)"
               type="line"
+              xAxisKey="date"
+              dataKeys={["submissions", "graded"]}
+              colors={["#3b82f6", "#16a34a"]}
             />
             <AnalyticsChart
               data={analyticsData.gradingTrends}
-              title="Trend Penilaian (7 Hari Terakhir)"
+              title="Kecepatan Penilaian (Rata-rata Jam)"
               type="area"
+              xAxisKey="date"
+              dataKey="avgHours"
+              colors={["#8b5cf6"]}
             />
           </Grid>
         </div>
       )}
 
-      {/* Enhanced Summary Statistics */}
+      {/* Summary Statistics */}
       <div className="mt-12">
         <div className="flex items-center mb-6">
           <div className="w-1 h-8 bg-gradient-to-b from-[#23407a] to-[#3b5fa4] rounded-full mr-4"></div>
@@ -323,9 +258,8 @@ export default function InstructorDashboard() {
             Analisis Performa
           </h2>
         </div>
-
         <Grid cols={1} mdCols={3} gap={8}>
-          <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-green-50 to-emerald-50">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50">
             <CardContent className="p-8 text-center">
               <div className="w-16 h-16 bg-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <CheckCircle className="h-8 w-8 text-white" />
@@ -338,74 +272,42 @@ export default function InstructorDashboard() {
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3">
                 <div
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 h-3 rounded-full transition-all duration-500"
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 h-3 rounded-full"
                   style={{ width: `${stats.completionRate}%` }}
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-2">
-                Rata-rata completion rate siswa
-              </p>
             </CardContent>
           </Card>
-
-          <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-blue-50 to-indigo-50">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50">
             <CardContent className="p-8 text-center">
               <div className="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                <CheckCircle className="h-8 w-8 text-white" />
+                <Star className="h-8 w-8 text-white" />
               </div>
               <div className="text-3xl font-bold text-gray-900 mb-2">
                 {stats.averageGrade}
               </div>
-              <div className="text-sm font-medium text-gray-600 mb-4">
+              <div className="text-sm font-medium text-gray-600">
                 Rata-rata Nilai
               </div>
-              <div className="flex items-center justify-center">
-                <div
-                  className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    stats.averageGrade >= 75
-                      ? "bg-green-100 text-green-700"
-                      : stats.averageGrade >= 60
-                      ? "bg-blue-100 text-blue-700"
-                      : "bg-yellow-100 text-yellow-700"
-                  }`}
-                >
-                  {stats.averageGrade >= 75
-                    ? "Sangat Baik"
-                    : stats.averageGrade >= 60
-                    ? "Baik"
-                    : "Perlu Perbaikan"}
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 mt-2">
-                Berdasarkan semua submission
-              </p>
             </CardContent>
           </Card>
-
-          <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-purple-50 to-indigo-50">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-indigo-50">
             <CardContent className="p-8 text-center">
               <div className="w-16 h-16 bg-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <DollarSign className="h-8 w-8 text-white" />
               </div>
               <div className="text-2xl font-bold text-gray-900 mb-2">
-                Rp {stats.totalRevenue.toLocaleString()}
+                Rp {stats.totalRevenue.toLocaleString("id-ID")}
               </div>
               <div className="text-sm font-medium text-gray-600 mb-4">
-                Total Pendapatan
+                Total Pengeluaran
               </div>
               <div className="flex items-center justify-center">
-                <TrendingUp className="h-4 w-4 text-purple-500 mr-1" />
+                <DollarSign className="h-4 w-4 text-purple-500 mr-1" />
                 <span className="text-sm text-purple-600 font-medium">
-                  +
-                  {Math.round(
-                    (stats.monthlyRevenue / (stats.totalRevenue || 1)) * 100
-                  )}
-                  % bulan ini
+                  Rp {stats.monthlyRevenue.toLocaleString("id-ID")} bulan ini
                 </span>
               </div>
-              <p className="text-xs text-gray-500 mt-2">
-                Dari assignment yang dibuat
-              </p>
             </CardContent>
           </Card>
         </Grid>

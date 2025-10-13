@@ -1,5 +1,4 @@
-// src/pages/instructor/Analytics.jsx
-import { useMemo, useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Calendar,
   BarChart3,
@@ -7,7 +6,11 @@ import {
   Users,
   FileText,
   CheckCircle,
+  AlertCircle,
+  Clock,
 } from "lucide-react";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 import {
   Container,
@@ -18,185 +21,252 @@ import {
   Grid,
   Button,
   Badge,
+  LoadingSpinner,
+  Alert,
 } from "../../components";
 import { Breadcrumb } from "../../components/layout";
 import { StatCard } from "../../components/dashboard";
 import { AnalyticsChart } from "../../components/instructor";
+import { analyticsService } from "../../services";
 
 export default function InstructorAnalytics() {
-  const [range, setRange] = useState("7d"); // 7d, 30d, 90d
+  const [range, setRange] = useState("7d");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const navigate = useNavigate();
 
-  // Dummy stats
-  const stats = useMemo(
-    () => ({
-      completionRate: 76,
-      avgPlagiarism: 9,
-      totalSubmissions: 128,
-      gradedSubmissions: 92,
-      pendingGrading: 36,
-      activeClasses: 4,
-    }),
-    []
-  );
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      console.log("Fetching analytics data for range:", range);
+      console.log("Token:", localStorage.getItem("token"));
+      const data = await analyticsService.getInstructorAnalytics(range);
+      console.log("Analytics data received:", data);
+      setAnalyticsData(data);
+    } catch (err) {
+      console.error("Analytics API Error:", err);
+      console.error("Error details:", {
+        message: err.message,
+        response: err.response,
+        status: err.response?.status,
+        data: err.response?.data,
+      });
+      const errorMessage =
+        err.response?.data?.message ||
+        "Gagal memuat data analytics. Silakan coba lagi.";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [range]);
 
-  // Helper to generate trend arrays
-  const days = range === "7d" ? 7 : range === "30d" ? 30 : 90;
-  const labels = Array.from({ length: days }, (_, i) => `D-${days - i}`);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-  // Generate arrays sesuai kebutuhan AnalyticsChart (expects array of items)
-  const submittedSeries = labels.map(
-    (_, i) => 5 + Math.round(Math.sin(i / 2) * 3) + (i % 5 === 0 ? 4 : 0)
-  );
-  const gradedSeries = labels.map(
-    (_, i) => 3 + Math.round(Math.cos(i / 3) * 2) + (i % 6 === 0 ? 3 : 0)
-  );
-  const submissionTrends = labels.map((label, i) => ({
-    date: label,
-    submissions: submittedSeries[i],
-    graded: gradedSeries[i],
-  }));
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="flex justify-center items-center h-96">
+          <LoadingSpinner size="lg" />
+          <p className="ml-4 text-gray-600">Memuat data analytics...</p>
+        </div>
+      );
+    }
 
-  const plagiarismDistribution = [
-    { name: "0-10%", activity: 58 },
-    { name: "10-20%", activity: 34 },
-    { name: "20-40%", activity: 11 },
-    { name: ">40%", activity: 3 },
-  ];
+    if (error) {
+      return (
+        <Alert variant="error" title="Terjadi Kesalahan">
+          <p>{error}</p>
+          <Button onClick={fetchData} size="sm" className="mt-4">
+            Coba Lagi
+          </Button>
+        </Alert>
+      );
+    }
 
-  const classActivity = [
-    { name: "SIM-301", activity: 46 },
-    { name: "AI-201", activity: 38 },
-    { name: "DB-102", activity: 22 },
-    { name: "WEB-205", activity: 31 },
-  ];
+    if (!analyticsData) {
+      console.log("analyticsData is null/undefined:", analyticsData);
+      return (
+        <div className="text-center py-12">
+          <p className="text-gray-500">Data tidak tersedia.</p>
+        </div>
+      );
+    }
 
-  const gradingSpeed = labels.map((label, i) => ({
-    date: label,
-    graded: 24 - Math.round((i % 7) * 1.8), // treat as average hours
-  }));
+    const { stats, charts } = analyticsData;
+
+    const completionRateTrend = stats?.trend?.completionRate;
+    const trendObj = completionRateTrend
+      ? {
+          change: Math.abs(Number(completionRateTrend)),
+          isPositive: String(completionRateTrend).startsWith("+"),
+        }
+      : null;
+
+    return (
+      <div className="space-y-12">
+        {/* Top Stats */}
+        <Grid cols={1} mdCols={3} lgCols={6} gap={6}>
+          <StatCard
+            title="Completion Rate"
+            value={`${stats.completionRate}%`}
+            icon={TrendingUp}
+            trend={trendObj}
+            color="green"
+          />
+          <StatCard
+            title="Rata-rata Plagiarisme"
+            value={`${stats.avgPlagiarism}%`}
+            icon={AlertCircle}
+            color="red"
+          />
+          <StatCard
+            title="Total Submission"
+            value={stats.totalSubmissions}
+            icon={FileText}
+            color="blue"
+          />
+          <StatCard
+            title="Sudah Dinilai"
+            value={stats.gradedSubmissions}
+            icon={CheckCircle}
+            color="purple"
+          />
+          <StatCard
+            title="Menunggu Nilai"
+            value={stats.pendingGrading}
+            icon={Clock}
+            color="yellow"
+          />
+          <StatCard
+            title="Kelas Aktif"
+            value={stats.activeClasses}
+            icon={Users}
+            color="blue"
+          />
+        </Grid>
+
+        {/* Charts */}
+        <div className="space-y-8">
+          <Grid cols={1} lgCols={2} gap={8}>
+            <AnalyticsChart
+              data={charts.submissionTrends}
+              title="Tren Submission & Penilaian"
+              type="line"
+              xAxisKey="date"
+              dataKeys={["submissions", "graded"]}
+              colors={["#3b82f6", "#16a34a"]}
+            />
+            <AnalyticsChart
+              data={charts.gradingSpeed}
+              title="Kecepatan Penilaian (Rata-rata Jam)"
+              type="area"
+              xAxisKey="date"
+              dataKey="avgHours"
+              colors={["#8b5cf6"]}
+            />
+          </Grid>
+
+          <Grid cols={1} lgCols={2} gap={8}>
+            <AnalyticsChart
+              data={charts.classActivity}
+              title="Aktivitas per Kelas"
+              type="bar"
+              xAxisKey="name"
+              dataKey="submissions"
+            />
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center text-gray-800">
+                  <Calendar className="w-5 h-5 mr-2 text-[#23407a]" />{" "}
+                  Distribusi Plagiarisme
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AnalyticsChart
+                  data={charts.plagiarismDistribution}
+                  title=""
+                  type="bar"
+                  xAxisKey="range"
+                  dataKey="count"
+                />
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {charts.plagiarismDistribution.map((item) => (
+                    <Badge key={item.range} variant="outline">
+                      {item.range}: {item.count}
+                    </Badge>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </Grid>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <Container className="py-6">
       <Breadcrumb />
-
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#23407a]/10 text-[#23407a] flex items-center justify-center">
-            <BarChart3 className="w-4 h-4" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
-            <p className="text-gray-600 text-sm">
-              Ringkasan performa kelas dan tugas
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant={range === "7d" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setRange("7d")}
-          >
-            7 Hari
-          </Button>
-          <Button
-            variant={range === "30d" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setRange("30d")}
-          >
-            30 Hari
-          </Button>
-          <Button
-            variant={range === "90d" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setRange("90d")}
-          >
-            90 Hari
-          </Button>
-        </div>
-      </div>
-
-      {/* Top Stats */}
-      <Grid cols={1} mdCols={3} lgCols={6} gap={6}>
-        <StatCard
-          title="Completion Rate"
-          value={`${stats.completionRate}%`}
-          icon={TrendingUp}
-          trend={{ label: "+4% vs last period", up: true }}
-        />
-        <StatCard
-          title="Rata-rata Plagiarisme"
-          value={`${stats.avgPlagiarism}%`}
-          icon={CheckCircle}
-        />
-        <StatCard
-          title="Total Submission"
-          value={stats.totalSubmissions}
-          icon={FileText}
-        />
-        <StatCard
-          title="Sudah Dinilai"
-          value={stats.gradedSubmissions}
-          icon={CheckCircle}
-        />
-        <StatCard
-          title="Menunggu Nilai"
-          value={stats.pendingGrading}
-          icon={FileText}
-        />
-        <StatCard
-          title="Kelas Aktif"
-          value={stats.activeClasses}
-          icon={Users}
-        />
-      </Grid>
-
-      {/* Charts */}
-      <div className="mt-8 space-y-8">
-        <Grid cols={1} lgCols={2} gap={8}>
-          <AnalyticsChart
-            data={submissionTrends}
-            title="Trend Submission"
-            type="line"
-          />
-          <AnalyticsChart
-            data={gradingSpeed}
-            title="Kecepatan Penilaian (rata-rata jam)"
-            type="area"
-          />
-        </Grid>
-
-        <Grid cols={1} lgCols={2} gap={8}>
-          <AnalyticsChart
-            data={classActivity}
-            title="Aktivitas per Kelas"
-            type="bar"
-          />
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Calendar className="w-5 h-5 mr-2 text-[#23407a]" /> Distribusi
-                Plagiarisme
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <AnalyticsChart
-                data={plagiarismDistribution}
-                title=""
-                type="bar"
-              />
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Badge variant="outline">0-10%: 58</Badge>
-                <Badge variant="outline">10-20%: 34</Badge>
-                <Badge variant="outline">20-40%: 11</Badge>
-                <Badge variant="outline">&gt;40%: 3</Badge>
+      {/* Enhanced Header Section */}
+      <div className="relative overflow-hidden mb-12">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#23407a] via-[#1a2f5c] to-[#162849] rounded-3xl"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent"></div>
+        <Container className="relative py-10">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="flex items-center mb-4">
+                <div className="w-3 h-3 bg-white rounded-full mr-3 animate-pulse"></div>
+                <span className="text-white/70 text-sm font-medium">
+                  Instructor Dashboard
+                </span>
               </div>
-            </CardContent>
-          </Card>
-        </Grid>
+              <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3">
+                Analytics Performa 📊
+              </h1>
+              <p className="text-white/80 text-lg leading-relaxed max-w-2xl">
+                Dapatkan wawasan mendalam tentang aktivitas kelas, submission
+                siswa, dan efektivitas penilaian Anda.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 p-1 bg-black/20 rounded-lg mt-6 lg:mt-0 backdrop-blur-sm border border-white/10">
+              {["7d", "30d", "90d"].map((r) => (
+                <Button
+                  key={r}
+                  variant={range === r ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setRange(r)}
+                  className={`transition-all duration-200 ${
+                    range === r
+                      ? "bg-white text-[#23407a] shadow-md"
+                      : "text-white/80 hover:bg-white/10 hover:text-white"
+                  }`}
+                >
+                  {r.replace("d", " Hari")}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </Container>
       </div>
+
+      <Container className="pb-12">
+        {renderContent()}
+        <div className="mt-8 flex justify-end">
+          <Button
+            size="sm"
+            className="bg-[#23407a] hover:bg-[#1a2f5c] text-white"
+            onClick={() => navigate("/instructor/classes")}
+          >
+            <Users className="h-4 w-4 mr-2" />
+            Lihat Kelas
+          </Button>
+        </div>
+      </Container>
     </Container>
   );
 }

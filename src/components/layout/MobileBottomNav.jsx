@@ -1,7 +1,15 @@
 // src/components/layout/MobileBottomNav.jsx
 // filepath: src/components/layout/MobileBottomNav.jsx
 import { Link, useLocation } from "react-router-dom";
-import { Home, BookOpen, FileText, User, Plus, CreditCard } from "lucide-react";
+import {
+  Home,
+  BookOpen,
+  FileText,
+  User,
+  Plus,
+  CreditCard,
+  BarChart3,
+} from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { cn } from "../../utils/helpers";
 
@@ -34,16 +42,16 @@ export default function MobileBottomNav() {
           isPrimary: true,
         },
         {
-          icon: CreditCard,
-          label: "Transaksi",
-          href: "/instructor/transactions",
-          active: location.pathname.startsWith("/instructor/transactions"),
+          icon: BarChart3,
+          label: "Analytics",
+          href: "/instructor/analytics",
+          active: location.pathname.startsWith("/instructor/analytics"),
         },
         {
           icon: User,
           label: "Profil",
-          href: "/profile",
-          active: location.pathname === "/profile",
+          href: "/instructor/settings",
+          active: location.pathname === "/instructor/settings",
         },
       ];
     } else {

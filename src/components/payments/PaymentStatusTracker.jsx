@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   CreditCard,
   ExternalLink,
+  MessageCircle,
 } from "lucide-react";
 
 import {
@@ -23,27 +24,34 @@ import {
 import { usePaymentTracker } from "../../hooks/usePaymentTracker";
 import { PAYMENT_STATUS } from "../../utils/constants";
 import { formatCurrency, formatDate } from "../../utils/helpers";
+import { WHATSAPP_CONFIG, generateWhatsAppUrl } from "../../utils/whatsappConfig";
 
 export default function PaymentStatusTracker({
   transaction,
   onPaymentSuccess,
   onPaymentFailure,
   showActions = true,
+  isActive,
 }) {
   const [showDetails, setShowDetails] = useState(false);
 
   const { status, loading, error, attempts, refreshStatus, isPolling } =
-    usePaymentTracker(transaction.orderId, {
-      onStatusChange: (newStatus) => {
-        // Logging status change (opsional)
+    usePaymentTracker(
+      transaction.orderId,
+      transaction.status, // Teruskan status awal di sini
+      {
+        onStatusChange: (newStatus) => {
+          // Logging status change (opsional)
+        },
+        onSuccess: (response) => {
+          if (onPaymentSuccess) onPaymentSuccess(response);
+        },
+        onFailure: (response) => {
+          if (onPaymentFailure) onPaymentFailure(response);
+        },
       },
-      onSuccess: (response) => {
-        if (onPaymentSuccess) onPaymentSuccess(response);
-      },
-      onFailure: (response) => {
-        if (onPaymentFailure) onPaymentFailure(response);
-      },
-    });
+      isActive
+    );
 
   // Status configuration sesuai BE
   const getStatusConfig = (status) => {
@@ -78,26 +86,6 @@ export default function PaymentStatusTracker({
           badge: "error",
           title: "Pembayaran Gagal",
           description: "Pembayaran tidak dapat diproses. Silakan coba lagi",
-        };
-      case PAYMENT_STATUS.CANCELLED:
-        return {
-          icon: XCircle,
-          color: "text-gray-600",
-          bgColor: "bg-gray-50",
-          borderColor: "border-gray-200",
-          badge: "secondary",
-          title: "Pembayaran Dibatalkan",
-          description: "Transaksi telah dibatalkan",
-        };
-      case PAYMENT_STATUS.EXPIRED:
-        return {
-          icon: AlertTriangle,
-          color: "text-orange-600",
-          bgColor: "bg-orange-50",
-          borderColor: "border-orange-200",
-          badge: "warning",
-          title: "Pembayaran Kadaluarsa",
-          description: "Waktu pembayaran telah habis",
         };
       default:
         return {
@@ -203,10 +191,28 @@ export default function PaymentStatusTracker({
         {status === PAYMENT_STATUS.PENDING && transaction.paymentUrl && (
           <div className="border-t pt-4">
             <Button
-              className="w-full"
-              onClick={() => window.open(transaction.paymentUrl, "_blank")}
+              className="w-full bg-green-600 hover:bg-green-700"
+              onClick={() => {
+                // Buat pesan WhatsApp dengan detail transaksi
+                const whatsappMessage = `Halo! Saya ingin melakukan pembayaran untuk transaksi Protextify.
+
+📋 *Detail Transaksi:*
+• ID Transaksi: ${transaction.id}
+• Total Pembayaran: Rp ${formatCurrency(transaction.amount)}
+• Status: ${status}
+• Tanggal: ${formatDate(transaction.createdAt)}
+
+Mohon bantuan untuk proses pembayaran. Terima kasih!`;
+
+                // Buka WhatsApp dengan pesan yang sudah diformat
+                const whatsappUrl = generateWhatsAppUrl(whatsappMessage);
+                window.open(whatsappUrl, "_blank");
+
+                // KOMENTAR: Kode Midtrans di bawah ini dinonaktifkan sementara
+                // window.open(transaction.paymentUrl, "_blank");
+              }}
             >
-              <CreditCard className="h-4 w-4 mr-2" />
+              <MessageCircle className="h-4 w-4 mr-2" />
               Lanjutkan Pembayaran
               <ExternalLink className="h-4 w-4 ml-2" />
             </Button>

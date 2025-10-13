@@ -1,5 +1,5 @@
 // src/pages/instructor/ClassSettings.jsx
-import { useState, useEffect } from "react"; // ✅ Add useEffect
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,8 +10,13 @@ import {
   Trash2,
   AlertTriangle,
   Copy,
+  RefreshCw,
+  Users,
+  FileText,
+  BookOpen,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { motion } from "framer-motion";
 
 import {
   Container,
@@ -27,16 +32,15 @@ import {
   Modal,
   LoadingSpinner,
 } from "../../components";
-import { classesService } from "../../services"; // ✅ Add this import
-import { useAsyncData } from "../../hooks/useAsyncData"; // ✅ Add this import
-import { updateClassSchema } from "../../utils/validation"; // ✅ Add this import
+import { classesService } from "../../services";
+import { useAsyncData } from "../../hooks/useAsyncData";
+import { updateClassSchema } from "../../utils/validation";
 
 export default function ClassSettings() {
   const { classId } = useParams();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showRegenerateModal, setShowRegenerateModal] = useState(false);
 
   const {
     data: classDetail,
@@ -48,17 +52,12 @@ export default function ClassSettings() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isDirty },
+    formState: { errors, isDirty, isSubmitting },
     reset,
   } = useForm({
     resolver: zodResolver(updateClassSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-    },
   });
 
-  // Reset form when data loads
   useEffect(() => {
     if (classDetail) {
       reset({
@@ -69,41 +68,40 @@ export default function ClassSettings() {
   }, [classDetail, reset]);
 
   const onSubmit = async (data) => {
-    try {
-      setLoading(true);
-      await classesService.updateClass(classId, data);
-      toast.success("Pengaturan kelas berhasil diperbarui!");
-      refetch();
-    } catch (error) {
-      console.error("Error updating class:", error);
-    } finally {
-      setLoading(false);
-    }
+    await toast.promise(classesService.updateClass(classId, data), {
+      loading: "Menyimpan perubahan...",
+      success: () => {
+        refetch();
+        return "Pengaturan kelas berhasil diperbarui!";
+      },
+      error: (err) =>
+        err.response?.data?.message || "Gagal menyimpan perubahan.",
+    });
   };
 
   const handleDeleteClass = async () => {
-    try {
-      setDeleteLoading(true);
-      await classesService.deleteClass(classId);
-      toast.success("Kelas berhasil dihapus!");
-      navigate("/instructor/classes");
-    } catch (error) {
-      console.error("Error deleting class:", error);
-      toast.error("Gagal menghapus kelas");
-    } finally {
-      setDeleteLoading(false);
-      setShowDeleteModal(false);
-    }
+    await toast.promise(classesService.deleteClass(classId), {
+      loading: "Menghapus kelas...",
+      success: () => {
+        navigate("/instructor/classes");
+        return "Kelas berhasil dihapus!";
+      },
+      error: (err) => err.response?.data?.message || "Gagal menghapus kelas.",
+    });
+    setShowDeleteModal(false);
   };
 
   const regenerateToken = async () => {
-    try {
-      const response = await classesService.regenerateClassToken(classId);
-      toast.success("Token kelas berhasil diperbarui!");
-      refetch();
-    } catch (error) {
-      console.error("Error regenerating token:", error);
-    }
+    await toast.promise(classesService.regenerateClassToken(classId), {
+      loading: "Membuat token baru...",
+      success: () => {
+        refetch();
+        return "Token kelas berhasil diperbarui!";
+      },
+      error: (err) =>
+        err.response?.data?.message || "Gagal membuat token baru.",
+    });
+    setShowRegenerateModal(false);
   };
 
   const copyClassToken = () => {
@@ -113,10 +111,8 @@ export default function ClassSettings() {
 
   if (fetchLoading) {
     return (
-      <Container className="py-6">
-        <div className="flex justify-center py-12">
-          <LoadingSpinner size="lg" />
-        </div>
+      <Container className="py-6 flex justify-center items-center h-screen">
+        <LoadingSpinner size="lg" />
       </Container>
     );
   }
@@ -124,9 +120,9 @@ export default function ClassSettings() {
   if (error) {
     return (
       <Container className="py-6">
-        <Alert variant="error">
-          <p>Gagal memuat pengaturan kelas: {error.message}</p>
-          <Button onClick={refetch} size="sm" className="mt-3">
+        <Alert variant="error" title="Gagal Memuat Data">
+          <p>{error.message || "Terjadi kesalahan saat mengambil data."}</p>
+          <Button onClick={refetch} size="sm" className="mt-4">
             Coba Lagi
           </Button>
         </Alert>
@@ -135,199 +131,231 @@ export default function ClassSettings() {
   }
 
   return (
-    <Container className="py-6">
-      {/* Breadcrumb */}
-      <Breadcrumb />
-
-      {/* Header */}
-      <div className="flex items-center mb-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate(`/instructor/classes/${classId}`)}
-          className="mr-4"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Kembali
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Pengaturan Kelas</h1>
-          <p className="text-gray-600">{classDetail?.name}</p>
+    <Container className="py-8">
+      {/* Header Section */}
+      <div className="relative overflow-hidden mb-12">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#23407a] via-[#1a2f5c] to-[#162849] rounded-2xl"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent rounded-2xl"></div>
+        <div className="relative px-8 py-10">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+            <div className="mb-6 lg:mb-0">
+              <div className="flex items-center mb-4">
+                <div className="w-3 h-3 bg-white rounded-full mr-3 animate-pulse"></div>
+                <span className="text-white/70 text-sm font-medium">
+                  Pengaturan Kelas
+                </span>
+              </div>
+              <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3 truncate max-w-2xl">
+                {classDetail?.name}
+              </h1>
+              <p className="text-white/80 text-lg leading-relaxed max-w-2xl">
+                Ubah informasi dasar, kelola akses, dan atur statistik kelas
+                Anda.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => navigate(`/instructor/classes/${classId}`)}
+              className="border-2 border-white/30 text-white hover:bg-white/10 backdrop-blur-sm transition-all duration-300"
+            >
+              <ArrowLeft className="h-5 w-5 mr-2" />
+              Kembali ke Detail Kelas
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-2xl space-y-6">
-        {/* Basic Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Settings className="h-5 w-5 mr-2" />
-              Informasi Dasar
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nama Kelas *
-                </label>
-                <Input
-                  {...register("name")}
-                  placeholder="Nama kelas"
-                  error={errors.name?.message}
-                />
-              </div>
+      <Breadcrumb />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Deskripsi
-                </label>
-                <Textarea
-                  {...register("description")}
-                  placeholder="Deskripsi kelas..."
-                  rows={3}
-                  error={errors.description?.message}
-                />
-              </div>
+      {/* Two-Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+        {/* Left Column - Main Settings */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Basic Settings Card */}
+          <Card className="border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Settings className="h-5 w-5 mr-2 text-[#23407a]" />
+                Informasi Dasar
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nama Kelas
+                  </label>
+                  <Input
+                    {...register("name")}
+                    placeholder="Contoh: Kalkulus Lanjutan 2025"
+                    error={errors.name?.message}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Deskripsi
+                  </label>
+                  <Textarea
+                    {...register("description")}
+                    placeholder="Deskripsi singkat mengenai kelas ini..."
+                    rows={4}
+                    error={errors.description?.message}
+                  />
+                </div>
+                <div className="flex justify-end pt-4 border-t">
+                  <Button
+                    type="submit"
+                    loading={isSubmitting}
+                    disabled={!isDirty || isSubmitting}
+                    className="bg-[#23407a] hover:bg-[#1a2f5c]"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    Simpan Perubahan
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
 
-              <div className="flex justify-end">
-                <Button
-                  type="submit"
-                  loading={loading}
-                  disabled={!isDirty}
-                  className="bg-[#23407a] hover:bg-[#1a2f5c]"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Simpan Perubahan
+        {/* Right Column - Side Info */}
+        <div className="space-y-8">
+          {/* Token Management Card */}
+          <Card className="border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Copy className="h-5 w-5 mr-2 text-[#23407a]" />
+                Token Kelas
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-3 p-3 bg-gray-100 rounded-lg border">
+                <span className="font-mono text-lg font-bold text-gray-800 flex-1 truncate">
+                  {classDetail?.classToken}
+                </span>
+                <Button size="sm" variant="outline" onClick={copyClassToken}>
+                  Salin
                 </Button>
               </div>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Class Token Management */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Token Kelas</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-              <span className="font-mono text-lg font-bold bg-white px-3 py-2 rounded border flex-1">
-                {classDetail?.classToken}
-              </span>
-              <Button size="sm" variant="outline" onClick={copyClassToken}>
-                <Copy className="h-4 w-4 mr-2" />
-                Salin
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setShowRegenerateModal(true)}
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Buat Token Baru
               </Button>
-            </div>
+            </CardContent>
+          </Card>
 
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm text-gray-600">
-                  Regenerate token jika token lama sudah tidak aman
-                </p>
-              </div>
-              <Button variant="outline" onClick={regenerateToken}>
-                Regenerate Token
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Class Statistics */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Statistik Kelas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
+          {/* Class Statistics Card */}
+          <Card className="border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <BookOpen className="h-5 w-5 mr-2 text-[#23407a]" />
+                Statistik
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 gap-4">
+              <div className="text-center p-4 bg-blue-50 rounded-lg">
+                <Users className="h-6 w-6 text-blue-600 mx-auto mb-2" />
                 <p className="text-2xl font-bold text-gray-900">
                   {classDetail?.enrollments?.length || 0}
                 </p>
-                <p className="text-sm text-gray-600">Total Siswa</p>
+                <p className="text-sm text-gray-600">Siswa</p>
               </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
+              <div className="text-center p-4 bg-green-50 rounded-lg">
+                <FileText className="h-6 w-6 text-green-600 mx-auto mb-2" />
                 <p className="text-2xl font-bold text-gray-900">
                   {classDetail?.assignments?.length || 0}
                 </p>
-                <p className="text-sm text-gray-600">Total Tugas</p>
+                <p className="text-sm text-gray-600">Tugas</p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* Danger Zone */}
-        <Card className="border-red-200">
-          <CardHeader>
-            <CardTitle className="text-red-600 flex items-center">
-              <AlertTriangle className="h-5 w-5 mr-2" />
-              Danger Zone
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <Alert variant="error">
-                <div className="text-sm">
-                  <strong>Peringatan:</strong> Menghapus kelas akan menghapus
-                  semua data termasuk tugas, submission, dan anggota kelas.
-                  Tindakan ini tidak dapat dibatalkan.
-                </div>
-              </Alert>
-
+          {/* Danger Zone Card */}
+          <Card className="border-red-200 bg-red-50/30">
+            <CardHeader>
+              <CardTitle className="text-red-700 flex items-center">
+                <AlertTriangle className="h-5 w-5 mr-2" />
+                Danger Zone
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-red-800">
+                Tindakan ini akan menghapus kelas beserta semua data terkait
+                secara permanen dan tidak dapat dibatalkan.
+              </p>
               <Button
                 variant="outline"
-                className="border-red-300 text-red-600 hover:bg-red-50"
+                className="w-full border-red-300 text-red-700 hover:bg-red-100 hover:border-red-400"
                 onClick={() => setShowDeleteModal(true)}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Hapus Kelas
+                Hapus Kelas Ini
               </Button>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
+      {/* Modals */}
       <Modal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         title="Konfirmasi Hapus Kelas"
       >
-        <div className="space-y-4">
-          <p className="text-gray-600">
-            Apakah Anda yakin ingin menghapus kelas "{classDetail?.name}"?
-          </p>
+        <p className="text-gray-600 mb-4">
+          Apakah Anda yakin ingin menghapus kelas "{classDetail?.name}"?
+        </p>
+        <Alert variant="error">
+          <strong>Data berikut akan dihapus permanen:</strong>
+          <ul className="list-disc list-inside mt-2 text-sm">
+            <li>{classDetail?.enrollments?.length || 0} data siswa</li>
+            <li>{classDetail?.assignments?.length || 0} data tugas</li>
+            <li>Semua submission dan laporan plagiarisme terkait</li>
+          </ul>
+        </Alert>
+        <div className="flex justify-end space-x-3 mt-6">
+          <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
+            Batal
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleDeleteClass}
+            loading={isSubmitting}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Ya, Hapus Kelas
+          </Button>
+        </div>
+      </Modal>
 
-          <Alert variant="error">
-            <div className="text-sm">
-              <strong>Data yang akan dihapus:</strong>
-              <ul className="list-disc list-inside mt-2">
-                <li>{classDetail?.enrollments?.length || 0} anggota kelas</li>
-                <li>{classDetail?.assignments?.length || 0} tugas</li>
-                <li>Semua submission dan laporan plagiarisme</li>
-              </ul>
-            </div>
-          </Alert>
-
-          <div className="flex justify-end space-x-3">
-            <Button
-              variant="outline"
-              onClick={() => setShowDeleteModal(false)}
-              disabled={deleteLoading}
-            >
-              Batal
-            </Button>
-            <Button
-              variant="outline"
-              className="border-red-300 text-red-600 hover:bg-red-50"
-              onClick={handleDeleteClass}
-              loading={deleteLoading}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Ya, Hapus Kelas
-            </Button>
-          </div>
+      <Modal
+        isOpen={showRegenerateModal}
+        onClose={() => setShowRegenerateModal(false)}
+        title="Buat Token Baru?"
+      >
+        <p className="text-gray-600">
+          Token lama akan segera tidak valid. Pastikan Anda membagikan token
+          baru kepada siswa yang belum bergabung.
+        </p>
+        <div className="flex justify-end space-x-3 mt-6">
+          <Button
+            variant="outline"
+            onClick={() => setShowRegenerateModal(false)}
+          >
+            Batal
+          </Button>
+          <Button
+            onClick={regenerateToken}
+            className="bg-[#23407a] hover:bg-[#1a2f5c]"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Ya, Buat Token Baru
+          </Button>
         </div>
       </Modal>
     </Container>

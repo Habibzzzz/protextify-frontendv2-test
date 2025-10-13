@@ -7,6 +7,7 @@ export { default as paymentsService } from "./payments";
 export { default as plagiarismService } from "./plagiarism";
 export { default as storageService } from "./storage";
 export { default as usersService } from "./users";
+export { default as analyticsService } from "./analytics";
 
 // Utility functions
 export { useApi } from "../hooks/useApi";
