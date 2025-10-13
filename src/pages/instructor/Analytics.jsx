@@ -99,6 +99,14 @@ export default function InstructorAnalytics() {
 
     const { stats, charts } = analyticsData;
 
+    const completionRateTrend = stats?.trend?.completionRate;
+    const trendObj = completionRateTrend
+      ? {
+          change: Math.abs(Number(completionRateTrend)),
+          isPositive: String(completionRateTrend).startsWith("+"),
+        }
+      : null;
+
     return (
       <div className="space-y-12">
         {/* Top Stats */}
@@ -107,7 +115,7 @@ export default function InstructorAnalytics() {
             title="Completion Rate"
             value={`${stats.completionRate}%`}
             icon={TrendingUp}
-            trend={stats.trend.completionRate}
+            trend={trendObj}
             color="green"
           />
           <StatCard

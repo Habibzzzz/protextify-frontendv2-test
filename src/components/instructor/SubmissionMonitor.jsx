@@ -147,7 +147,7 @@ const SubmissionMonitor = ({ submissions, pendingCount, assignment }) => {
                     )}
                   </div>
                 </div>
-                <Link to={`/instructor/submissions/${submission.id}`}>
+                <Link to={`/instructor/submissions/${submission.id}/grade`}>
                   <Button variant="outline" size="sm">
                     <Eye className="h-4 w-4 mr-1" />
                     {submission.status === "SUBMITTED" ? "Nilai" : "Lihat"}
