@@ -22,7 +22,7 @@ const InstructorQuickActions = ({ stats }) => {
     {
       label: "Review Tugas",
       icon: FileText,
-      href: "/instructor/submissions",
+      href: "/instructor/classes", // Diarahkan ke halaman kelas
       variant: "outline",
       description: `${stats.pendingGrading} menunggu penilaian`,
       urgent: stats.pendingGrading > 0,

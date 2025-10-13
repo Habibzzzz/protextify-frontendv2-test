@@ -38,24 +38,34 @@ const getSubmissionById = async (submissionId) => {
       id: response.id,
       assignmentId: response.assignmentId,
       studentId: response.studentId,
-      student: response.student, // <-- Tambahkan baris ini
       content: response.content,
       status: response.status,
-      grade: typeof response.grade === "number" ? response.grade : null,
+      grade: response.grade,
+      feedback: response.feedback,
       createdAt: response.createdAt,
       updatedAt: response.updatedAt,
-      submittedAt: response.submittedAt || null,
+      submittedAt: response.submittedAt,
       assignment: response.assignment
         ? {
             id: response.assignment.id,
             title: response.assignment.title,
             deadline: response.assignment.deadline,
             class: response.assignment.class
-              ? { name: response.assignment.class.name }
+              ? {
+                  id: response.assignment.class.id,
+                  name: response.assignment.class.name,
+                  instructorId: response.assignment.class.instructorId,
+                }
               : undefined,
           }
         : undefined,
       plagiarismChecks: response.plagiarismChecks || null,
+      student: response.student
+        ? {
+            id: response.student.id,
+            fullName: response.student.fullName,
+          }
+        : undefined,
     };
   } catch (error) {
     throw error;

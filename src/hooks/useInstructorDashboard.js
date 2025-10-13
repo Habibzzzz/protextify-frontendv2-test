@@ -32,7 +32,23 @@ export const useInstructorDashboard = () => {
       setLoading(true);
       setError(null);
       const response = await analyticsService.getInstructorDashboardData();
-      setData(response);
+      setData({
+        stats: response.stats,
+        recentClasses: Array.isArray(response.recentClasses)
+          ? response.recentClasses
+          : [],
+        recentSubmissions: Array.isArray(response.recentSubmissions)
+          ? response.recentSubmissions
+          : [],
+        recentTransactions: Array.isArray(response.recentTransactions)
+          ? response.recentTransactions
+          : [],
+        analyticsData: response.analyticsData || {
+          classActivity: [],
+          submissionTrends: [],
+          gradingTrends: [],
+        },
+      });
     } catch (err) {
       const formattedError = {
         statusCode: err?.response?.data?.statusCode || 500,

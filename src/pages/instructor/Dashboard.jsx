@@ -141,7 +141,7 @@ export default function InstructorDashboard() {
                   Anda memiliki {stats.pendingGrading} submission yang menunggu
                   penilaian dari siswa.
                 </p>
-                <Link to="/instructor/submissions">
+                <Link to="/instructor/classes">
                   <Button className="bg-orange-500 hover:bg-orange-600 text-white shadow-lg">
                     <FileText className="h-4 w-4 mr-2" />
                     Review Sekarang
@@ -192,7 +192,11 @@ export default function InstructorDashboard() {
         <Grid cols={1} lgCols={3} gap={8}>
           <InstructorQuickActions stats={stats} />
           <ClassOverview
-            classes={recentClasses}
+            classes={recentClasses.map((cls) => ({
+              id: cls.id,
+              name: cls.name,
+              enrollmentsCount: cls._count?.enrollments ?? 0,
+            }))}
             totalClasses={stats.totalClasses}
           />
           <RecentActivity

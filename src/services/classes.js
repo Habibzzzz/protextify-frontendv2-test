@@ -10,7 +10,7 @@ const getClasses = async () => {
     const response = await api.get("/classes");
     const data = Array.isArray(response) ? response : [];
 
-    // Transform response sesuai struktur BE terbaru
+    // Transform response sesuai struktur BE terbaru dari Postman
     return data.map((classObj) => ({
       id: classObj.id,
       name: classObj.name,
@@ -23,7 +23,7 @@ const getClasses = async () => {
         ? {
             id: classObj.instructor.id,
             fullName: classObj.instructor.fullName,
-            institution: classObj.instructor.institution,
+            // Hapus institution karena tidak ada di response
           }
         : undefined,
       enrollments: Array.isArray(classObj.enrollments)
@@ -38,18 +38,12 @@ const getClasses = async () => {
         ? classObj.assignments.map((a) => ({
             id: a.id,
             title: a.title,
-            instructions: a.instructions,
             deadline: a.deadline,
             active: a.active,
-            createdAt: a.createdAt,
+            // Hapus instructions dan createdAt karena tidak ada di response
           }))
         : [],
-      currentUserEnrollment: classObj.currentUserEnrollment
-        ? {
-            id: classObj.currentUserEnrollment.id,
-            joinedAt: classObj.currentUserEnrollment.joinedAt,
-          }
-        : undefined,
+      // Hapus currentUserEnrollment karena tidak ada di response
     }));
   } catch (error) {
     console.error("Error fetching classes:", error);
@@ -65,7 +59,7 @@ const getClasses = async () => {
 const getClassById = async (id) => {
   try {
     const response = await api.get(`/classes/${id}`);
-    // Mapping sesuai BE
+    // Mapping disempurnakan sesuai data Postman
     return {
       id: response.id,
       name: response.name,
@@ -83,9 +77,12 @@ const getClassById = async (id) => {
         : undefined,
       enrollments: Array.isArray(response.enrollments)
         ? response.enrollments.map((e) => ({
+            id: e.id,
+            joinedAt: e.joinedAt,
             student: {
               id: e.student?.id,
               fullName: e.student?.fullName,
+              // Hapus email dan institution karena tidak ada di response
             },
           }))
         : [],
@@ -97,6 +94,7 @@ const getClassById = async (id) => {
             deadline: a.deadline,
             active: a.active,
             createdAt: a.createdAt,
+            // Hapus expectedStudentCount dan _count karena tidak ada di response
           }))
         : [],
       currentUserEnrollment: response.currentUserEnrollment

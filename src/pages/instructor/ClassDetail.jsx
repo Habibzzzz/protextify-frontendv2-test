@@ -244,7 +244,7 @@ export default function ClassDetail() {
         </TabsList>
 
         <TabsContent value="overview">
-          <OverviewTab classDetail={classDetail} />
+          <OverviewTab classDetail={classDetail} navigate={navigate} />
         </TabsContent>
 
         <TabsContent value="assignments">
@@ -286,7 +286,7 @@ export default function ClassDetail() {
 }
 
 // Overview Tab Component
-function OverviewTab({ classDetail }) {
+function OverviewTab({ classDetail, navigate }) {
   const recentAssignments = classDetail?.assignments?.slice(0, 3) || [];
   const recentStudents = classDetail?.enrollments?.slice(0, 5) || [];
 
@@ -323,9 +323,7 @@ function OverviewTab({ classDetail }) {
                       size="sm"
                       variant="outline"
                       onClick={() =>
-                        window.location.assign(
-                          `/instructor/assignments/${assignment.id}`
-                        )
+                        navigate(`/instructor/assignments/${assignment.id}`)
                       }
                     >
                       <Eye className="h-4 w-4" />
@@ -364,7 +362,7 @@ function OverviewTab({ classDetail }) {
                       {enrollment.student.fullName}
                     </p>
                     <p className="text-sm text-gray-600">
-                      Bergabung: {formatDate(enrollment.createdAt)}
+                      Bergabung: {formatDate(enrollment.joinedAt)}
                     </p>
                   </div>
                 </div>
@@ -440,16 +438,7 @@ function AssignmentsTab({ classDetail }) {
                         <Calendar className="h-4 w-4 mr-2 text-[#23407a]" />
                         <span>Deadline: {formatDate(assignment.deadline)}</span>
                       </div>
-                      <div className="flex items-center text-gray-600">
-                        <Users className="h-4 w-4 mr-2 text-[#23407a]" />
-                        <span>Siswa: {assignment.expectedStudentCount}</span>
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <FileText className="h-4 w-4 mr-2 text-[#23407a]" />
-                        <span>
-                          Submission: {assignment._count?.submissions || 0}
-                        </span>
-                      </div>
+                      {/* Hapus expectedStudentCount dan submission count */}
                     </div>
                   </div>
                   <Button
@@ -518,12 +507,7 @@ function StudentsTab({ classDetail }) {
                     <th className="text-left p-4 font-medium text-gray-900">
                       Nama Siswa
                     </th>
-                    <th className="text-left p-4 font-medium text-gray-900">
-                      Email
-                    </th>
-                    <th className="text-left p-4 font-medium text-gray-900">
-                      Institusi
-                    </th>
+                    {/* Hapus kolom Email dan Institusi */}
                     <th className="text-left p-4 font-medium text-gray-900">
                       Bergabung
                     </th>
@@ -550,14 +534,9 @@ function StudentsTab({ classDetail }) {
                           </span>
                         </div>
                       </td>
+                      {/* Hapus kolom Email dan Institusi */}
                       <td className="p-4 text-gray-600">
-                        {enrollment.student.email}
-                      </td>
-                      <td className="p-4 text-gray-600">
-                        {enrollment.student.institution}
-                      </td>
-                      <td className="p-4 text-gray-600">
-                        {formatDate(enrollment.createdAt)}
+                        {formatDate(enrollment.joinedAt)}
                       </td>
                       <td className="p-4">
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
