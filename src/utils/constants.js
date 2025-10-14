@@ -1,6 +1,6 @@
 export const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-export const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:3000";
+  import.meta.env.VITE_API_URL || "http://api.protextify.id/api";
+export const WS_URL = import.meta.env.VITE_WS_URL || "ws://api.protextify.id";
 
 export const USER_ROLES = {
   STUDENT: "STUDENT",
