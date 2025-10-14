@@ -11,6 +11,7 @@ import {
   CardContent,
   Alert,
 } from "../../components";
+import logo from "@/assets/logo-protextify-warna.png";
 
 const GoogleCallback = () => {
   const navigate = useNavigate();
@@ -86,7 +87,7 @@ const GoogleCallback = () => {
               <div className="mb-6">
                 <img
                   className="mx-auto h-12 w-auto"
-                  src="/src/assets/logo-protextify-warna.png"
+                  src={logo}
                   alt="Protextify"
                 />
               </div>

@@ -102,7 +102,7 @@ export default function DashboardLayout() {
 
               <div className="flex items-center">
                 <img
-                  src="/src/assets/logo-protextify-warna.png"
+                  src={logoPutih}
                   alt="Protextify"
                   className="h-8 w-auto"
                 />

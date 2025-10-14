@@ -27,6 +27,7 @@ import {
   Container,
   Badge,
 } from "../../components";
+import logo from "@/assets/logo-protextify-warna.png";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -169,7 +170,7 @@ export default function Register() {
                 <div className="mb-6 lg:hidden">
                   <img
                     className="mx-auto h-12 w-auto"
-                    src="/src/assets/logo-protextify-warna.png"
+                    src={logo}
                     alt="Protextify"
                   />
                 </div>

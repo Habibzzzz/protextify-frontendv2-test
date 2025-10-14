@@ -13,6 +13,7 @@ import {
   Container,
   LoadingSpinner,
 } from "../../components";
+import logo from "@/assets/logo-protextify-warna.png";
 
 export default function EmailVerification() {
   const location = useLocation();
@@ -164,7 +165,7 @@ export default function EmailVerification() {
               <div className="mb-6">
                 <img
                   className="mx-auto h-12 w-auto"
-                  src="/src/assets/logo-protextify-warna.png"
+                  src={logo}
                   alt="Protextify"
                 />
               </div>

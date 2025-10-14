@@ -10,6 +10,8 @@ import {
   Alert,
 } from "../../components";
 import { authService } from "../../services";
+import logo from "@/assets/logo-protextify-warna.png";
+
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle");
@@ -56,7 +58,7 @@ export default function ForgotPassword() {
               <div className="mb-6">
                 <img
                   className="mx-auto h-12 w-auto"
-                  src="/src/assets/logo-protextify-warna.png"
+                  src={logo}
                   alt="Protextify"
                 />
               </div>

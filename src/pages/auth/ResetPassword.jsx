@@ -11,6 +11,7 @@ import {
   Alert,
 } from "../../components";
 import { authService } from "../../services";
+import logo from "@/assets/logo-protextify-warna.png";
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -84,7 +85,7 @@ export default function ResetPassword() {
               <div className="mb-6">
                 <img
                   className="mx-auto h-12 w-auto"
-                  src="/src/assets/logo-protextify-warna.png"
+                  src={logo}
                   alt="Protextify"
                 />
               </div>
