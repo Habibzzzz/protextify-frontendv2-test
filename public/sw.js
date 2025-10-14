@@ -16,6 +16,7 @@ const STATIC_ASSETS = [
 
 // API endpoints to cache
 const API_CACHE_PATTERNS = [
+  /^http:\/\/103\.217\.145\.28:3000\/api\/.*$/,
   /^https:\/\/api\.protextify\.com\/.*$/,
   /^http:\/\/localhost:3000\/api\/.*$/,
 ];
