@@ -17,6 +17,7 @@ import useAuth from "../../hooks/useAuth";
 import { USER_ROLES } from "../../utils/constants";
 import { MessageCircle } from "lucide-react";
 import { generateWhatsAppUrl, isWithinOperatingHours, WHATSAPP_CONFIG } from "../../utils/whatsappConfig";
+import logoPutih from "@/assets/logo-protextify-putih.png";
 
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -123,7 +124,7 @@ export default function Sidebar() {
               <div className="flex items-center group">
                 <div className="relative">
                   <img
-                    src="/src/assets/logo-protextify-putih.png"
+                    src={logoPutih}
                     alt="Protextify"
                     className="h-12 w-auto transition-transform group-hover:scale-105"
                   />

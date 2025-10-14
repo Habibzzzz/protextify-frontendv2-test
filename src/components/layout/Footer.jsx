@@ -9,6 +9,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Button, Container } from "../../components";
+import logoPutih from "@/assets/logo-protextify-putih.png";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -41,7 +42,7 @@ export default function Footer() {
             <div className="lg:col-span-4">
               <div className="flex items-center mb-6">
                 <img
-                  src="/src/assets/logo-protextify-putih.png"
+                  src={logoPutih}
                   alt="Protextify"
                   className="h-16 w-auto"
                 />

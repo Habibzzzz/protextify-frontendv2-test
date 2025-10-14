@@ -6,6 +6,7 @@ import DashboardHeader from "../components/layout/DashboardHeader";
 import MobileBottomNav from "../components/layout/MobileBottomNav";
 // Removed floating WhatsApp to embed in Sidebar instead
 import { cn } from "../utils/helpers";
+import logoPutih from "@/assets/logo-protextify-putih.png";
 
 export default function DashboardLayout() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -63,7 +64,7 @@ export default function DashboardLayout() {
                 <div className="relative z-10 flex items-center justify-between">
                   <div className="flex items-center">
                     <img
-                      src="/src/assets/logo-protextify-putih.png"
+                      src={logoPutih}
                       alt="Protextify"
                       className="h-8 w-auto"
                     />

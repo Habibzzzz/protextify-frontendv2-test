@@ -5,6 +5,8 @@ import { cn } from "../../utils/helpers";
 import useAuth from "../../hooks/useAuth";
 import { getDefaultRoute } from "../../utils/constants";
 import { Button } from "../ui";
+import logo from "@/assets/logo-protextify-warna.png";
+import logoPutih from "@/assets/logo-protextify-putih.png";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -65,8 +67,8 @@ export default function Header() {
                   <img
                     src={
                       scrolled
-                        ? "/src/assets/logo-protextify-warna.png"
-                        : "/src/assets/logo-protextify-putih.png"
+                        ? logo
+                        : logoPutih
                     }
                     alt="Protextify"
                     className="h-8 lg:h-10 w-auto transition-transform group-hover:scale-105"
@@ -309,8 +311,8 @@ export default function Header() {
                   <img
                     src={
                       scrolled
-                        ? "/src/assets/logo-protextify-warna.png"
-                        : "/src/assets/logo-protextify-putih.png"
+                        ? logo
+                        : logoPutih
                     }
                     alt="Protextify"
                     className="h-8 w-auto"
