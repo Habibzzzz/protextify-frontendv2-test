@@ -27,7 +27,7 @@ export const testApiServices = async () => {
       try {
         // Test ping to backend health endpoint
         const baseUrl =
-          import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+          import.meta.env.VITE_API_URL || "https://api.protextify.id/api";
         const healthUrl = baseUrl.replace("/api", "") + "/health"; // Remove /api and add /health
 
         const response = await fetch(healthUrl, {
@@ -51,7 +51,7 @@ export const testApiServices = async () => {
         console.warn("⚠️ Backend connection: Failed (", error.message, ")");
         console.log(
           "💡 Make sure backend is running. Trying health endpoint at:",
-          (import.meta.env.VITE_API_URL || "http://localhost:3000/api").replace(
+          (import.meta.env.VITE_API_URL || "https://api.protextify.id/api").replace(
             "/api",
             ""
           ) + "/health"
@@ -137,7 +137,7 @@ export const testApiServices = async () => {
 // Export individual test functions for specific testing
 export const testBackendConnection = async () => {
   try {
-    const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+    const baseUrl = import.meta.env.VITE_API_URL || "https://api.protextify.id/api";
     const healthUrl = baseUrl.replace("/api", "") + "/health";
 
     const response = await fetch(healthUrl);

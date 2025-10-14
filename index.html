@@ -1,210 +1,90 @@
 <!DOCTYPE html>
 <html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
-    />
 
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#23407a" />
-    <meta name="background-color" content="#ffffff" />
-    <meta name="display" content="standalone" />
-    <meta name="orientation" content="portrait-primary" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 
-    <!-- iOS Safari specific meta tags -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Protextify" />
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#23407a" />
+  <meta name="background-color" content="#ffffff" />
+  <meta name="display" content="standalone" />
+  <meta name="orientation" content="portrait-primary" />
 
-    <!-- iOS Splash Screens -->
-    <link
-      rel="apple-touch-startup-image"
-      href="/splash/apple-splash-2048-2732.jpg"
-      media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
-    />
-    <link
-      rel="apple-touch-startup-image"
-      href="/splash/apple-splash-1668-2388.jpg"
-      media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
-    />
-    <link
-      rel="apple-touch-startup-image"
-      href="/splash/apple-splash-1536-2048.jpg"
-      media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
-    />
-    <link
-      rel="apple-touch-startup-image"
-      href="/splash/apple-splash-1284-2778.jpg"
-      media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
-    />
-    <link
-      rel="apple-touch-startup-image"
-      href="/splash/apple-splash-1170-2532.jpg"
-      media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
-    />
-    <link
-      rel="apple-touch-startup-image"
-      href="/splash/apple-splash-1125-2436.jpg"
-      media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)"
-    />
-    <link
-      rel="apple-touch-startup-image"
-      href="/splash/apple-splash-828-1792.jpg"
-      media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
-    />
-    <link
-      rel="apple-touch-startup-image"
-      href="/splash/apple-splash-750-1334.jpg"
-      media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
-    />
-    <link
-      rel="apple-touch-startup-image"
-      href="/splash/apple-splash-640-1136.jpg"
-      media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)"
-    />
+  <!-- iOS Safari specific meta tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Protextify" />
 
-    <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" href="/icons/icon-180x180.png" />
-    <link
-      rel="apple-touch-icon"
-      sizes="152x152"
-      href="/icons/icon-152x152.png"
-    />
-    <link
-      rel="apple-touch-icon"
-      sizes="144x144"
-      href="/icons/icon-144x144.png"
-    />
-    <link
-      rel="apple-touch-icon"
-      sizes="120x120"
-      href="/icons/icon-120x120.png"
-    />
-    <link
-      rel="apple-touch-icon"
-      sizes="114x114"
-      href="/icons/icon-114x114.png"
-    />
-    <link rel="apple-touch-icon" sizes="76x76" href="/icons/icon-76x76.png" />
-    <link rel="apple-touch-icon" sizes="72x72" href="/icons/icon-72x72.png" />
-    <link rel="apple-touch-icon" sizes="60x60" href="/icons/icon-60x60.png" />
-    <link rel="apple-touch-icon" sizes="57x57" href="/icons/icon-57x57.png" />
+  <!-- iOS Splash Screens -->
+  <link rel="apple-touch-startup-image" href="/splash/apple-splash-2048-2732.jpg"
+    media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="/splash/apple-splash-1668-2388.jpg"
+    media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="/splash/apple-splash-1536-2048.jpg"
+    media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="/splash/apple-splash-1284-2778.jpg"
+    media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="/splash/apple-splash-1170-2532.jpg"
+    media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="/splash/apple-splash-1125-2436.jpg"
+    media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="/splash/apple-splash-828-1792.jpg"
+    media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="/splash/apple-splash-750-1334.jpg"
+    media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="/splash/apple-splash-640-1136.jpg"
+    media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
 
-    <!-- Favicons -->
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="/icons/favicon-32x32.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="/icons/favicon-16x16.png"
-    />
-    <link rel="icon" href="/favicon.ico" />
+  <!-- Favicons -->
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
 
-    <!-- Windows specific meta tags -->
-    <meta name="msapplication-TileColor" content="#23407a" />
-    <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
-    <meta name="msapplication-config" content="/browserconfig.xml" />
+  <!-- Apple Touch Icons -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180x180.png" />
+  <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512x512.png" />
 
-    <!-- SEO Meta Tags -->
-    <title>Protextify - Platform Deteksi Plagiarisme</title>
-    <meta
-      name="description"
-      content="Platform deteksi plagiarisme dengan teknologi AI terdepan untuk institusi pendidikan. Menulis tugas, deteksi plagiarisme, dan manajemen kelas yang mudah."
-    />
-    <meta
-      name="keywords"
-      content="plagiarisme, deteksi plagiarisme, pendidikan, AI, tugas, akademik, mahasiswa, dosen"
-    />
-    <meta name="author" content="Protextify Team" />
+  <!-- Manifest -->
+  <link rel="manifest" href="/manifest.json" />
 
-    <!-- Open Graph Meta Tags -->
-    <meta
-      property="og:title"
-      content="Protextify - Platform Deteksi Plagiarisme"
-    />
-    <meta
-      property="og:description"
-      content="Platform deteksi plagiarisme dengan teknologi AI terdepan untuk institusi pendidikan."
-    />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://protextify.com" />
-    <meta property="og:image" content="/og-image.png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:site_name" content="Protextify" />
-    <meta property="og:locale" content="id_ID" />
+  <!-- Preload critical resources -->
+  <link rel="preload" href="/src/assets/logo-protextify.png" as="image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+</head>
 
-    <!-- Twitter Card Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content="Protextify - Platform Deteksi Plagiarisme"
-    />
-    <meta
-      name="twitter:description"
-      content="Platform deteksi plagiarisme dengan teknologi AI terdepan untuk institusi pendidikan."
-    />
-    <meta name="twitter:image" content="/twitter-image.png" />
-    <meta name="twitter:creator" content="@protextify" />
+<body>
+  <div id="root"></div>
 
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://protextify.com" />
-
-    <!-- Manifest -->
-    <link rel="manifest" href="/manifest.json" />
-
-    <!-- Preload critical resources -->
-    <link rel="preload" href="/src/assets/logo-protextify.png" as="image" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  </head>
-  <body>
-    <div id="root"></div>
-
-    <!-- PWA Install prompt -->
-    <div id="pwa-install-prompt" style="display: none">
-      <div
-        class="fixed bottom-4 left-4 right-4 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-50"
-      >
-        <div class="flex items-center justify-between">
-          <div class="flex items-center">
-            <img
-              src="/icons/icon-72x72.png"
-              alt="Protextify"
-              class="w-12 h-12 rounded-lg mr-3"
-            />
-            <div>
-              <h3 class="font-semibold text-gray-900">Install Protextify</h3>
-              <p class="text-sm text-gray-600">
-                Install app untuk pengalaman yang lebih baik
-              </p>
-            </div>
+  <!-- PWA Install prompt -->
+  <div id="pwa-install-prompt" style="display: none">
+    <div class="fixed bottom-4 left-4 right-4 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-50">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <img src="/icons/icon-72x72.png" alt="Protextify" class="w-12 h-12 rounded-lg mr-3" />
+          <div>
+            <h3 class="font-semibold text-gray-900">Install Protextify</h3>
+            <p class="text-sm text-gray-600">
+              Install app untuk pengalaman yang lebih baik
+            </p>
           </div>
-          <div class="flex gap-2">
-            <button
-              id="pwa-install-dismiss"
-              class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
-            >
-              Nanti
-            </button>
-            <button
-              id="pwa-install-accept"
-              class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700"
-            >
-              Install
-            </button>
-          </div>
+        </div>
+        <div class="flex gap-2">
+          <button id="pwa-install-dismiss" class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800">
+            Nanti
+          </button>
+          <button id="pwa-install-accept" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
+            Install
+          </button>
         </div>
       </div>
     </div>
+  </div>
 
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
 </html>

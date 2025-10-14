@@ -2,6 +2,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles, Star, Users } from "lucide-react";
 import { Button, Container, Card, CardContent } from "../../components";
+import LogoUnila from "../../assets/logo-unila.png";
 
 export default function CTASection() {
   return (
@@ -115,7 +116,7 @@ export default function CTASection() {
             <div className="text-white/40 text-xs">Trusted by:</div>
             {/* Logo Unila */}
             <img
-              src="/src/assets/logo-unila.png"
+              src={LogoUnila}
               alt="Universitas Lampung"
               className="h-7 w-auto object-contain"
               title="Universitas Lampung"
