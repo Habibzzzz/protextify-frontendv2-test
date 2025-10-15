@@ -97,15 +97,21 @@ const updateSubmissionContent = async (submissionId, content) => {
 /**
  * Submit final submission (student only)
  * @param {string} submissionId
- * @returns {object} { id, status, submittedAt }
+ * @param {number[]} [answers] - Optional array of 5 feedback scores (1-10)
+ * @returns {object} { id, status, submittedAt, studentFeedback }
  */
-const submitSubmission = async (submissionId) => {
+const submitSubmission = async (submissionId, answers) => {
   try {
-    const response = await api.post(`/submissions/${submissionId}/submit`);
+    const payload = answers ? { answers } : undefined;
+    const response = await api.post(
+      `/submissions/${submissionId}/submit`,
+      payload
+    );
     return {
       id: response.id,
       status: response.status,
       submittedAt: response.submittedAt,
+      studentFeedback: response.studentFeedback ?? null,
     };
   } catch (error) {
     throw error;

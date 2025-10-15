@@ -73,38 +73,42 @@ export const useDraftManager = (submissionId) => {
   );
 
   // Submit final submission
-  const submitSubmission = useCallback(async () => {
-    if (!submissionId || submitting) return;
-
-    try {
+  const submitSubmission = useCallback(
+    async (answers) => {
+      if (!submissionId) return;
       setSubmitting(true);
       setError(null);
 
-      const result = await submissionsService.submitSubmission(submissionId);
-
-      setSubmission((prev) => ({
-        ...prev,
-        status: result.status,
-        submittedAt: result.submittedAt,
-      }));
-
-      toast.success("Tugas berhasil dikumpulkan!");
-      return result;
-    } catch (err) {
-      const formattedError = {
-        statusCode: err?.response?.data?.statusCode || err?.statusCode || 400,
-        message:
-          err?.response?.data?.message ||
-          err?.message ||
-          "Gagal mengumpulkan tugas",
-      };
-      setError(formattedError);
-      toast.error(formattedError.message);
-      throw err;
-    } finally {
-      setSubmitting(false);
-    }
-  }, [submissionId, submitting]);
+      try {
+        const result = await submissionsService.submitSubmission(
+          submissionId,
+          answers
+        );
+        setSubmission((prev) => ({
+          ...prev,
+          status: result.status,
+          submittedAt: result.submittedAt,
+          studentFeedback: result.studentFeedback ?? null,
+        }));
+        toast.success("Tugas berhasil dikumpulkan!");
+        return result;
+      } catch (err) {
+        const formattedError = {
+          statusCode: err?.response?.data?.statusCode || err?.statusCode || 400,
+          message:
+            err?.response?.data?.message ||
+            err?.message ||
+            "Gagal mengumpulkan tugas",
+        };
+        setError(formattedError);
+        toast.error(formattedError.message);
+        throw err;
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [submissionId, submitting]
+  );
 
   // Check if can edit
   const canEdit = useCallback(() => {

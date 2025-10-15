@@ -27,14 +27,13 @@ import SubmissionActions from "../../components/submission/SubmissionActions";
 import { useTextAnalytics } from "../../hooks/useTextAnalytics";
 import { assignmentsService, submissionsService } from "../../services";
 import { formatDate } from "../../utils/helpers";
+import { useDraftManager } from "../../hooks/useDraftManager";
 
 export default function WriteAssignment() {
   const { classId, assignmentId, id } = useParams();
   const effectiveAssignmentId = assignmentId || id;
   const navigate = useNavigate();
   const editorRef = useRef(null);
-
-  // State
   const [assignment, setAssignment] = useState(null);
   const [submission, setSubmission] = useState(null);
   const [localSubmissionId, setLocalSubmissionId] = useState(null);
@@ -48,6 +47,17 @@ export default function WriteAssignment() {
   const [editorReady, setEditorReady] = useState(false);
   const [contentInitialized, setContentInitialized] = useState(false);
   const [showSubmitModal, setShowSubmitModal] = useState(false); // 1. Tambahkan state modal di sini
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackAnswers, setFeedbackAnswers] = useState([
+    null,
+    null,
+    null,
+    null,
+    null,
+  ]);
+  const [submittingFeedback, setSubmittingFeedback] = useState(false);
+
+  const draftManager = useDraftManager(localSubmissionId);
 
   // Load assignment data
   useEffect(() => {
@@ -246,11 +256,34 @@ export default function WriteAssignment() {
 
   // 2. Buat handler untuk konfirmasi dari modal
   const handleConfirmSubmit = async () => {
+    setShowFeedbackModal(true);
+  };
+
+  const handleFeedbackSubmit = async () => {
+    setSubmittingFeedback(true);
     try {
-      await handleSubmit();
-      setShowSubmitModal(false); // Tutup modal jika sukses
+      const validAnswers = feedbackAnswers.every(
+        (a) => a === null || (typeof a === "number" && a >= 1 && a <= 10)
+      );
+      const answersToSend =
+        feedbackAnswers.every((a) => typeof a === "number") &&
+        feedbackAnswers.length === 5
+          ? feedbackAnswers
+          : undefined;
+
+      await draftManager.submitSubmission(answersToSend);
+      setSubmission(
+        await submissionsService.getSubmissionById(localSubmissionId)
+      );
+      setShowFeedbackModal(false);
+      setShowSubmitModal(false);
+      toast.success("Tugas dan feedback berhasil dikumpulkan!");
     } catch (error) {
-      // Jangan tutup modal jika gagal, agar pengguna tahu ada masalah
+      toast.error(
+        error?.response?.data?.message || "Gagal submit tugas/feedback"
+      );
+    } finally {
+      setSubmittingFeedback(false);
     }
   };
 
@@ -555,8 +588,64 @@ export default function WriteAssignment() {
             >
               Batal
             </Button>
-            <Button onClick={handleConfirmSubmit} loading={submitting}>
+            <Button
+              size="lg"
+              className="w-full bg-[#23407a] hover:bg-[#1a2f5c] shadow-lg hover:shadow-xl transition-all"
+              onClick={handleConfirmSubmit}
+            >
               Ya, Kumpulkan
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        title="Penilaian Pengalaman Menulis Tugas"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-700">
+            Mohon berikan penilaian Anda untuk 5 pertanyaan berikut (skala
+            1-10):
+          </p>
+          {[
+            "Seberapa mudah navigasi tampilan Protextify?",
+            "Apakah editor penulisan Protextify nyaman dan mudah digunakan?",
+            "Seberapa membantu fitur anti copy-paste dalam mendorong Anda menulis secara orisinal?",
+            "Setelah menggunakan Protextify, apakah Anda merasa lebih memahami materi/tugas yang diberikan?",
+            "Berikan rating keseluruhan untuk pengalaman Anda menggunakan Protextify",
+          ].map((question, idx) => (
+            <div key={idx} className="flex items-center gap-4">
+              <span className="flex-1">{question}</span>
+              <input
+                type="number"
+                min={1}
+                max={10}
+                value={feedbackAnswers[idx] ?? ""}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setFeedbackAnswers((prev) =>
+                    prev.map((a, i) => (i === idx ? val : a))
+                  );
+                }}
+                className="w-16 border rounded px-2 py-1"
+              />
+            </div>
+          ))}
+          <div className="flex justify-end gap-2 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowFeedbackModal(false)}
+            >
+              Lewati
+            </Button>
+            <Button
+              onClick={handleFeedbackSubmit}
+              disabled={submittingFeedback}
+              className="bg-[#23407a] text-white"
+            >
+              {submittingFeedback ? "Mengirim..." : "Kirim Feedback & Submit"}
             </Button>
           </div>
         </div>
