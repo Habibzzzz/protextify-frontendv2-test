@@ -1,10 +1,18 @@
 // src/components/dashboard/QuickActions.jsx
+
 import { Link } from "react-router-dom";
 import { Plus, FileText, TrendingUp, BookOpen } from "lucide-react";
 import { Button, Card, CardHeader, CardTitle, CardContent } from "../ui";
 
-// Komponen QuickActions hanya menampilkan aksi yang didukung BE untuk student
+/**
+ * Komponen QuickActions
+ * Menampilkan daftar aksi cepat yang didukung backend untuk user bertipe student.
+ * Setiap aksi memiliki label, ikon, link tujuan, style, dan deskripsi.
+ * Props:
+ *   - stats: Object berisi statistik user (totalClasses, activeAssignments, completedAssignments)
+ */
 const QuickActions = ({ stats }) => {
+  // Daftar aksi yang ditampilkan pada dashboard
   const actions = [
     {
       label: "Gabung Kelas Baru",
@@ -39,17 +47,23 @@ const QuickActions = ({ stats }) => {
   ];
 
   return (
+    // Card utama untuk membungkus seluruh quick actions
     <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+      {/* Header Card */}
       <CardHeader className="pb-4">
         <div className="flex items-center">
+          {/* Indicator bulat di kiri judul */}
           <div className="w-2 h-2 bg-gradient-to-r from-[#23407a] to-[#3b5fa4] rounded-full mr-3"></div>
           <CardTitle className="text-lg font-bold text-gray-900">
             Quick Actions
           </CardTitle>
         </div>
       </CardHeader>
+
+      {/* Konten Card: Daftar aksi */}
       <CardContent>
         <div className="space-y-3">
+          {/* Iterasi setiap aksi untuk ditampilkan */}
           {actions.map((action, index) => (
             <Link
               key={index}
@@ -62,19 +76,20 @@ const QuickActions = ({ stats }) => {
             >
               <div
                 className={`
-                relative overflow-hidden p-4 rounded-xl border transition-all duration-300 
-                hover:shadow-lg hover:scale-[1.02] hover:border-[#23407a]/30
-                ${
-                  action.className ||
-                  "border-gray-200 bg-gradient-to-r from-gray-50 to-white"
-                }
-              `}
+                  relative overflow-hidden p-4 rounded-xl border transition-all duration-300 
+                  hover:shadow-lg hover:scale-[1.02] hover:border-[#23407a]/30
+                  ${
+                    action.className ||
+                    "border-gray-200 bg-gradient-to-r from-gray-50 to-white"
+                  }
+                `}
               >
-                {/* Hover gradient overlay */}
+                {/* Overlay gradient saat hover */}
                 <div className="absolute inset-0 bg-gradient-to-r from-[#23407a]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
                 <div className="relative z-10 flex items-center justify-between">
                   <div className="flex items-center space-x-4">
+                    {/* Icon aksi */}
                     <div
                       className={`p-2.5 rounded-lg transition-colors ${
                         action.className
@@ -88,6 +103,7 @@ const QuickActions = ({ stats }) => {
                         }`}
                       />
                     </div>
+                    {/* Label dan deskripsi aksi */}
                     <div>
                       <span
                         className={`font-semibold text-sm ${
@@ -105,6 +121,7 @@ const QuickActions = ({ stats }) => {
                       </p>
                     </div>
                   </div>
+                  {/* Icon panah muncul saat hover */}
                   <div
                     className={`opacity-0 group-hover:opacity-100 transition-opacity ${
                       action.className ? "text-white" : "text-[#23407a]"

@@ -3,14 +3,22 @@
 ## Perubahan yang Dibuat
 
 ### 1. Import Dependencies Baru
+
 ```javascript
+// Import icon MessageCircle dari lucide-react untuk tombol WhatsApp
 import { MessageCircle } from "lucide-react";
-import { WHATSAPP_CONFIG, generateWhatsAppUrl } from "../../utils/whatsappConfig";
+
+// Import konfigurasi dan fungsi pembuat URL WhatsApp
+import {
+  WHATSAPP_CONFIG,
+  generateWhatsAppUrl,
+} from "../../utils/whatsappConfig";
 ```
 
 ### 2. Modifikasi Tombol "Lanjutkan Pembayaran"
 
 **Sebelum:**
+
 ```javascript
 <Button
   className="w-full"
@@ -23,11 +31,15 @@ import { WHATSAPP_CONFIG, generateWhatsAppUrl } from "../../utils/whatsappConfig
 ```
 
 **Sesudah:**
+
 ```javascript
 <Button
   className="w-full bg-green-600 hover:bg-green-700"
   onClick={() => {
-    // Buat pesan WhatsApp dengan detail transaksi
+    /**
+     * Membuat pesan WhatsApp berisi detail transaksi.
+     * Pesan ini akan dikirim ke nomor WhatsApp yang telah dikonfigurasi.
+     */
     const whatsappMessage = `Halo! Saya ingin melakukan pembayaran untuk transaksi Protextify.
 
 📋 *Detail Transaksi:*
@@ -38,7 +50,10 @@ import { WHATSAPP_CONFIG, generateWhatsAppUrl } from "../../utils/whatsappConfig
 
 Mohon bantuan untuk proses pembayaran. Terima kasih!`;
 
-    // Buka WhatsApp dengan pesan yang sudah diformat
+    /**
+     * Membuka WhatsApp dengan pesan yang sudah diformat.
+     * Fungsi generateWhatsAppUrl akan menghasilkan URL WhatsApp sesuai format.
+     */
     const whatsappUrl = generateWhatsAppUrl(whatsappMessage);
     window.open(whatsappUrl, "_blank");
 
@@ -46,6 +61,7 @@ Mohon bantuan untuk proses pembayaran. Terima kasih!`;
     // window.open(transaction.paymentUrl, "_blank");
   }}
 >
+  {/* Icon WhatsApp menggunakan MessageCircle */}
   <MessageCircle className="h-4 w-4 mr-2" />
   Lanjutkan Pembayaran via WhatsApp
   <ExternalLink className="h-4 w-4 ml-2" />
@@ -62,6 +78,7 @@ Mohon bantuan untuk proses pembayaran. Terima kasih!`;
 ### 4. Format Pesan WhatsApp
 
 Pesan yang dikirim ke WhatsApp berisi:
+
 ```
 Halo! Saya ingin melakukan pembayaran untuk transaksi Protextify.
 
@@ -92,6 +109,7 @@ Mohon bantuan untuk proses pembayaran. Terima kasih!
 ## Cara Mengaktifkan Kembali Midtrans
 
 Untuk mengaktifkan kembali Midtrans:
+
 1. Uncomment kode `window.open(transaction.paymentUrl, "_blank");`
 2. Comment atau hapus kode WhatsApp
 3. Update button text kembali ke "Lanjutkan Pembayaran"
@@ -109,5 +127,6 @@ Untuk mengaktifkan kembali Midtrans:
 ## Nomor WhatsApp
 
 Menggunakan nomor yang sama dengan konfigurasi di `src/utils/whatsappConfig.js`:
+
 - Default: `6282363343710`
 - Dapat diubah sesuai kebutuhan

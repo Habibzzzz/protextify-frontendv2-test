@@ -8,14 +8,34 @@ import { Button } from "../ui";
 import logo from "@/assets/logo-protextify-warna.png";
 import logoPutih from "@/assets/logo-protextify-putih.png";
 
+/**
+ * Komponen Header
+ * Menampilkan navigasi utama aplikasi, logo, menu user, dan menu mobile.
+ * Mengatur tampilan berdasarkan status scroll dan autentikasi user.
+ */
 export default function Header() {
+  // State untuk mendeteksi apakah halaman sudah discroll
   const [scrolled, setScrolled] = useState(false);
+
+  // State untuk membuka/tutup menu mobile
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // State untuk membuka/tutup menu user (dropdown)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+  // Mendapatkan status autentikasi dan data user dari hook useAuth
   const { isAuthenticated, user, logout } = useAuth();
+
+  // Mendapatkan lokasi route saat ini
   const location = useLocation();
+
+  // Untuk navigasi programatik setelah logout
   const navigate = useNavigate();
 
+  /**
+   * Efek: Mengatur state 'scrolled' berdasarkan posisi scroll window.
+   * Menambahkan event listener saat komponen mount dan membersihkan saat unmount.
+   */
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
@@ -24,11 +44,18 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  /**
+   * Efek: Menutup menu mobile dan menu user setiap kali route berubah.
+   */
   useEffect(() => {
     setIsMenuOpen(false);
     setIsUserMenuOpen(false);
   }, [location]);
 
+  /**
+   * Efek: Mengatur overflow body saat menu mobile dibuka/tutup.
+   * Mencegah scroll pada body ketika menu mobile terbuka.
+   */
   useEffect(() => {
     if (isMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -40,16 +67,20 @@ export default function Header() {
     };
   }, [isMenuOpen]);
 
+  /**
+   * Fungsi untuk logout user.
+   * Setelah logout, navigasi ke halaman utama dan tutup menu user.
+   */
   const handleLogout = () => {
     logout();
     navigate("/");
     setIsUserMenuOpen(false);
   };
 
-  const isHomePage = location.pathname === "/";
-
+  // Render komponen Header
   return (
     <>
+      {/* Header utama */}
       <header
         className={cn(
           "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
@@ -65,11 +96,7 @@ export default function Header() {
               <Link to="/" className="flex items-center group">
                 <div className="relative">
                   <img
-                    src={
-                      scrolled
-                        ? logo
-                        : logoPutih
-                    }
+                    src={scrolled ? logo : logoPutih}
                     alt="Protextify"
                     className="h-8 lg:h-10 w-auto transition-transform group-hover:scale-105"
                   />
@@ -77,7 +104,7 @@ export default function Header() {
               </Link>
             </div>
 
-            {/* Desktop Navigation */}
+            {/* Navigasi desktop */}
             <div className="hidden lg:flex items-center space-x-8">
               <nav className="flex items-center space-x-6">
                 <Link
@@ -137,9 +164,10 @@ export default function Header() {
                 </Link>
               </nav>
 
+              {/* Menu user jika sudah login */}
               {isAuthenticated ? (
                 <div className="flex items-center space-x-4">
-                  {/* Notifications */}
+                  {/* Tombol notifikasi */}
                   <button className="relative p-2 rounded-full hover:bg-gray-100/80 transition-colors group">
                     <Bell
                       className={cn(
@@ -152,7 +180,7 @@ export default function Header() {
                     {/* Badge notifikasi hanya jika ada data dari BE */}
                   </button>
 
-                  {/* User Menu */}
+                  {/* Dropdown menu user */}
                   <div className="relative">
                     <button
                       onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
@@ -178,17 +206,30 @@ export default function Header() {
                       <ChevronDown className="h-4 w-4 opacity-60" />
                     </button>
 
+                    {/* Dropdown user menu */}
                     {isUserMenuOpen && (
                       <>
-                        {/* Backdrop */}
+                        {/* Backdrop untuk menutup dropdown saat klik di luar */}
                         <div
                           className="fixed inset-0 z-10"
                           onClick={() => setIsUserMenuOpen(false)}
+                          tabIndex={0}
+                          role="button"
+                          aria-label="Tutup menu pengguna"
+                          onKeyDown={(e) => {
+                            if (
+                              e.key === "Escape" ||
+                              e.key === "Enter" ||
+                              e.key === " "
+                            ) {
+                              setIsUserMenuOpen(false);
+                            }
+                          }}
                         />
 
-                        {/* Dropdown */}
+                        {/* Isi dropdown user */}
                         <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-20 animate-slide-up">
-                          {/* User Info Header */}
+                          {/* Header info user */}
                           <div className="px-4 py-3 border-b border-gray-100">
                             <div className="flex items-center space-x-3">
                               <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#23407a] to-[#3b5fa4] text-white flex items-center justify-center font-semibold">
@@ -208,7 +249,7 @@ export default function Header() {
                             </div>
                           </div>
 
-                          {/* Menu Items */}
+                          {/* Menu navigasi user */}
                           <div className="py-2">
                             <Link
                               to={getDefaultRoute(user?.role)}
@@ -228,7 +269,7 @@ export default function Header() {
                             </Link>
                           </div>
 
-                          {/* Logout */}
+                          {/* Tombol logout */}
                           <div className="border-t border-gray-100 py-2">
                             <button
                               onClick={handleLogout}
@@ -244,6 +285,7 @@ export default function Header() {
                   </div>
                 </div>
               ) : (
+                // Jika belum login, tampilkan tombol login dan register
                 <div className="flex items-center space-x-3">
                   <Link to="/auth/login">
                     <Button
@@ -271,7 +313,7 @@ export default function Header() {
               )}
             </div>
 
-            {/* Mobile menu button */}
+            {/* Tombol menu mobile */}
             <div className="lg:hidden">
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -293,27 +335,31 @@ export default function Header() {
         </nav>
       </header>
 
-      {/* Mobile Navigation Overlay */}
+      {/* Overlay navigasi mobile */}
       {isMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          {/* Backdrop */}
+          {/* Backdrop untuk menutup menu mobile */}
           <div
             className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
             onClick={() => setIsMenuOpen(false)}
+            tabIndex={0}
+            role="button"
+            aria-label="Tutup menu navigasi"
+            onKeyDown={(e) => {
+              if (e.key === "Escape" || e.key === "Enter" || e.key === " ") {
+                setIsMenuOpen(false);
+              }
+            }}
           />
 
-          {/* Menu Content */}
+          {/* Konten menu mobile */}
           <div className="fixed inset-y-0 right-0 w-80 max-w-sm bg-white shadow-2xl transform transition-transform">
             <div className="flex flex-col h-full">
-              {/* Header */}
+              {/* Header menu mobile */}
               <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gradient-to-r from-[#23407a] to-[#3b5fa4]">
                 <div className="flex items-center">
                   <img
-                    src={
-                      scrolled
-                        ? logo
-                        : logoPutih
-                    }
+                    src={scrolled ? logo : logoPutih}
                     alt="Protextify"
                     className="h-8 w-auto"
                   />
@@ -329,7 +375,7 @@ export default function Header() {
                 </button>
               </div>
 
-              {/* Menu Items */}
+              {/* Daftar menu navigasi mobile */}
               <div className="flex-1 py-6 overflow-y-auto">
                 <nav className="space-y-2 px-6">
                   <Link
@@ -370,6 +416,7 @@ export default function Header() {
                     </span>
                   </Link>
 
+                  {/* Menu user pada mobile jika sudah login */}
                   {isAuthenticated && (
                     <>
                       <div className="border-t border-gray-200 my-4"></div>
@@ -401,6 +448,7 @@ export default function Header() {
                     </>
                   )}
 
+                  {/* Tombol login/register pada mobile jika belum login */}
                   {!isAuthenticated && (
                     <div className="space-y-3 mt-6">
                       <Link

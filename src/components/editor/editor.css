@@ -1,4 +1,15 @@
-/* Custom Quill styles */
+/* ============================================================================
+  Custom Quill Editor Styles
+  ----------------------------------------------------------------------------
+  File: editor.css
+  Description: Styling for Quill editor, toolbar, clipboard, focus, and print.
+  ============================================================================ */
+
+/* ----------------------------------------------------------------------------
+  Main Editor Styling
+  ----------------------------------------------------------------------------
+  Styles for the Quill editor content area.
+  -------------------------------------------------------------------------- */
 .ql-editor {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     sans-serif;
@@ -9,11 +20,21 @@
   padding: 20px;
 }
 
+/* ----------------------------------------------------------------------------
+  Placeholder Styling
+  ----------------------------------------------------------------------------
+  Styles for the placeholder text when the editor is blank.
+  -------------------------------------------------------------------------- */
 .ql-editor.ql-blank::before {
   color: #9ca3af;
   font-style: normal;
 }
 
+/* ----------------------------------------------------------------------------
+  Toolbar Styling
+  ----------------------------------------------------------------------------
+  Styles for the Quill toolbar container.
+  -------------------------------------------------------------------------- */
 .ql-toolbar {
   border-top: 1px solid #e5e7eb;
   border-left: 1px solid #e5e7eb;
@@ -22,6 +43,11 @@
   background: #f9fafb;
 }
 
+/* ----------------------------------------------------------------------------
+  Container Styling
+  ----------------------------------------------------------------------------
+  Styles for the Quill editor container.
+  -------------------------------------------------------------------------- */
 .ql-container {
   border-bottom: 1px solid #e5e7eb;
   border-left: 1px solid #e5e7eb;
@@ -30,7 +56,11 @@
   font-size: 16px;
 }
 
-/* Custom toolbar button styling */
+/* ----------------------------------------------------------------------------
+  Toolbar Button Styling
+  ----------------------------------------------------------------------------
+  Custom styles for toolbar buttons and pickers.
+  -------------------------------------------------------------------------- */
 .ql-toolbar .ql-formats {
   margin-right: 15px;
 }
@@ -51,7 +81,11 @@
   color: #23407a;
 }
 
-/* Disable paste styling override */
+/* ----------------------------------------------------------------------------
+  Clipboard Styling
+  ----------------------------------------------------------------------------
+  Prevents paste styling override by hiding the clipboard element.
+  -------------------------------------------------------------------------- */
 .ql-clipboard {
   position: absolute;
   left: -100000px;
@@ -60,7 +94,11 @@
   overflow-x: hidden;
 }
 
-/* Focus styles */
+/* ----------------------------------------------------------------------------
+  Focus Styling
+  ----------------------------------------------------------------------------
+  Removes outline when the editor or container is focused.
+  -------------------------------------------------------------------------- */
 .ql-container.ql-editor {
   outline: none;
 }
@@ -69,7 +107,12 @@
   outline: none;
 }
 
-/* Print styles */
+/* ----------------------------------------------------------------------------
+  Print Styling
+  ----------------------------------------------------------------------------
+  Styles applied when printing the editor content.
+  Hides toolbar and removes borders/padding from editor.
+  -------------------------------------------------------------------------- */
 @media print {
   .ql-toolbar {
     display: none;

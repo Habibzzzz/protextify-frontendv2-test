@@ -1,9 +1,19 @@
 // src/components/instructor/InstructorQuickActions.jsx
+
 import { Link } from "react-router-dom";
 import { Plus, BookOpen, FileText, BarChart3, DollarSign } from "lucide-react";
 import { Button, Card, CardHeader, CardTitle, CardContent } from "../ui";
 
+/**
+ * Komponen InstructorQuickActions
+ * Menampilkan kumpulan aksi cepat untuk instruktur, seperti membuat kelas baru, mengelola kelas, review tugas, dan melihat analytics.
+ * Setiap aksi memiliki ikon, label, deskripsi, dan status (urgent/disabled).
+ *
+ * @param {Object} props
+ * @param {Object} props.stats - Statistik terkait instruktur (totalClasses, pendingGrading, completionRate)
+ */
 const InstructorQuickActions = ({ stats }) => {
+  // Daftar aksi cepat yang tersedia untuk instruktur
   const actions = [
     {
       label: "Buat Kelas Baru",
@@ -38,10 +48,12 @@ const InstructorQuickActions = ({ stats }) => {
   ];
 
   return (
+    // Card utama yang membungkus seluruh aksi cepat
     <Card className="border-0 shadow-2xl hover:shadow-3xl transition-all duration-500 relative overflow-hidden">
-      {/* Decorative background */}
+      {/* Background dekoratif di pojok kanan atas */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#23407a]/10 to-blue-500/10 rounded-full transform translate-x-16 -translate-y-16"></div>
 
+      {/* Header Card: Judul dan ikon utama */}
       <CardHeader className="relative z-10 pb-4">
         <div className="flex items-center space-x-4">
           <div className="p-3 bg-[#23407a]/10 rounded-2xl">
@@ -57,10 +69,13 @@ const InstructorQuickActions = ({ stats }) => {
           </div>
         </div>
       </CardHeader>
+
+      {/* Konten Card: Daftar aksi cepat */}
       <CardContent className="relative z-10 space-y-3">
         {actions.map((action, index) => (
+          // Link untuk setiap aksi cepat
           <Link
-            key={action.href}
+            key={`${action.href}-${action.label}-${index}`} // Key unik untuk setiap aksi
             to={action.href}
             className={`group block ${
               action.disabled ? "pointer-events-none opacity-60" : ""
@@ -70,18 +85,19 @@ const InstructorQuickActions = ({ stats }) => {
           >
             <div
               className={`relative overflow-hidden p-4 rounded-xl border-2 transition-all duration-300 
-              hover:shadow-lg hover:scale-[1.02] group ${
-                action.urgent
-                  ? "border-red-200 bg-gradient-to-r from-red-50 to-orange-50 hover:border-red-300"
-                  : action.variant === "default"
-                  ? "border-[#23407a]/30 bg-gradient-to-r from-[#23407a]/5 to-blue-500/5 hover:border-[#23407a]"
-                  : "border-gray-200 bg-gradient-to-r from-gray-50 to-white hover:border-[#23407a]/30"
-              }`}
+                hover:shadow-lg hover:scale-[1.02] group ${
+                  action.urgent
+                    ? "border-red-200 bg-gradient-to-r from-red-50 to-orange-50 hover:border-red-300"
+                    : action.variant === "default"
+                    ? "border-[#23407a]/30 bg-gradient-to-r from-[#23407a]/5 to-blue-500/5 hover:border-[#23407a]"
+                    : "border-gray-200 bg-gradient-to-r from-gray-50 to-white hover:border-[#23407a]/30"
+                }`}
             >
-              {/* Hover overlay */}
+              {/* Overlay efek hover */}
               <div className="absolute inset-0 bg-gradient-to-r from-[#23407a]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
               <div className="relative z-10 flex items-center w-full">
+                {/* Ikon aksi */}
                 <div
                   className={`p-3 rounded-xl transition-all duration-300 group-hover:scale-110 ${
                     action.urgent
@@ -94,6 +110,7 @@ const InstructorQuickActions = ({ stats }) => {
                   <action.icon className="h-5 w-5" />
                 </div>
 
+                {/* Label dan deskripsi aksi */}
                 <div className="ml-4 flex-1">
                   <div
                     className={`font-semibold transition-colors ${
@@ -118,6 +135,7 @@ const InstructorQuickActions = ({ stats }) => {
                   </div>
                 </div>
 
+                {/* Panah navigasi muncul saat hover */}
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity text-[#23407a]">
                   <svg
                     className="w-5 h-5"

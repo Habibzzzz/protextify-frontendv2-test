@@ -1,5 +1,5 @@
 // src/components/layout/MobileBottomNav.jsx
-// filepath: src/components/layout/MobileBottomNav.jsx
+// Komponen navigasi bawah untuk tampilan mobile pada aplikasi
 import { Link, useLocation } from "react-router-dom";
 import {
   Home,
@@ -13,14 +13,25 @@ import {
 import { useAuth } from "../../contexts/AuthContext";
 import { cn } from "../../utils/helpers";
 
+/**
+ * Komponen MobileBottomNav
+ * Menampilkan navigasi bawah khusus untuk pengguna yang sudah login (authenticated).
+ * Navigasi akan menyesuaikan dengan peran user (INSTRUCTOR atau STUDENT).
+ */
 export default function MobileBottomNav() {
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
 
+  // Jika user belum login, navigasi tidak ditampilkan
   if (!isAuthenticated) return null;
 
+  /**
+   * Fungsi untuk mendapatkan daftar item navigasi sesuai peran user.
+   * @returns {Array} Array objek navigasi
+   */
   const getNavItems = () => {
     if (user?.role === "INSTRUCTOR") {
+      // Navigasi untuk INSTRUCTOR
       return [
         {
           icon: Home,
@@ -55,7 +66,7 @@ export default function MobileBottomNav() {
         },
       ];
     } else {
-      // Student
+      // Navigasi untuk STUDENT
       return [
         {
           icon: Home,
@@ -92,19 +103,21 @@ export default function MobileBottomNav() {
     }
   };
 
+  // Mendapatkan daftar item navigasi sesuai peran user
   const navItems = getNavItems();
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden">
-      {/* Enhanced Backdrop with Glass Effect */}
+      {/* Backdrop dengan efek kaca (glass effect) */}
       <div className="absolute inset-0 bg-white/80 backdrop-blur-xl border-t border-gray-200/50"></div>
 
-      {/* Safe area padding */}
+      {/* Padding untuk safe area di bagian bawah */}
       <div className="relative safe-area-bottom px-4 py-3">
         <div className="flex justify-around items-center">
           {navItems.map((item) => {
             const Icon = item.icon;
 
+            // Render item navigasi utama (isPrimary)
             if (item.isPrimary) {
               return (
                 <Link
@@ -129,6 +142,7 @@ export default function MobileBottomNav() {
               );
             }
 
+            // Render item navigasi biasa
             return (
               <Link
                 key={item.href}

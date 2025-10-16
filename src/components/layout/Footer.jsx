@@ -41,11 +41,7 @@ export default function Footer() {
             {/* Brand Section */}
             <div className="lg:col-span-4">
               <div className="flex items-center mb-6">
-                <img
-                  src={logoPutih}
-                  alt="Protextify"
-                  className="h-16 w-auto"
-                />
+                <img src={logoPutih} alt="Protextify" className="h-16 w-auto" />
               </div>
               <p className="text-white/70 text-lg leading-relaxed mb-8 max-w-sm">
                 Platform deteksi plagiarisme dengan teknologi AI terdepan untuk
@@ -63,13 +59,31 @@ export default function Footer() {
               </div>
               {/* Social Links */}
               <div className="flex space-x-3">
-                <a href="#" className="text-white/60 hover:text-white">
+                <a
+                  href="https://github.com/protextify"
+                  className="text-white/60 hover:text-white"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="GitHub Protextify"
+                >
                   <Github className="h-5 w-5" />
                 </a>
-                <a href="#" className="text-white/60 hover:text-white">
+                <a
+                  href="https://twitter.com/protextify"
+                  className="text-white/60 hover:text-white"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Twitter Protextify"
+                >
                   <Twitter className="h-5 w-5" />
                 </a>
-                <a href="#" className="text-white/60 hover:text-white">
+                <a
+                  href="https://linkedin.com/company/protextify"
+                  className="text-white/60 hover:text-white"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="LinkedIn Protextify"
+                >
                   <Linkedin className="h-5 w-5" />
                 </a>
               </div>

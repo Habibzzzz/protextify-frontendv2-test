@@ -78,7 +78,7 @@ export default function PDFGenerator({
       }
     } catch (error) {
       console.error("PDF generation error:", error);
-      toast.error("Gagal menghasilkan PDF: " + error.message);
+      toast.error(`Gagal menghasilkan PDF: ${error.message}`);
     } finally {
       setGenerating(false);
     }
@@ -170,8 +170,14 @@ export default function PDFGenerator({
             <h4 className="font-medium mb-4">Basic Settings</h4>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">Include Header</label>
+                <label
+                  className="text-sm font-medium"
+                  htmlFor="include-header-switch"
+                >
+                  Include Header
+                </label>
                 <Switch
+                  id="include-header-switch"
                   checked={settings.includeHeader}
                   onCheckedChange={(checked) =>
                     updateSetting("includeHeader", checked)
@@ -180,8 +186,14 @@ export default function PDFGenerator({
               </div>
 
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">Include Footer</label>
+                <label
+                  className="text-sm font-medium"
+                  htmlFor="include-footer-switch"
+                >
+                  Include Footer
+                </label>
                 <Switch
+                  id="include-footer-switch"
                   checked={settings.includeFooter}
                   onCheckedChange={(checked) =>
                     updateSetting("includeFooter", checked)
@@ -190,8 +202,14 @@ export default function PDFGenerator({
               </div>
 
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">Include Metadata</label>
+                <label
+                  className="text-sm font-medium"
+                  htmlFor="include-metadata-switch"
+                >
+                  Include Metadata
+                </label>
                 <Switch
+                  id="include-metadata-switch"
                   checked={settings.includeMetadata}
                   onCheckedChange={(checked) =>
                     updateSetting("includeMetadata", checked)
@@ -200,10 +218,14 @@ export default function PDFGenerator({
               </div>
 
               <div>
-                <label className="text-sm font-medium block mb-2">
+                <label
+                  className="text-sm font-medium block mb-2"
+                  htmlFor="watermark-input"
+                >
                   Watermark Text
                 </label>
                 <Input
+                  id="watermark-input"
                   value={settings.watermark}
                   onChange={(e) => updateSetting("watermark", e.target.value)}
                   placeholder="Enter watermark text (optional)"
@@ -217,10 +239,14 @@ export default function PDFGenerator({
             <h4 className="font-medium mb-4">Page Settings</h4>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium block mb-2">
+                <label
+                  className="text-sm font-medium block mb-2"
+                  htmlFor="page-format-select"
+                >
                   Page Format
                 </label>
                 <select
+                  id="page-format-select"
                   value={settings.pageFormat}
                   onChange={(e) => updateSetting("pageFormat", e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#23407a] focus:border-transparent"
@@ -233,10 +259,14 @@ export default function PDFGenerator({
               </div>
 
               <div>
-                <label className="text-sm font-medium block mb-2">
+                <label
+                  className="text-sm font-medium block mb-2"
+                  htmlFor="orientation-select"
+                >
                   Orientation
                 </label>
                 <select
+                  id="orientation-select"
                   value={settings.orientation}
                   onChange={(e) => updateSetting("orientation", e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#23407a] focus:border-transparent"
@@ -247,10 +277,14 @@ export default function PDFGenerator({
               </div>
 
               <div>
-                <label className="text-sm font-medium block mb-2">
+                <label
+                  className="text-sm font-medium block mb-2"
+                  htmlFor="quality-range"
+                >
                   Quality ({settings.quality}x)
                 </label>
                 <input
+                  id="quality-range"
                   type="range"
                   min="0.5"
                   max="3"
@@ -271,8 +305,14 @@ export default function PDFGenerator({
               <h4 className="font-medium mb-4">Bulk Export Settings</h4>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">Separate Pages</label>
+                  <label
+                    className="text-sm font-medium"
+                    htmlFor="separate-pages-switch"
+                  >
+                    Separate Pages
+                  </label>
                   <Switch
+                    id="separate-pages-switch"
                     checked={settings.separatePages}
                     onCheckedChange={(checked) =>
                       updateSetting("separatePages", checked)
@@ -281,10 +321,14 @@ export default function PDFGenerator({
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">
+                  <label
+                    className="text-sm font-medium"
+                    htmlFor="table-of-contents-switch"
+                  >
                     Table of Contents
                   </label>
                   <Switch
+                    id="table-of-contents-switch"
                     checked={settings.includeTableOfContents}
                     onCheckedChange={(checked) =>
                       updateSetting("includeTableOfContents", checked)

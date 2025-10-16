@@ -12,18 +12,37 @@ import {
   ChevronLeft,
   ChevronRight,
   CreditCard,
+  MessageCircle,
 } from "lucide-react";
 import useAuth from "../../hooks/useAuth";
 import { USER_ROLES } from "../../utils/constants";
-import { MessageCircle } from "lucide-react";
-import { generateWhatsAppUrl, isWithinOperatingHours, WHATSAPP_CONFIG } from "../../utils/whatsappConfig";
+import {
+  generateWhatsAppUrl,
+  isWithinOperatingHours,
+  WHATSAPP_CONFIG,
+} from "../../utils/whatsappConfig";
 import logoPutih from "@/assets/logo-protextify-putih.png";
 
+/**
+ * Komponen Sidebar untuk navigasi utama aplikasi.
+ * Menampilkan menu sesuai dengan peran user (Instructor/Student),
+ * serta tombol WhatsApp untuk bantuan.
+ */
 export default function Sidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  // State untuk mengatur apakah sidebar dalam keadaan collapsed.
+  // Saat ini sidebar selalu tidak collapsed.
+  const [isCollapsed] = useState(false);
+
+  // Mendapatkan data user dari hook autentikasi.
   const { user } = useAuth();
+
+  // Mendapatkan lokasi route saat ini.
   const location = useLocation();
-  
+
+  /**
+   * Fungsi untuk menangani klik tombol WhatsApp.
+   * Membuka link WhatsApp dengan pesan yang sesuai jam operasional.
+   */
   const handleWhatsAppClick = () => {
     const message = isWithinOperatingHours()
       ? WHATSAPP_CONFIG.defaultMessage
@@ -32,6 +51,10 @@ export default function Sidebar() {
     window.open(whatsappUrl, "_blank");
   };
 
+  /**
+   * Fungsi untuk mendapatkan daftar menu sesuai peran user.
+   * @returns {Array} Daftar menu yang akan ditampilkan di sidebar.
+   */
   const getMenuItems = () => {
     if (user?.role === USER_ROLES.INSTRUCTOR) {
       return [
@@ -63,7 +86,7 @@ export default function Sidebar() {
         },
       ];
     } else {
-      // Student
+      // Jika user adalah Student
       return [
         {
           label: "Dashboard",
@@ -100,11 +123,17 @@ export default function Sidebar() {
     }
   };
 
+  // Mendapatkan daftar menu berdasarkan peran user.
   const menuItems = getMenuItems();
 
+  /**
+   * Fungsi untuk menentukan apakah route saat ini aktif.
+   * @param {string} path - Path menu yang dicek.
+   * @returns {boolean} True jika route aktif.
+   */
   const isActiveRoute = (path) => {
     return (
-      location.pathname === path || location.pathname.startsWith(path + "/")
+      location.pathname === path || location.pathname.startsWith(`${path}/`)
     );
   };
 
@@ -114,7 +143,7 @@ export default function Sidebar() {
         isCollapsed ? "w-16" : "w-64"
       }`}
     >
-      {/* Header */}
+      {/* Bagian Header Sidebar */}
       <div className="relative overflow-hidden bg-gradient-to-br from-[#23407a] via-[#1a2f5c] to-[#162849] border-b border-[#23407a]/20">
         <div className="absolute top-0 right-0 w-16 h-16 bg-white/5 rounded-full transform translate-x-8 -translate-y-8"></div>
         <div className="absolute bottom-0 left-0 w-12 h-12 bg-white/5 rounded-full transform -translate-x-6 translate-y-6"></div>
@@ -135,7 +164,7 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* User Info */}
+      {/* Bagian Informasi User */}
       {!isCollapsed && (
         <div className="p-6 bg-gradient-to-r from-gray-50 to-blue-50/50 border-b border-gray-200/50">
           <div className="flex items-center space-x-4">
@@ -168,7 +197,7 @@ export default function Sidebar() {
         </div>
       )}
 
-      {/* Navigation */}
+      {/* Bagian Navigasi Menu */}
       <nav className="flex-1 p-4 bg-white">
         <ul className="space-y-2">
           {menuItems.map((item, index) => {
@@ -179,6 +208,7 @@ export default function Sidebar() {
             return (
               <li key={index}>
                 {isDisabled ? (
+                  // Menu yang dinonaktifkan (disabled)
                   <div
                     className={`relative group flex items-center px-4 py-3.5 text-sm font-medium rounded-2xl cursor-not-allowed transition-all duration-300 ${
                       isCollapsed ? "justify-center" : ""
@@ -200,6 +230,7 @@ export default function Sidebar() {
                     )}
                   </div>
                 ) : (
+                  // Menu yang aktif dan dapat diklik
                   <Link
                     to={item.path}
                     className={`relative group flex items-center px-4 py-3.5 text-sm font-medium rounded-2xl transition-all duration-300 ${
@@ -234,6 +265,7 @@ export default function Sidebar() {
           })}
         </ul>
 
+        {/* Tombol WhatsApp untuk bantuan */}
         <div className="mt-8 pt-6 border-t border-gray-200/50">
           {!isCollapsed && (
             <button
@@ -241,12 +273,15 @@ export default function Sidebar() {
               className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-green-500 hover:bg-green-600 text-white px-4 py-3 font-semibold shadow-md hover:shadow-lg transition-all"
             >
               <MessageCircle className="h-5 w-5" />
-              <span>Chat WhatsApp{isWithinOperatingHours() ? " (Online)" : " (Offline)"}</span>
+              <span>
+                {`Chat WhatsApp${
+                  isWithinOperatingHours() ? " (Online)" : " (Offline)"
+                }`}
+              </span>
             </button>
           )}
         </div>
       </nav>
-
     </div>
   );
 }

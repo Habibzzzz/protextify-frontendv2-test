@@ -1,23 +1,31 @@
 // src/components/home/CTASection.jsx
+
 import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles, Star, Users } from "lucide-react";
 import { Button, Container, Card, CardContent } from "../../components";
 import LogoUnila from "../../assets/logo-unila.png";
 
+/**
+ * Komponen CTASection
+ * Menampilkan section Call-To-Action utama pada halaman home,
+ * berisi background visual, judul, deskripsi, tombol aksi, indikator kepercayaan,
+ * dan bukti sosial (logo institusi).
+ */
 export default function CTASection() {
   return (
     <section className="relative py-24 overflow-hidden">
-      {/* Background dengan gradient dan pattern */}
+      {/* Background dengan gradient dan pola grid transparan */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#23407a] via-[#1a2f5c] to-[#0f1b3a]"></div>
       <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px]"></div>
 
-      {/* Floating elements */}
+      {/* Elemen dekoratif mengambang (floating) */}
       <div className="absolute top-20 left-20 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl animate-float"></div>
       <div className="absolute bottom-20 right-20 w-48 h-48 bg-purple-500/20 rounded-full blur-2xl animate-float-delayed"></div>
 
       <Container className="relative z-10">
+        {/* Bagian utama CTA: Judul, deskripsi, dan tombol aksi */}
         <div className="text-center max-w-4xl mx-auto mb-16">
-          {/* Main CTA */}
+          {/* Label platform terpercaya */}
           <div className="flex justify-center mb-6">
             <div className="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full text-white">
               <Sparkles className="w-4 h-4 mr-2" />
@@ -27,6 +35,7 @@ export default function CTASection() {
             </div>
           </div>
 
+          {/* Judul utama CTA */}
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
             Siap Meningkatkan{" "}
             <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
@@ -34,13 +43,14 @@ export default function CTASection() {
             </span>
           </h2>
 
+          {/* Deskripsi singkat platform */}
           <p className="text-xl text-white/80 mb-12 leading-relaxed">
             Bergabunglah dengan Protextify dan rasakan perbedaan dalam mengelola
             tugas akademik dan mendeteksi plagiarisme dengan teknologi AI
             terdepan.
           </p>
 
-          {/* CTA Buttons */}
+          {/* Tombol aksi utama (Daftar dan Login) */}
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
             <Link to="/auth/register">
               <Button
@@ -64,7 +74,7 @@ export default function CTASection() {
           </div>
         </div>
 
-        {/* Trust Indicators Grid */}
+        {/* Grid indikator kepercayaan (statistik pengguna, rating, akurasi AI) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {[
             {
@@ -104,7 +114,7 @@ export default function CTASection() {
           ))}
         </div>
 
-        {/* Social proof */}
+        {/* Bukti sosial: info pricing dan logo institusi */}
         <div className="text-center">
           <div className="text-white/60 text-sm mb-4">
             <p>
@@ -114,7 +124,7 @@ export default function CTASection() {
 
           <div className="flex justify-center items-center space-x-8 opacity-60">
             <div className="text-white/40 text-xs">Trusted by:</div>
-            {/* Logo Unila */}
+            {/* Logo Universitas Lampung */}
             <img
               src={LogoUnila}
               alt="Universitas Lampung"

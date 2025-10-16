@@ -1,5 +1,5 @@
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { mergeRegister } from "@lexical/utils";
+import { mergeRegister, $getNearestNodeOfType } from "@lexical/utils";
 import {
   $getSelection,
   $isRangeSelection,
@@ -11,7 +11,7 @@ import {
   SELECTION_CHANGE_COMMAND,
   UNDO_COMMAND,
   $createParagraphNode,
-  $getNodeByKey,
+  // $getNodeByKey, // Hapus unused
 } from "lexical";
 import {
   $isListNode,
@@ -25,12 +25,11 @@ import {
   $createHeadingNode,
   $createQuoteNode,
 } from "@lexical/rich-text";
-import { $createCodeNode, $isCodeNode } from "@lexical/code";
-import { $findMatchingParent, $getNearestNodeOfType } from "@lexical/utils";
+import { $createCodeNode } from "@lexical/code"; // Hapus $isCodeNode
 import { INSERT_HORIZONTAL_RULE_COMMAND } from "@lexical/react/LexicalHorizontalRuleNode";
 import { TOGGLE_LINK_COMMAND, $isLinkNode } from "@lexical/link";
 import { $wrapNodes } from "@lexical/selection";
-import { INSERT_IMAGE_COMMAND } from "./ImagePlugin";
+import { INSERT_IMAGE_COMMAND } from "./imageCommands";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Bold,
@@ -56,6 +55,7 @@ import {
 
 const LowPriority = 1;
 
+// Set tipe block yang didukung oleh toolbar
 const supportedBlockTypes = new Set([
   "paragraph",
   "quote",
@@ -67,6 +67,7 @@ const supportedBlockTypes = new Set([
   "ol",
 ]);
 
+// Mapping tipe block ke nama tampilan
 const blockTypeToBlockName = {
   code: "Code Block",
   h1: "Heading 1",
@@ -78,18 +79,29 @@ const blockTypeToBlockName = {
   ul: "Bulleted List",
 };
 
+/**
+ * Komponen Divider
+ * Digunakan untuk memisahkan kelompok tombol pada toolbar.
+ */
 function Divider() {
   return <div className="w-px h-6 bg-gray-300 mx-1" />;
 }
 
+/**
+ * Fungsi untuk mengambil node yang sedang dipilih pada editor.
+ * @param {Selection} selection - Objek selection Lexical.
+ * @returns {LexicalNode} - Node yang dipilih.
+ */
 function getSelectedNode(selection) {
   const anchor = selection.anchor;
   const focus = selection.focus;
   const anchorNode = selection.anchor.getNode();
   const focusNode = selection.focus.getNode();
+
   if (anchorNode === focusNode) {
     return anchorNode;
   }
+
   const isBackward = selection.isBackward();
   if (isBackward) {
     return $isAtNodeEnd(focus) ? anchorNode : focusNode;
@@ -98,6 +110,11 @@ function getSelectedNode(selection) {
   }
 }
 
+/**
+ * Mengecek apakah titik selection berada di akhir sebuah node.
+ * @param {Point} point - Objek point Lexical.
+ * @returns {boolean} - True jika di akhir node, false jika tidak.
+ */
 function $isAtNodeEnd(point) {
   if (point.type === "text") {
     return point.offset === point.getNode().getTextContentSize();
@@ -105,6 +122,11 @@ function $isAtNodeEnd(point) {
   return point.offset === point.getNode().getChildrenSize();
 }
 
+/**
+ * Mengecek apakah parent element dari selection bertipe RTL.
+ * @param {Selection} selection - Objek selection Lexical.
+ * @returns {boolean} - True jika RTL, false jika tidak.
+ */
 function $isParentElementRTL(selection) {
   if ($isRangeSelection(selection)) {
     const anchorNode = selection.anchor.getNode();
@@ -117,17 +139,26 @@ function $isParentElementRTL(selection) {
   return false;
 }
 
+/**
+ * AdvancedToolbarPlugin
+ * Plugin toolbar untuk Lexical editor yang menyediakan fitur formatting, block type, dan insert options.
+ * @param {Object} props
+ * @param {boolean} props.disabled - Menentukan apakah toolbar dalam keadaan disabled.
+ */
 export function AdvancedToolbarPlugin({ disabled = false }) {
+  // Lexical editor context
   const [editor] = useLexicalComposerContext();
+
+  // Referensi DOM toolbar
   const toolbarRef = useRef(null);
+
+  // State untuk undo/redo, block type, selection, dropdown, formatting, dll.
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
   const [blockType, setBlockType] = useState("paragraph");
-  const [selectedElementKey, setSelectedElementKey] = useState(null);
-  const [showBlockOptionsDropDown, setShowBlockOptionsDropDown] =
-    useState(false);
-  const [codeLanguage, setCodeLanguage] = useState("");
-  const [isRTL, setIsRTL] = useState(false);
+  const [_selectedElementKey, _setSelectedElementKey] = useState(null);
+  const [_codeLanguage, _setCodeLanguage] = useState("");
+  const [_isRTL, _setIsRTL] = useState(false);
   const [isLink, setIsLink] = useState(false);
   const [isBold, setIsBold] = useState(false);
   const [isItalic, setIsItalic] = useState(false);
@@ -135,6 +166,14 @@ export function AdvancedToolbarPlugin({ disabled = false }) {
   const [isStrikethrough, setIsStrikethrough] = useState(false);
   const [isCode, setIsCode] = useState(false);
 
+  // State untuk dropdown block type
+  const [showBlockOptionsDropDown, setShowBlockOptionsDropDown] =
+    useState(false);
+
+  /**
+   * updateToolbar
+   * Fungsi untuk mengupdate state toolbar berdasarkan selection dan formatting saat ini.
+   */
   const updateToolbar = useCallback(() => {
     const selection = $getSelection();
     if ($isRangeSelection(selection)) {
@@ -146,17 +185,15 @@ export function AdvancedToolbarPlugin({ disabled = false }) {
       const elementKey = element.getKey();
       const elementDOM = editor.getElementByKey(elementKey);
 
-      setSelectedElementKey(elementKey);
-
-      // Update text format
+      // Update state format text
       setIsBold(selection.hasFormat("bold"));
       setIsItalic(selection.hasFormat("italic"));
       setIsUnderline(selection.hasFormat("underline"));
       setIsStrikethrough(selection.hasFormat("strikethrough"));
       setIsCode(selection.hasFormat("code"));
-      setIsRTL($isParentElementRTL(selection));
+      _setIsRTL($isParentElementRTL(selection)); // gunakan _setIsRTL
 
-      // Update links
+      // Update state link
       const node = getSelectedNode(selection);
       const parent = node.getParent();
       if ($isLinkNode(parent) || $isLinkNode(node)) {
@@ -165,6 +202,7 @@ export function AdvancedToolbarPlugin({ disabled = false }) {
         setIsLink(false);
       }
 
+      // Update state block type
       if (elementDOM !== null) {
         if ($isListNode(element)) {
           const parentList = $getNearestNodeOfType(anchorNode, ListNode);
@@ -182,6 +220,10 @@ export function AdvancedToolbarPlugin({ disabled = false }) {
     }
   }, [editor]);
 
+  /**
+   * useEffect untuk register listener pada editor state update dan command.
+   * Mengatur updateToolbar, canUndo, canRedo.
+   */
   useEffect(() => {
     return mergeRegister(
       editor.registerUpdateListener(({ editorState }) => {
@@ -191,7 +233,7 @@ export function AdvancedToolbarPlugin({ disabled = false }) {
       }),
       editor.registerCommand(
         SELECTION_CHANGE_COMMAND,
-        (_payload, newEditor) => {
+        (_payload, _newEditor) => {
           updateToolbar();
           return false;
         },
@@ -216,6 +258,10 @@ export function AdvancedToolbarPlugin({ disabled = false }) {
     );
   }, [editor, updateToolbar]);
 
+  /**
+   * insertLink
+   * Fungsi untuk toggle link pada selection saat ini.
+   */
   const insertLink = useCallback(() => {
     if (!isLink) {
       editor.dispatchCommand(TOGGLE_LINK_COMMAND, "https://");
@@ -224,6 +270,10 @@ export function AdvancedToolbarPlugin({ disabled = false }) {
     }
   }, [editor, isLink]);
 
+  /**
+   * insertImage
+   * Fungsi untuk prompt URL gambar dan insert image pada selection.
+   */
   const insertImage = useCallback(() => {
     const url = prompt("Masukkan URL gambar:");
     if (url) {
@@ -234,6 +284,10 @@ export function AdvancedToolbarPlugin({ disabled = false }) {
     }
   }, [editor]);
 
+  /**
+   * formatParagraph
+   * Fungsi untuk format selection menjadi paragraph.
+   */
   const formatParagraph = () => {
     editor.update(() => {
       const selection = $getSelection();
@@ -243,6 +297,11 @@ export function AdvancedToolbarPlugin({ disabled = false }) {
     });
   };
 
+  /**
+   * formatHeading
+   * Fungsi untuk format selection menjadi heading sesuai size.
+   * @param {string} headingSize - Tag heading (h1, h2, h3).
+   */
   const formatHeading = (headingSize) => {
     if (blockType !== headingSize) {
       editor.update(() => {
@@ -254,6 +313,10 @@ export function AdvancedToolbarPlugin({ disabled = false }) {
     }
   };
 
+  /**
+   * formatBulletList
+   * Fungsi untuk toggle bullet list pada selection.
+   */
   const formatBulletList = () => {
     if (blockType !== "ul") {
       editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined);
@@ -262,6 +325,10 @@ export function AdvancedToolbarPlugin({ disabled = false }) {
     }
   };
 
+  /**
+   * formatNumberedList
+   * Fungsi untuk toggle numbered list pada selection.
+   */
   const formatNumberedList = () => {
     if (blockType !== "ol") {
       editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined);
@@ -270,6 +337,10 @@ export function AdvancedToolbarPlugin({ disabled = false }) {
     }
   };
 
+  /**
+   * formatQuote
+   * Fungsi untuk format selection menjadi quote block.
+   */
   const formatQuote = () => {
     if (blockType !== "quote") {
       editor.update(() => {
@@ -281,6 +352,10 @@ export function AdvancedToolbarPlugin({ disabled = false }) {
     }
   };
 
+  /**
+   * formatCode
+   * Fungsi untuk format selection menjadi code block.
+   */
   const formatCode = () => {
     if (blockType !== "code") {
       editor.update(() => {
@@ -292,12 +367,16 @@ export function AdvancedToolbarPlugin({ disabled = false }) {
     }
   };
 
+  /**
+   * Render toolbar UI
+   * Menampilkan tombol-tombol toolbar sesuai state dan block type.
+   */
   return (
     <div
       className="flex items-center flex-wrap gap-1 p-3 border-b border-gray-200 bg-gray-50 relative"
       ref={toolbarRef}
     >
-      {/* Undo/Redo */}
+      {/* Tombol Undo/Redo */}
       <button
         disabled={!canUndo || disabled}
         onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)}
@@ -317,7 +396,7 @@ export function AdvancedToolbarPlugin({ disabled = false }) {
 
       <Divider />
 
-      {/* Block Type Selector */}
+      {/* Dropdown Block Type Selector */}
       {supportedBlockTypes.has(blockType) && (
         <div className="relative">
           <button
@@ -344,7 +423,7 @@ export function AdvancedToolbarPlugin({ disabled = false }) {
                 Normal
               </button>
               <button
-                className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 font-bold text-xl"
+                className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 font-bold"
                 onClick={() => {
                   formatHeading("h1");
                   setShowBlockOptionsDropDown(false);
@@ -353,7 +432,7 @@ export function AdvancedToolbarPlugin({ disabled = false }) {
                 Heading 1
               </button>
               <button
-                className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 font-bold text-lg"
+                className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 font-bold"
                 onClick={() => {
                   formatHeading("h2");
                   setShowBlockOptionsDropDown(false);
@@ -413,7 +492,7 @@ export function AdvancedToolbarPlugin({ disabled = false }) {
 
       <Divider />
 
-      {/* Text Formatting */}
+      {/* Tombol Formatting Teks */}
       {blockType !== "code" && (
         <>
           <button
@@ -479,7 +558,7 @@ export function AdvancedToolbarPlugin({ disabled = false }) {
 
           <Divider />
 
-          {/* Alignment */}
+          {/* Tombol Alignment */}
           <button
             onClick={() =>
               editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, "left")
@@ -526,7 +605,7 @@ export function AdvancedToolbarPlugin({ disabled = false }) {
 
           <Divider />
 
-          {/* Lists */}
+          {/* Tombol List Formatting */}
           <button
             onClick={formatBulletList}
             className={`flex items-center justify-center w-8 h-8 rounded hover:bg-gray-200 ${
@@ -551,7 +630,7 @@ export function AdvancedToolbarPlugin({ disabled = false }) {
 
           <Divider />
 
-          {/* Insert Options */}
+          {/* Tombol Insert: Link, Image, Horizontal Rule */}
           <button
             onClick={insertLink}
             className={`flex items-center justify-center w-8 h-8 rounded hover:bg-gray-200 ${

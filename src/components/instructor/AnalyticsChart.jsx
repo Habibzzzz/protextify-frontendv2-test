@@ -1,4 +1,5 @@
 // src/components/instructor/AnalyticsChart.jsx
+
 import {
   ResponsiveContainer,
   BarChart,
@@ -16,15 +17,35 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from "../ui";
 import { BarChart3 } from "lucide-react";
 
+/**
+ * Komponen AnalyticsChart
+ * Menampilkan grafik analitik (Bar, Line, Area) berdasarkan data yang diberikan.
+ *
+ * Props:
+ * - data: Array data yang akan divisualisasikan.
+ * - title: Judul chart yang ditampilkan di atas.
+ * - type: Jenis chart ('bar', 'line', 'area'). Default 'bar'.
+ * - xAxisKey: Key untuk sumbu X. Default 'name'.
+ * - dataKey: Key data utama untuk chart (bar/area).
+ * - dataKeys: Array key data untuk chart multi-line.
+ * - colors: Array warna untuk elemen chart.
+ */
 const AnalyticsChart = ({
   data,
   title,
   type = "bar",
   xAxisKey = "name", // Default ke 'name', bisa di-override
   dataKey, // 'submissions', 'count', 'avgHours'
-  dataKeys, // For multi-line charts: ['submissions', 'graded']
+  dataKeys, // Untuk chart multi-line: ['submissions', 'graded']
   colors = ["#3b82f6", "#16a34a", "#8b5cf6"],
 }) => {
+  /**
+   * Fungsi renderChart
+   * Menentukan jenis chart yang akan dirender berdasarkan props 'type'.
+   * - BarChart: Untuk data tunggal.
+   * - LineChart: Untuk data multi-line.
+   * - AreaChart: Untuk data area.
+   */
   const renderChart = () => {
     switch (type) {
       case "bar":
@@ -78,6 +99,10 @@ const AnalyticsChart = ({
     }
   };
 
+  /**
+   * Render utama komponen
+   * Menampilkan Card berisi chart atau pesan jika data kosong.
+   */
   return (
     <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300">
       <CardHeader>

@@ -39,7 +39,11 @@ const getStatusColor = (status) => {
   }
 };
 
-const SubmissionMonitor = ({ submissions, pendingCount, assignment }) => {
+const SubmissionMonitor = ({
+  submissions,
+  pendingCount,
+  assignment: _assignment,
+}) => {
   // Prioritas: hanya submission dengan status SUBMITTED
   const getPrioritySubmissions = () => {
     return submissions

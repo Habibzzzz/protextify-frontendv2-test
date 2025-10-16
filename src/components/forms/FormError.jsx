@@ -1,8 +1,22 @@
 // src/components/forms/FormError.jsx
+
+/**
+ * Komponen FormError
+ * Menampilkan pesan error pada form.
+ *
+ * Props:
+ * - error: Bisa berupa objek error atau array error (misal dari validasi).
+ *   Jika tidak ada error, komponen tidak akan dirender.
+ */
 export default function FormError({ error }) {
+  // Jika tidak ada error, tidak merender apapun
   if (!error) return null;
 
-  // Jika error adalah array (validasi), tampilkan semua pesan
+  /**
+   * Menyusun daftar pesan error.
+   * Jika error berupa array, ambil semua pesan.
+   * Jika error berupa objek, ambil pesan dari properti message.
+   */
   const errorMessages = Array.isArray(error)
     ? error.map((e) => e.message || e)
     : [error.message || error];
@@ -10,6 +24,7 @@ export default function FormError({ error }) {
   return (
     <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
       <div className="flex">
+        {/* Icon error */}
         <div className="flex-shrink-0">
           <svg
             className="h-5 w-5 text-red-400"
@@ -23,11 +38,13 @@ export default function FormError({ error }) {
             />
           </svg>
         </div>
+        {/* Bagian pesan error */}
         <div className="ml-3">
           <h3 className="text-sm font-medium text-red-800">
             Terjadi kesalahan
           </h3>
           <div className="mt-2 text-sm text-red-700 space-y-1">
+            {/* Render semua pesan error */}
             {errorMessages.map((msg, idx) => (
               <div key={idx}>
                 {msg || "Terjadi kesalahan yang tidak diketahui"}

@@ -30,8 +30,8 @@ export const isWithinOperatingHours = () => {
   const day = now.getDay(); // 0 = Minggu, 1 = Senin, ..., 6 = Sabtu
   const hour = now.getHours();
   
-  // Senin - Jumat (1-5), jam 08:00 - 17:00
-  return day >= 1 && day <= 5 && hour >= 8 && hour < 17;
+  // Senin - Sabtu (1-6), jam 07:00 - 20:00
+  return day >= 1 && day <= 6 && hour >= 7 && hour < 20;
 };
 
 export default WHATSAPP_CONFIG;

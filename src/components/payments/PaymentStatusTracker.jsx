@@ -1,4 +1,3 @@
-// src/components/payments/PaymentStatusTracker.jsx
 import { useState } from "react";
 import {
   CheckCircle,
@@ -24,8 +23,22 @@ import {
 import { usePaymentTracker } from "../../hooks/usePaymentTracker";
 import { PAYMENT_STATUS } from "../../utils/constants";
 import { formatCurrency, formatDate } from "../../utils/helpers";
-import { WHATSAPP_CONFIG, generateWhatsAppUrl } from "../../utils/whatsappConfig";
+import {
+  WHATSAPP_CONFIG,
+  generateWhatsAppUrl,
+} from "../../utils/whatsappConfig";
 
+/**
+ * Komponen PaymentStatusTracker
+ * Menampilkan status pembayaran dan detail transaksi.
+ *
+ * Props:
+ * - transaction: Data transaksi pembayaran
+ * - onPaymentSuccess: Callback jika pembayaran sukses
+ * - onPaymentFailure: Callback jika pembayaran gagal
+ * - showActions: Menampilkan tombol aksi (default: true)
+ * - isActive: Status aktif tracker
+ */
 export default function PaymentStatusTracker({
   transaction,
   onPaymentSuccess,
@@ -33,15 +46,20 @@ export default function PaymentStatusTracker({
   showActions = true,
   isActive,
 }) {
+  // State untuk toggle detail transaksi
   const [showDetails, setShowDetails] = useState(false);
 
+  /**
+   * Hook custom untuk tracking status pembayaran.
+   * Mengambil status, loading, error, jumlah percobaan, fungsi refresh, dan status polling.
+   */
   const { status, loading, error, attempts, refreshStatus, isPolling } =
     usePaymentTracker(
       transaction.orderId,
-      transaction.status, // Teruskan status awal di sini
+      transaction.status, // Status awal transaksi
       {
-        onStatusChange: (newStatus) => {
-          // Logging status change (opsional)
+        onStatusChange: (_newStatus) => {
+          // Logging status perubahan (opsional)
         },
         onSuccess: (response) => {
           if (onPaymentSuccess) onPaymentSuccess(response);
@@ -53,7 +71,12 @@ export default function PaymentStatusTracker({
       isActive
     );
 
-  // Status configuration sesuai BE
+  /**
+   * Fungsi konfigurasi status pembayaran sesuai backend.
+   * Mengembalikan objek konfigurasi berdasarkan status.
+   * @param {string} status - Status pembayaran
+   * @returns {object} Konfigurasi status
+   */
   const getStatusConfig = (status) => {
     switch (status) {
       case PAYMENT_STATUS.SUCCESS:
@@ -100,6 +123,7 @@ export default function PaymentStatusTracker({
     }
   };
 
+  // Konfigurasi status berdasarkan status pembayaran saat ini
   const statusConfig = getStatusConfig(status);
   const StatusIcon = statusConfig.icon;
 
@@ -141,7 +165,7 @@ export default function PaymentStatusTracker({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Transaction Info */}
+        {/* Informasi Transaksi */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div>
             <span className="font-medium">Order ID:</span>
@@ -165,7 +189,7 @@ export default function PaymentStatusTracker({
           </div>
         </div>
 
-        {/* Polling Status */}
+        {/* Status Polling */}
         {isPolling && status === PAYMENT_STATUS.PENDING && (
           <Alert variant="info">
             <RefreshCw className="h-4 w-4 animate-spin" />
@@ -177,7 +201,7 @@ export default function PaymentStatusTracker({
           </Alert>
         )}
 
-        {/* Error Display */}
+        {/* Tampilkan Error jika ada */}
         {error && (
           <Alert variant="error">
             <AlertTriangle className="h-4 w-4" />
@@ -187,13 +211,13 @@ export default function PaymentStatusTracker({
           </Alert>
         )}
 
-        {/* Payment Actions */}
+        {/* Tombol Aksi Pembayaran (WhatsApp) */}
         {status === PAYMENT_STATUS.PENDING && transaction.paymentUrl && (
           <div className="border-t pt-4">
             <Button
               className="w-full bg-green-600 hover:bg-green-700"
               onClick={() => {
-                // Buat pesan WhatsApp dengan detail transaksi
+                // Membuat pesan WhatsApp dengan detail transaksi
                 const whatsappMessage = `Halo! Saya ingin melakukan pembayaran untuk transaksi Protextify.
 
 📋 *Detail Transaksi:*
@@ -204,7 +228,7 @@ export default function PaymentStatusTracker({
 
 Mohon bantuan untuk proses pembayaran. Terima kasih!`;
 
-                // Buka WhatsApp dengan pesan yang sudah diformat
+                // Membuka WhatsApp dengan pesan yang sudah diformat
                 const whatsappUrl = generateWhatsAppUrl(whatsappMessage);
                 window.open(whatsappUrl, "_blank");
 
@@ -219,7 +243,7 @@ Mohon bantuan untuk proses pembayaran. Terima kasih!`;
           </div>
         )}
 
-        {/* Details Toggle */}
+        {/* Toggle Detail Transaksi */}
         <div className="border-t pt-4">
           <Button
             variant="ghost"
@@ -231,7 +255,7 @@ Mohon bantuan untuk proses pembayaran. Terima kasih!`;
           </Button>
         </div>
 
-        {/* Transaction Details */}
+        {/* Detail Transaksi */}
         {showDetails && (
           <div className="border-t pt-4 space-y-2 text-sm">
             <div className="grid grid-cols-2 gap-2">

@@ -1,8 +1,15 @@
 // src/components/home/TestimonialSection.jsx
+
 import { Container, Card, CardContent } from "../../components";
 import { Star, Quote } from "lucide-react";
 
+/**
+ * Komponen TestimonialSection
+ * Menampilkan kumpulan testimonial dari pengguna Protextify.
+ * Testimonial ditampilkan dalam bentuk kartu dengan nama, peran, isi testimonial, rating, dan avatar.
+ */
 export default function TestimonialSection() {
+  // Daftar testimonial yang akan ditampilkan pada halaman
   const testimonials = [
     {
       name: "Dr. Sarah Wijaya",
@@ -31,8 +38,10 @@ export default function TestimonialSection() {
   ];
 
   return (
+    // Section utama untuk testimonial
     <section className="py-24 bg-gradient-to-br from-gray-50 to-blue-50/30">
       <Container>
+        {/* Header section: Judul dan deskripsi testimonial */}
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
             Apa Kata Mereka?
@@ -43,6 +52,7 @@ export default function TestimonialSection() {
           </p>
         </div>
 
+        {/* Grid untuk menampilkan setiap testimonial dalam bentuk kartu */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
             <Card
@@ -50,9 +60,10 @@ export default function TestimonialSection() {
               className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg"
             >
               <CardContent className="p-8">
+                {/* Icon kutipan di bagian atas kartu */}
                 <Quote className="w-8 h-8 text-[#23407a] mb-4" />
 
-                {/* Rating */}
+                {/* Bagian rating: menampilkan bintang sesuai rating */}
                 <div className="flex items-center mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
                     <Star
@@ -62,11 +73,14 @@ export default function TestimonialSection() {
                   ))}
                 </div>
 
+                {/* Isi testimonial */}
                 <p className="text-gray-600 mb-6 leading-relaxed">
                   "{testimonial.content}"
                 </p>
 
+                {/* Bagian identitas pemberi testimonial */}
                 <div className="flex items-center">
+                  {/* Avatar berupa inisial nama */}
                   <div className="w-12 h-12 bg-[#23407a]/10 rounded-full flex items-center justify-center mr-4">
                     <span className="text-[#23407a] font-semibold">
                       {testimonial.name
@@ -75,6 +89,7 @@ export default function TestimonialSection() {
                         .join("")}
                     </span>
                   </div>
+                  {/* Nama dan peran pemberi testimonial */}
                   <div>
                     <h4 className="font-semibold text-gray-900">
                       {testimonial.name}

@@ -12,21 +12,29 @@ import {
 import { Button, Modal, Input, Select, Card, CardContent } from "../ui";
 import toast from "react-hot-toast";
 
-// Helper untuk memformat nama penulis dari Crossref API
+/**
+ * Helper untuk memformat nama penulis dari Crossref API.
+ * Format: NamaBelakang, InisialDepan. Tambahkan "et al." jika lebih dari satu penulis.
+ * @param {Array} authors - Array objek penulis dari Crossref API.
+ * @returns {string} Nama penulis yang sudah diformat.
+ */
 const formatAuthors = (authors) => {
   if (!authors || authors.length === 0) return "";
   const firstAuthor = authors[0];
-  // Format: NamaBelakang, InisialDepan.
   let formattedName = `${firstAuthor.family}, ${
-    firstAuthor.given ? firstAuthor.given.charAt(0) + "." : ""
+    firstAuthor.given ? `${firstAuthor.given.charAt(0)}.` : ""
   }`;
-  // Tambahkan "et al." jika lebih dari satu penulis
   if (authors.length > 1) {
     formattedName += " et al.";
   }
   return formattedName;
 };
 
+/**
+ * Komponen utama untuk mengelola daftar sitasi (Daftar Pustaka).
+ * Mendukung penambahan, pengeditan, penghapusan, dan penyisipan sitasi.
+ * Terdapat fitur fetch otomatis dari Crossref API menggunakan DOI.
+ */
 const CitationManager = ({
   citations = [],
   onAdd,
@@ -35,8 +43,13 @@ const CitationManager = ({
   onInsert,
   disabled = false,
 }) => {
+  // State untuk modal tambah/edit sitasi
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // State untuk index sitasi yang sedang diedit
   const [editingIndex, setEditingIndex] = useState(null);
+
+  // State untuk data form sitasi
   const [formData, setFormData] = useState({
     type: "book",
     title: "",
@@ -52,10 +65,11 @@ const CitationManager = ({
     siteName: "",
   });
 
-  // State baru untuk fitur fetch API
+  // State untuk DOI dan status fetching dari Crossref API
   const [doi, setDoi] = useState("");
   const [isFetching, setIsFetching] = useState(false);
 
+  // Konfigurasi jenis sitasi beserta ikon dan label
   const citationTypes = [
     { value: "book", label: "Buku", icon: Book },
     { value: "journal", label: "Artikel Jurnal", icon: FileText },
@@ -63,6 +77,10 @@ const CitationManager = ({
     { value: "article", label: "Artikel Umum", icon: FileText },
   ];
 
+  /**
+   * Reset form data dan index editing ke nilai awal.
+   * Juga mereset DOI.
+   */
   const resetForm = () => {
     setFormData({
       type: "book",
@@ -79,14 +97,21 @@ const CitationManager = ({
       siteName: "",
     });
     setEditingIndex(null);
-    setDoi(""); // Reset DOI juga
+    setDoi("");
   };
 
+  /**
+   * Handler untuk membuka modal tambah sitasi.
+   */
   const handleAdd = () => {
     resetForm();
     setIsModalOpen(true);
   };
 
+  /**
+   * Handler untuk membuka modal edit sitasi.
+   * @param {number} index - Index sitasi yang akan diedit.
+   */
   const handleEdit = (index) => {
     const currentData = citations[index];
     setFormData({
@@ -102,6 +127,10 @@ const CitationManager = ({
     setIsModalOpen(true);
   };
 
+  /**
+   * Handler untuk submit form sitasi (tambah atau edit).
+   * Validasi field wajib sesuai jenis sitasi.
+   */
   const handleSubmit = () => {
     if (!formData.title || !formData.author || !formData.year) return;
     if (formData.type === "website" && !formData.url) return;
@@ -116,7 +145,11 @@ const CitationManager = ({
     resetForm();
   };
 
-  // [BARU] Fungsi untuk memformat sitasi lengkap sebagai teks biasa untuk disisipkan
+  /**
+   * Memformat sitasi lengkap sebagai teks biasa untuk disisipkan ke editor.
+   * @param {Object} citation - Data sitasi.
+   * @returns {string} Sitasi dalam format teks.
+   */
   const formatFullCitationAsText = (citation) => {
     const {
       type,
@@ -136,13 +169,14 @@ const CitationManager = ({
     switch (type) {
       case "book":
         return `${author} (${year}). ${title}. ${publisher}.`;
-      case "journal":
+      case "journal": {
         let journalString = `${author} (${year}). ${title}. ${journalName}, ${volume}`;
         if (issue) journalString += `(${issue})`;
         if (pages) journalString += `, ${pages}`;
         journalString += ".";
         if (doi) journalString += ` https://doi.org/${doi}`;
         return journalString;
+      }
       case "website":
         return `${author} (${year}). ${title}. ${siteName}. ${url}`;
       case "article":
@@ -151,7 +185,10 @@ const CitationManager = ({
     }
   };
 
-  // [BARU] Fungsi untuk mengambil data dari Crossref API
+  /**
+   * Handler untuk mengambil data sitasi dari Crossref API berdasarkan DOI.
+   * Data hasil fetch akan langsung diisi ke form.
+   */
   const handleFetchCitation = async () => {
     if (!doi.trim()) {
       toast.error("Silakan masukkan DOI yang valid.");
@@ -168,9 +205,9 @@ const CitationManager = ({
       const data = await response.json();
       const item = data.message;
 
-      // Memetakan data API ke state form
+      // Mapping data dari Crossref ke formData
       const mappedData = {
-        type: "journal", // DOI umumnya untuk jurnal
+        type: "journal",
         title: item.title?.[0] || "",
         author: formatAuthors(item.author),
         year: item.created?.["date-parts"]?.[0]?.[0]?.toString() || "",
@@ -192,11 +229,11 @@ const CitationManager = ({
     }
   };
 
-  const formatInTextCitation = (citation) => {
-    const lastName = citation.author.split(",")[0].trim();
-    return `${lastName}, ${citation.year}`;
-  };
-
+  /**
+   * Memformat sitasi untuk ditampilkan di daftar pustaka.
+   * @param {Object} citation - Data sitasi.
+   * @returns {JSX.Element} Format sitasi sesuai jenis.
+   */
   const formatCitation = (citation) => {
     const {
       type,
@@ -260,14 +297,23 @@ const CitationManager = ({
     }
   };
 
+  /**
+   * Mendapatkan ikon sesuai jenis sitasi.
+   * @param {string} type - Jenis sitasi.
+   * @returns {JSX.Element} Ikon.
+   */
   const getTypeIcon = (type) => {
     const typeConfig = citationTypes.find((t) => t.value === type);
     const Icon = typeConfig?.icon || Book;
     return <Icon className="h-4 w-4" />;
   };
 
+  // ==========================
+  // Render UI utama komponen
+  // ==========================
   return (
     <div className="space-y-4">
+      {/* Header dan tombol tambah sitasi */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Daftar Pustaka</h3>
         <Button onClick={handleAdd} size="sm" disabled={disabled}>
@@ -276,6 +322,7 @@ const CitationManager = ({
         </Button>
       </div>
 
+      {/* Daftar sitasi yang sudah ditambahkan */}
       {citations.length > 0 ? (
         <div className="space-y-3">
           {citations.map((citation, index) => (
@@ -337,19 +384,24 @@ const CitationManager = ({
         </Card>
       )}
 
+      {/* Modal tambah/edit sitasi */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={editingIndex !== null ? "Edit Sitasi" : "Tambah Sitasi"}
       >
         <div className="space-y-4">
-          {/* [BARU] Fitur Fetch by DOI */}
+          {/* Fitur fetch otomatis dari Crossref API menggunakan DOI */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
+            <label
+              className="block text-sm font-medium text-gray-700"
+              htmlFor="citation-doi-search-input"
+            >
               Cari Otomatis dengan DOI
             </label>
             <div className="flex gap-2">
               <Input
+                id="citation-doi-search-input"
                 placeholder="10.1000/xyz123"
                 value={doi}
                 onChange={(e) => setDoi(e.target.value)}
@@ -368,6 +420,7 @@ const CitationManager = ({
             </div>
           </div>
 
+          {/* Separator antara fetch otomatis dan input manual */}
           <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
@@ -379,11 +432,16 @@ const CitationManager = ({
             </div>
           </div>
 
+          {/* Form input manual sitasi */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              className="block text-sm font-medium text-gray-700 mb-2"
+              htmlFor="citation-type-select"
+            >
               Jenis Sitasi
             </label>
             <Select
+              id="citation-type-select"
               value={formData.type}
               onChange={(value) => setFormData({ ...formData, type: value })}
               options={citationTypes}
@@ -394,6 +452,7 @@ const CitationManager = ({
           <div>
             <Input
               label="Judul *"
+              id="citation-title-input"
               value={formData.title}
               onChange={(e) =>
                 setFormData({ ...formData, title: e.target.value })
@@ -406,6 +465,7 @@ const CitationManager = ({
           <div>
             <Input
               label="Penulis *"
+              id="citation-author-input"
               value={formData.author}
               onChange={(e) =>
                 setFormData({ ...formData, author: e.target.value })
@@ -418,6 +478,7 @@ const CitationManager = ({
           <div>
             <Input
               label="Tahun *"
+              id="citation-year-input"
               value={formData.year}
               onChange={(e) =>
                 setFormData({ ...formData, year: e.target.value })
@@ -427,11 +488,13 @@ const CitationManager = ({
             />
           </div>
 
+          {/* Input khusus untuk jenis website */}
           {formData.type === "website" && (
             <>
               <div>
                 <Input
                   label="Nama Situs *"
+                  id="citation-sitename-input"
                   value={formData.siteName}
                   onChange={(e) =>
                     setFormData({ ...formData, siteName: e.target.value })
@@ -443,6 +506,7 @@ const CitationManager = ({
               <div>
                 <Input
                   label="URL *"
+                  id="citation-url-input"
                   value={formData.url}
                   onChange={(e) =>
                     setFormData({ ...formData, url: e.target.value })
@@ -454,10 +518,12 @@ const CitationManager = ({
             </>
           )}
 
+          {/* Input khusus untuk jenis buku */}
           {formData.type === "book" && (
             <div>
               <Input
                 label="Penerbit"
+                id="citation-publisher-input"
                 value={formData.publisher}
                 onChange={(e) =>
                   setFormData({ ...formData, publisher: e.target.value })
@@ -468,11 +534,13 @@ const CitationManager = ({
             </div>
           )}
 
+          {/* Input khusus untuk jenis jurnal */}
           {formData.type === "journal" && (
             <>
               <div>
                 <Input
                   label="Nama Jurnal *"
+                  id="citation-journalname-input"
                   value={formData.journalName}
                   onChange={(e) =>
                     setFormData({ ...formData, journalName: e.target.value })
@@ -484,6 +552,7 @@ const CitationManager = ({
               <div className="grid grid-cols-2 gap-4">
                 <Input
                   label="Volume"
+                  id="citation-volume-input"
                   value={formData.volume}
                   onChange={(e) =>
                     setFormData({ ...formData, volume: e.target.value })
@@ -493,6 +562,7 @@ const CitationManager = ({
                 />
                 <Input
                   label="Issue"
+                  id="citation-issue-input"
                   value={formData.issue}
                   onChange={(e) =>
                     setFormData({ ...formData, issue: e.target.value })
@@ -504,6 +574,7 @@ const CitationManager = ({
               <div>
                 <Input
                   label="Halaman"
+                  id="citation-pages-input"
                   value={formData.pages}
                   onChange={(e) =>
                     setFormData({ ...formData, pages: e.target.value })
@@ -515,6 +586,7 @@ const CitationManager = ({
               <div>
                 <Input
                   label="DOI"
+                  id="citation-doi-input"
                   value={formData.doi}
                   onChange={(e) =>
                     setFormData({ ...formData, doi: e.target.value })
@@ -526,6 +598,7 @@ const CitationManager = ({
             </>
           )}
 
+          {/* Tombol aksi modal */}
           <div className="flex justify-end space-x-3">
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>
               Batal

@@ -1,4 +1,5 @@
 // src/components/export/ExportCenter.jsx
+
 import { useState } from "react";
 import { Download, FileText, BarChart3, Filter } from "lucide-react";
 import Button from "../ui/Button";
@@ -18,14 +19,31 @@ import {
 } from "../../utils/exportUtils";
 import toast from "react-hot-toast";
 
+/**
+ * ExportCenter Component
+ * Menyediakan fitur ekspor data submissions dengan berbagai format dan filter.
+ * Menampilkan opsi ekspor cepat, ekspor lanjutan, dan laporan analitik.
+ *
+ * Props:
+ * - submissions: Array data submissions yang akan diekspor.
+ * - assignmentTitle: Judul assignment terkait submissions.
+ * - className: Kelas CSS tambahan untuk styling.
+ */
 export default function ExportCenter({
   submissions,
   assignmentTitle,
   className = "",
 }) {
+  // State untuk modal ekspor lanjutan
   const [showExportModal, setShowExportModal] = useState(false);
+
+  // State untuk modal filter/analytics
   const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
-  const [exportType, setExportType] = useState("submissions");
+
+  // State untuk tipe ekspor (tidak digunakan di bawah, tetap dipertahankan)
+  const [_exportType, _setExportType] = useState("submissions");
+
+  // State untuk filter submissions
   const [filters, setFilters] = useState({
     status: "all",
     dateRange: "all",
@@ -37,7 +55,10 @@ export default function ExportCenter({
     maxScore: null,
   });
 
-  // Filter submissions sesuai field BE
+  /**
+   * Filter submissions sesuai field dari backend dan filter yang dipilih user.
+   * Mengembalikan array submissions yang sudah difilter.
+   */
   const filteredSubmissions = submissions.filter((submission) => {
     // Status filter
     if (filters.status !== "all" && submission.status !== filters.status) {
@@ -77,7 +98,14 @@ export default function ExportCenter({
     return true;
   });
 
-  // Export logic hanya field yang tersedia di BE
+  /**
+   * handleQuickExport
+   * Fungsi untuk mengekspor submissions secara cepat sesuai format yang dipilih.
+   * Format yang didukung: CSV, Excel, JSON.
+   * Menampilkan toast untuk status sukses/gagal.
+   *
+   * @param {string} format - Format file ekspor ("csv", "excel", "json")
+   */
   const handleQuickExport = async (format) => {
     try {
       const dataToExport =
@@ -104,7 +132,12 @@ export default function ExportCenter({
     }
   };
 
-  // Analytics export hanya statistik FE
+  /**
+   * handleAnalyticsExport
+   * Fungsi untuk mengekspor laporan analitik submissions.
+   * Menggunakan statistik dari FE, bukan dari backend.
+   * Menampilkan toast untuk status sukses/gagal.
+   */
   const handleAnalyticsExport = async () => {
     try {
       const dataToAnalyze =
@@ -114,7 +147,7 @@ export default function ExportCenter({
       const analyticsData = {
         summary: analytics,
         submissions: dataToAnalyze,
-        filters: filters,
+        filters, // property shorthand
         generatedAt: new Date().toISOString(),
         assignmentTitle,
       };
@@ -127,7 +160,11 @@ export default function ExportCenter({
     }
   };
 
-  // Export options hanya yang didukung BE
+  /**
+   * exportOptions
+   * Array opsi ekspor yang tersedia di UI.
+   * Setiap opsi berisi id, nama, deskripsi, ikon, dan aksi yang dijalankan saat dipilih.
+   */
   const exportOptions = [
     {
       id: "csv",
@@ -168,8 +205,8 @@ export default function ExportCenter({
 
   return (
     <>
+      {/* Export Center Header */}
       <div className={`space-y-4 ${className}`}>
-        {/* Export Header */}
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-gray-900">
@@ -279,10 +316,14 @@ export default function ExportCenter({
         <div className="space-y-6">
           {/* Status Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              className="block text-sm font-medium text-gray-700 mb-2"
+              htmlFor="status-filter-select"
+            >
               Status Filter
             </label>
             <Select
+              id="status-filter-select"
               value={filters.status}
               onValueChange={(value) =>
                 setFilters((prev) => ({ ...prev, status: value }))
@@ -297,23 +338,31 @@ export default function ExportCenter({
 
           {/* Grade Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              className="block text-sm font-medium text-gray-700 mb-2"
+              htmlFor="grade-filter-group"
+            >
               Grade Filter
             </label>
-            <div className="space-y-2">
+            <div className="space-y-2" id="grade-filter-group">
               <div className="flex items-center">
                 <Switch
+                  id="include-graded-switch"
                   checked={filters.includeGraded}
                   onCheckedChange={(checked) =>
                     setFilters((prev) => ({ ...prev, includeGraded: checked }))
                   }
                 />
-                <label className="ml-3 text-sm text-gray-700">
+                <label
+                  className="ml-3 text-sm text-gray-700"
+                  htmlFor="include-graded-switch"
+                >
                   Include Graded
                 </label>
               </div>
               <div className="flex items-center">
                 <Switch
+                  id="include-ungraded-switch"
                   checked={filters.includeUngraded}
                   onCheckedChange={(checked) =>
                     setFilters((prev) => ({
@@ -322,7 +371,10 @@ export default function ExportCenter({
                     }))
                   }
                 />
-                <label className="ml-3 text-sm text-gray-700">
+                <label
+                  className="ml-3 text-sm text-gray-700"
+                  htmlFor="include-ungraded-switch"
+                >
                   Include Ungraded
                 </label>
               </div>
@@ -331,15 +383,22 @@ export default function ExportCenter({
 
           {/* Score Range Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              className="block text-sm font-medium text-gray-700 mb-2"
+              htmlFor="score-range-group"
+            >
               Plagiarism Score Range
             </label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4" id="score-range-group">
               <div>
-                <label className="block text-xs text-gray-500 mb-1">
+                <label
+                  className="block text-xs text-gray-500 mb-1"
+                  htmlFor="min-score-input"
+                >
                   Min Score (%)
                 </label>
                 <Input
+                  id="min-score-input"
                   type="number"
                   min="0"
                   max="100"
@@ -356,10 +415,14 @@ export default function ExportCenter({
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">
+                <label
+                  className="block text-xs text-gray-500 mb-1"
+                  htmlFor="max-score-input"
+                >
                   Max Score (%)
                 </label>
                 <Input
+                  id="max-score-input"
                   type="number"
                   min="0"
                   max="100"
@@ -380,15 +443,22 @@ export default function ExportCenter({
 
           {/* Date Range Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              className="block text-sm font-medium text-gray-700 mb-2"
+              htmlFor="date-range-group"
+            >
               Date Range
             </label>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4" id="date-range-group">
               <div>
-                <label className="block text-xs text-gray-500 mb-1">
+                <label
+                  className="block text-xs text-gray-500 mb-1"
+                  htmlFor="start-date-picker"
+                >
                   Start Date
                 </label>
                 <DatePicker
+                  id="start-date-picker"
                   value={filters.startDate}
                   onChange={(date) =>
                     setFilters((prev) => ({ ...prev, startDate: date }))
@@ -397,10 +467,14 @@ export default function ExportCenter({
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">
+                <label
+                  className="block text-xs text-gray-500 mb-1"
+                  htmlFor="end-date-picker"
+                >
                   End Date
                 </label>
                 <DatePicker
+                  id="end-date-picker"
                   value={filters.endDate}
                   onChange={(date) =>
                     setFilters((prev) => ({ ...prev, endDate: date }))

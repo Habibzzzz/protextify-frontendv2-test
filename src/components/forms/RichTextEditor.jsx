@@ -1,3 +1,4 @@
+// Import React dan Lexical beserta plugin serta node yang diperlukan
 import {
   useRef, // Pastikan useRef diimpor
   useEffect,
@@ -31,7 +32,7 @@ import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
 
-// Nodes
+// Import node untuk berbagai fitur editor
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { ListNode, ListItemNode } from "@lexical/list";
 import { CodeNode, CodeHighlightNode } from "@lexical/code";
@@ -40,7 +41,7 @@ import { TableNode, TableCellNode, TableRowNode } from "@lexical/table";
 import { HorizontalRuleNode } from "@lexical/react/LexicalHorizontalRuleNode";
 import { ImageNode } from "./plugins/ImageNode";
 
-// Custom Plugins
+// Import plugin kustom
 import { AdvancedToolbarPlugin } from "./plugins/AdvancedToolbarPlugin";
 import { FloatingTextFormatToolbarPlugin } from "./plugins/FloatingTextFormatToolbarPlugin";
 import { ImagePlugin } from "./plugins/ImagePlugin";
@@ -52,6 +53,7 @@ import { Save, AlertCircle, CheckCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import "../../styles/lexical-editor.css";
 
+// Konfigurasi tema untuk Lexical Editor
 const theme = {
   ltr: "ltr",
   rtl: "rtl",
@@ -124,13 +126,14 @@ const theme = {
   hr: "editor-hr",
 };
 
-// URL matcher for AutoLink
+// Regex untuk mendeteksi URL dan email pada fitur AutoLink
 const URL_MATCHER =
   /((https?:\/\/(www\.)?)|(www\.))[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
 
 const EMAIL_MATCHER =
   /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
 
+// Fungsi validasi URL untuk plugin Link
 function validateUrl(url) {
   return (
     url === "https://" ||
@@ -141,6 +144,7 @@ function validateUrl(url) {
 }
 
 // Helper function baru untuk mengatur ulang konten editor secara paksa
+// Fungsi ini digunakan untuk mengatur ulang isi editor dengan HTML baru
 const setEditorContent = (editor, html) => {
   if (!editor) return;
   editor.update(() => {
@@ -163,7 +167,10 @@ const setEditorContent = (editor, html) => {
   });
 };
 
-// 3. Buat plugin baru untuk mengontrol paste
+/**
+ * Plugin untuk mengontrol aksi paste pada editor.
+ * Jika disablePaste bernilai true, maka aksi paste akan dicegah dan menampilkan notifikasi.
+ */
 function PasteControlPlugin({ disablePaste }) {
   const [editor] = useLexicalComposerContext();
 
@@ -188,6 +195,10 @@ function PasteControlPlugin({ disablePaste }) {
   return null; // Plugin ini tidak me-render apapun
 }
 
+/**
+ * Komponen utama RichTextEditor.
+ * Merupakan editor teks kaya berbasis Lexical dengan berbagai fitur seperti toolbar, auto-save, word/character limit, dan plugin tambahan.
+ */
 const RichTextEditor = forwardRef(
   (
     {
@@ -212,6 +223,7 @@ const RichTextEditor = forwardRef(
     },
     ref
   ) => {
+    // State dan ref untuk mengelola editor dan statusnya
     const [editor, setEditor] = useState(null);
     const [wordCount, setWordCount] = useState(0);
     const [characterCount, setCharacterCount] = useState(0);
@@ -227,23 +239,23 @@ const RichTextEditor = forwardRef(
     const initialContentRef = useRef(value);
     const preventOnChangeRef = useRef(false); // NEW: Prevent onChange during initialization
 
-    // Update initial content ref when value changes
+    // Update initial content ref ketika value berubah
     useEffect(() => {
       initialContentRef.current = value;
-      // Reset flags when new value comes in
+      // Reset flags ketika value baru masuk
       if (value !== initialContentRef.current) {
         setIsInitialized(false);
         setInitialContentProcessed(false);
       }
     }, [value]);
 
-    // Initial config with all nodes
+    // Konfigurasi awal Lexical Editor dengan node yang dibutuhkan
     const initialConfig = {
       namespace: "ProtextifyEditor",
       theme,
       onError(error) {
         console.error("Lexical Error:", error);
-        toast.error("Editor error: " + error.message);
+        toast.error(`Editor error: ${error.message}`);
       },
       nodes: [
         HeadingNode,
@@ -261,7 +273,10 @@ const RichTextEditor = forwardRef(
       editorState: null,
     };
 
-    // Expose editor methods to parent via ref
+    /**
+     * Expose method editor ke parent melalui ref.
+     * Method yang diekspos: getEditor, insertText, focus, getContent, getWordCount, getCharacterCount, clear, insertHtml.
+     */
     useImperativeHandle(ref, () => ({
       getEditor: () => editor,
       insertText: (text) => {
@@ -307,7 +322,10 @@ const RichTextEditor = forwardRef(
       },
     }));
 
-    // Handle content change
+    /**
+     * Handler perubahan konten editor.
+     * Melakukan validasi jumlah kata dan karakter, update state, serta trigger auto-save jika diperlukan.
+     */
     const handleEditorChange = (editorState, editorInstance) => {
       if (!editorInstance) return;
 
@@ -320,7 +338,7 @@ const RichTextEditor = forwardRef(
         () => editorInstance.getRootElement()?.textContent || ""
       );
 
-      // Calculate word and character counts
+      // Hitung jumlah kata dan karakter
       const words =
         plainText.trim() === ""
           ? 0
@@ -330,32 +348,31 @@ const RichTextEditor = forwardRef(
               .filter((word) => word.length > 0).length;
       const characters = plainText.length;
 
-      // 2. Ganti logika validasi untuk menggunakan ref
+      // Validasi batas kata/karakter, jika melebihi reset ke konten valid terakhir
       if (words > maxWords || characters > maxCharacters) {
         toast.error(
           `Batas maksimal ${maxWords} kata atau ${maxCharacters} karakter telah tercapai.`
         );
-        // Reset ke konten valid terakhir yang disimpan di ref
         setEditorContent(editorInstance, lastValidHtmlRef.current);
         return; // Hentikan eksekusi lebih lanjut
       }
 
-      // 3. Jika valid, perbarui ref dengan konten saat ini
+      // Jika valid, update ref dengan konten saat ini
       lastValidHtmlRef.current = html;
 
       setWordCount(words);
       setCharacterCount(characters);
 
-      // CRITICAL: Only call onChange if we're not preventing it during initialization
+      // Hanya panggil onChange jika tidak sedang prevent (misal saat inisialisasi)
       if (!preventOnChangeRef.current && initialContentProcessed) {
         if (onChange) {
           onChange(html);
         }
 
-        // Mark as unsaved for auto-save
+        // Tandai sebagai belum tersimpan untuk auto-save
         setHasUnsavedChanges(true);
 
-        // Auto-save logic
+        // Logika auto-save
         if (onAutoSave && !disabled) {
           if (autoSaveTimeoutRef.current) {
             clearTimeout(autoSaveTimeoutRef.current);
@@ -379,7 +396,7 @@ const RichTextEditor = forwardRef(
         }
       }
 
-      // Limit checks (always run)
+      // Peringatan limit (selalu dijalankan)
       if (words > maxWords) {
         toast.error(`Melebihi batas maksimal ${maxWords} kata`);
       }
@@ -388,12 +405,15 @@ const RichTextEditor = forwardRef(
       }
     };
 
-    // Set initial content when editor is ready
+    /**
+     * Efek untuk mengatur konten awal editor ketika editor siap.
+     * Prevent onChange selama proses inisialisasi.
+     */
     useEffect(() => {
       // PERBAIKAN: Ubah kondisi `value` menjadi `value !== undefined`
       // Ini memastikan inisialisasi berjalan bahkan jika konten awal adalah string kosong.
       if (editor && value !== undefined && !isInitialized) {
-        // Prevent onChange during initialization
+        // Prevent onChange selama inisialisasi
         preventOnChangeRef.current = true;
 
         // Gunakan helper function untuk mengatur konten
@@ -402,12 +422,12 @@ const RichTextEditor = forwardRef(
 
         setIsInitialized(true);
 
-        // Allow onChange after a delay to ensure content is fully set
+        // Allow onChange setelah delay untuk memastikan konten sudah ter-set
         setTimeout(() => {
           preventOnChangeRef.current = false;
           setInitialContentProcessed(true);
 
-          // Call onEditorReady callback
+          // Panggil callback onEditorReady
           if (onEditorReady) {
             onEditorReady();
           }
@@ -415,7 +435,9 @@ const RichTextEditor = forwardRef(
       }
     }, [editor, value, isInitialized, onEditorReady]);
 
-    // Cleanup
+    /**
+     * Cleanup timeout auto-save ketika komponen unmount.
+     */
     useEffect(() => {
       return () => {
         if (autoSaveTimeoutRef.current) {
@@ -424,7 +446,9 @@ const RichTextEditor = forwardRef(
       };
     }, []);
 
-    // Helper functions untuk warna
+    /**
+     * Helper untuk menentukan warna word count berdasarkan persentase limit.
+     */
     const getWordCountColor = () => {
       const percentage = (wordCount / maxWords) * 100;
       if (percentage >= 100) return "text-red-600";
@@ -433,6 +457,9 @@ const RichTextEditor = forwardRef(
       return "text-gray-600";
     };
 
+    /**
+     * Helper untuk menentukan warna character count berdasarkan persentase limit.
+     */
     const getCharacterCountColor = () => {
       const percentage = (characterCount / maxCharacters) * 100;
       if (percentage >= 100) return "text-red-600";
@@ -441,9 +468,10 @@ const RichTextEditor = forwardRef(
       return "text-gray-600";
     };
 
+    // Render UI editor beserta plugin dan status
     return (
       <div className="w-full">
-        {/* Editor Header */}
+        {/* Editor Header: Menampilkan status word/character count dan auto-save */}
         <div className="flex items-center justify-between mb-3 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-t-lg border border-gray-200">
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-2">
@@ -480,7 +508,7 @@ const RichTextEditor = forwardRef(
           </div>
         </div>
 
-        {/* Editor Container */}
+        {/* Editor Container: Area utama editor */}
         <div
           className={`border rounded-lg overflow-hidden ${
             error ? "border-red-300" : "border-gray-200"
@@ -514,6 +542,7 @@ const RichTextEditor = forwardRef(
                 <ClearEditorPlugin />
                 <WordCountPlugin />
 
+                {/* Plugin AutoLink dan Link jika diaktifkan */}
                 {enableAutoLink && (
                   <>
                     <AutoLinkPlugin
@@ -552,24 +581,31 @@ const RichTextEditor = forwardRef(
                   </>
                 )}
 
+                {/* Plugin Table jika diaktifkan */}
                 {enableTables && <TablePlugin />}
+
+                {/* Plugin Image jika diaktifkan */}
                 {enableImages && <ImagePlugin />}
+
+                {/* Plugin DragDrop jika diaktifkan */}
                 {enableDragDrop && <DragDropPlugin />}
 
+                {/* Plugin Markdown Shortcut jika diaktifkan */}
                 {enableMarkdownShortcuts && (
                   <MarkdownShortcutPlugin transformers={[]} />
                 )}
 
-                {/* 6. Tambahkan plugin baru di sini */}
+                {/* Plugin kontrol paste */}
                 <PasteControlPlugin disablePaste={disablePaste} />
 
+                {/* Floating Toolbar jika diaktifkan */}
                 {showFloatingToolbar && <FloatingTextFormatToolbarPlugin />}
               </div>
             </div>
           </LexicalComposer>
         </div>
 
-        {/* Error Message */}
+        {/* Error Message: Menampilkan pesan error jika ada */}
         {error && (
           <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-center space-x-2">
@@ -579,7 +615,7 @@ const RichTextEditor = forwardRef(
           </div>
         )}
 
-        {/* Limit Warning */}
+        {/* Limit Warning: Peringatan jika mendekati atau melebihi batas kata/karakter */}
         {(wordCount >= maxWords * 0.9 ||
           characterCount >= maxCharacters * 0.9) && (
           <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">

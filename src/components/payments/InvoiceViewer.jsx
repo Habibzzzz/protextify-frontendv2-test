@@ -12,24 +12,44 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from "../ui";
 import { formatCurrency, formatDate } from "../../utils/helpers";
 import { PAYMENT_STATUS } from "../../utils/constants";
 
+/**
+ * Komponen InvoiceViewer
+ * Menampilkan detail invoice pembayaran, informasi customer, assignment, dan metode pembayaran.
+ * Menyediakan aksi Download, Print, dan Email invoice.
+ *
+ * Props:
+ * - transaction: Data transaksi/invoice yang akan ditampilkan.
+ * - onDownload: Fungsi handler untuk aksi download invoice.
+ * - onPrint: Fungsi handler untuk aksi print invoice.
+ * - onEmail: Fungsi handler untuk aksi kirim invoice via email.
+ */
 export default function InvoiceViewer({
   transaction,
   onDownload,
   onPrint,
   onEmail,
 }) {
+  // State untuk loading pada aksi Download, Print, dan Email
   const [loading, setLoading] = useState({
     download: false,
     print: false,
     email: false,
   });
 
+  /**
+   * handleAction
+   * Handler umum untuk aksi Download, Print, dan Email.
+   * Mengatur state loading dan menjalankan handler yang diberikan.
+   *
+   * @param {string} action - Nama aksi ('download', 'print', 'email')
+   * @param {function} handler - Fungsi handler aksi
+   */
   const handleAction = async (action, handler) => {
     if (!handler) return;
     try {
       setLoading((prev) => ({ ...prev, [action]: true }));
       await handler(transaction);
-    } catch (error) {
+    } catch {
       // Error handling sudah sesuai standar BE
       // toast error jika diperlukan
     } finally {
@@ -37,7 +57,13 @@ export default function InvoiceViewer({
     }
   };
 
-  // Status badge mapping sesuai BE
+  /**
+   * getStatusVariant
+   * Mapping status pembayaran ke variant badge yang sesuai.
+   *
+   * @param {string} status - Status pembayaran
+   * @returns {string} - Variant badge
+   */
   const getStatusVariant = (status) => {
     switch (status) {
       case PAYMENT_STATUS.SUCCESS:
@@ -61,6 +87,7 @@ export default function InvoiceViewer({
 
   return (
     <Card className="max-w-4xl mx-auto">
+      {/* Header Invoice: Judul dan aksi Download/Print/Email */}
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center">
@@ -106,9 +133,10 @@ export default function InvoiceViewer({
       </CardHeader>
 
       <CardContent className="space-y-6">
-        {/* Invoice Header */}
+        {/* Bagian Header Invoice: Informasi perusahaan dan detail invoice */}
         <div className="border-b pb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Informasi Perusahaan */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Informasi Kami
@@ -122,6 +150,7 @@ export default function InvoiceViewer({
                 <div>Phone: +62 21 1234 5678</div>
               </div>
             </div>
+            {/* Detail Invoice */}
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Detail Invoice
@@ -156,7 +185,7 @@ export default function InvoiceViewer({
           </div>
         </div>
 
-        {/* Customer Information */}
+        {/* Informasi Customer */}
         <div className="border-b pb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
             <User className="h-5 w-5 mr-2" />
@@ -171,7 +200,7 @@ export default function InvoiceViewer({
           </div>
         </div>
 
-        {/* Assignment Information */}
+        {/* Informasi Assignment */}
         <div className="border-b pb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Detail Assignment
@@ -206,7 +235,7 @@ export default function InvoiceViewer({
           </div>
         </div>
 
-        {/* Payment Breakdown */}
+        {/* Rincian Pembayaran */}
         <div className="border-b pb-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
             <CreditCard className="h-5 w-5 mr-2" />
@@ -235,7 +264,7 @@ export default function InvoiceViewer({
           </div>
         </div>
 
-        {/* Payment Method */}
+        {/* Metode Pembayaran */}
         {transaction.paymentMethod && (
           <div className="border-b pb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -261,7 +290,7 @@ export default function InvoiceViewer({
           </div>
         )}
 
-        {/* Footer */}
+        {/* Footer Invoice */}
         <div className="text-center text-sm text-gray-500 pt-6 border-t">
           <p>Terima kasih telah menggunakan layanan Protextify!</p>
           <p className="mt-2">

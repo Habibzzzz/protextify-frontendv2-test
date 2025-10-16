@@ -1,11 +1,22 @@
 // src/components/instructor/ClassOverview.jsx
+
 import { Link } from "react-router-dom";
 import { BookOpen, Users, FileText, Plus, Eye } from "lucide-react";
 import { Button, Card, CardHeader, CardTitle, CardContent } from "../ui";
 
+/**
+ * Komponen ClassOverview
+ * Menampilkan ringkasan kelas untuk instruktur, baik dalam mode detail maupun ringkas.
+ *
+ * Props:
+ * - classes: Array daftar kelas yang akan ditampilkan.
+ * - totalClasses: Jumlah total kelas yang dimiliki instruktur.
+ * - detailed: Boolean, jika true maka menampilkan mode detail (management kelas).
+ */
 const ClassOverview = ({ classes, totalClasses, detailed = false }) => {
   return (
     <Card className="border-0 shadow-2xl hover:shadow-3xl transition-all duration-500">
+      {/* Header Card: Judul dan tombol lihat semua kelas */}
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -34,42 +45,44 @@ const ClassOverview = ({ classes, totalClasses, detailed = false }) => {
           </Link>
         </div>
       </CardHeader>
+
+      {/* Konten Card: Daftar kelas atau pesan jika belum ada kelas */}
       <CardContent>
         <div className="space-y-4">
           {classes.length > 0 ? (
+            // Menampilkan daftar kelas jika tersedia
             classes.map((cls) => (
               <div
                 key={cls.id}
                 className="group relative overflow-hidden p-4 bg-gradient-to-r from-gray-50 to-blue-50/30 rounded-2xl border border-gray-200/50 hover:border-[#23407a]/30 hover:shadow-lg transition-all duration-300"
               >
-                {/* Hover overlay */}
+                {/* Overlay efek hover */}
                 <div className="absolute inset-0 bg-gradient-to-r from-[#23407a]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
                 <div className="relative z-10 flex items-center justify-between">
                   <div className="flex-1 min-w-0">
+                    {/* Nama kelas */}
                     <h3 className="font-bold text-gray-900 truncate group-hover:text-[#23407a] transition-colors text-lg">
                       {cls.name}
                     </h3>
+                    {/* Info jumlah siswa dan tugas */}
                     <div className="flex items-center space-x-4 text-sm text-gray-600 mt-2">
                       <div className="flex items-center bg-white/70 px-2 py-1 rounded-lg">
                         <Users className="h-3 w-3 mr-1 text-blue-500" />
                         <span className="font-medium">
-                          {/* {Array.isArray(cls.enrollments)
-                            ? cls.enrollments.length
-                            : 0}{" "} */}
+                          {/* Jumlah siswa, bisa diaktifkan jika data enrollments tersedia */}
                           siswa
                         </span>
                       </div>
                       <div className="flex items-center bg-white/70 px-2 py-1 rounded-lg">
                         <FileText className="h-3 w-3 mr-1 text-purple-500" />
                         <span className="font-medium">
-                          {/* {Array.isArray(cls.assignments)
-                            ? cls.assignments.length
-                            : 0}{" "} */}
+                          {/* Jumlah tugas, bisa diaktifkan jika data assignments tersedia */}
                           tugas
                         </span>
                       </div>
                     </div>
+                    {/* Info tanggal pembuatan kelas (hanya di mode detail) */}
                     {detailed && (
                       <div className="mt-3 text-xs text-gray-500 bg-white/50 px-2 py-1 rounded-lg inline-block">
                         Dibuat:{" "}
@@ -80,6 +93,7 @@ const ClassOverview = ({ classes, totalClasses, detailed = false }) => {
                     )}
                   </div>
 
+                  {/* Tombol aksi untuk kelas */}
                   <div className="flex items-center space-x-2 ml-4">
                     {detailed && (
                       <Link to={`/instructor/classes/${cls.id}`}>
@@ -108,6 +122,7 @@ const ClassOverview = ({ classes, totalClasses, detailed = false }) => {
               </div>
             ))
           ) : (
+            // Pesan jika belum ada kelas
             <div className="text-center py-12">
               <div className="w-20 h-20 bg-gradient-to-br from-[#23407a]/10 to-blue-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
                 <BookOpen className="h-10 w-10 text-[#23407a]" />

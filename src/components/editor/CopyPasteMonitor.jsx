@@ -3,15 +3,25 @@ import { AlertTriangle, Eye, Shield } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent, Badge, Alert } from "../ui";
 import { useCopyPasteMonitor } from "../../hooks/useCopyPasteMonitor";
 
+/**
+ * Komponen CopyPasteMonitor
+ * Memantau aktivitas copy-paste pada editor, menampilkan statistik, dan peringatan risiko.
+ *
+ * Props:
+ * - editorRef: referensi ke editor (TipTap/RichTextEditor)
+ * - onSuspiciousActivity: callback saat aktivitas mencurigakan terdeteksi
+ * - showWarnings: apakah peringatan ditampilkan
+ * - enabled: apakah monitoring aktif
+ */
 const CopyPasteMonitor = ({
   editorRef,
   onSuspiciousActivity,
   showWarnings = true,
   enabled = true,
 }) => {
+  // Hook custom untuk monitoring copy-paste
   const {
     pasteEvents,
-    suspiciousCount,
     isMonitoring,
     attachToEditor,
     getStats,
@@ -25,9 +35,13 @@ const CopyPasteMonitor = ({
     logToBackend: false, // Pastikan log ke BE dinonaktifkan
   });
 
+  // State untuk ekspansi riwayat aktivitas
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Attach monitor to editor
+  /**
+   * Effect: Attach monitor ke editor saat editorRef dan monitoring aktif
+   * Mendukung TipTap dan RichTextEditor
+   */
   useEffect(() => {
     if (editorRef?.current && isMonitoring) {
       // Untuk TipTap: dapatkan DOM editor dari .view.dom
@@ -46,8 +60,14 @@ const CopyPasteMonitor = ({
     }
   }, [editorRef, isMonitoring, attachToEditor]);
 
+  // Statistik aktivitas paste
   const stats = getStats();
 
+  /**
+   * Mendapatkan varian badge berdasarkan tingkat risiko
+   * @param {string} riskLevel - Tingkat risiko
+   * @returns {string} - Varian badge
+   */
   const getRiskBadgeVariant = (riskLevel) => {
     switch (riskLevel) {
       case "high":
@@ -61,6 +81,11 @@ const CopyPasteMonitor = ({
     }
   };
 
+  /**
+   * Mendapatkan label risiko berdasarkan tingkat risiko
+   * @param {string} riskLevel - Tingkat risiko
+   * @returns {string} - Label risiko
+   */
   const getRiskLabel = (riskLevel) => {
     switch (riskLevel) {
       case "high":
@@ -76,6 +101,7 @@ const CopyPasteMonitor = ({
 
   return (
     <Card className="w-full">
+      {/* Header Card: Judul, status monitoring, dan badge risiko */}
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -99,7 +125,9 @@ const CopyPasteMonitor = ({
         </div>
       </CardHeader>
 
+      {/* Konten Card: Statistik dan peringatan */}
       <CardContent className="pt-0">
+        {/* Statistik paste */}
         <div className="grid grid-cols-3 gap-4 text-sm">
           <div className="text-center">
             <div className="font-semibold text-lg">{stats.totalPastes}</div>
@@ -119,6 +147,7 @@ const CopyPasteMonitor = ({
           </div>
         </div>
 
+        {/* Peringatan risiko tinggi */}
         {stats.riskLevel === "high" && (
           <Alert variant="destructive" className="mt-4">
             <AlertTriangle className="h-4 w-4" />
@@ -132,6 +161,7 @@ const CopyPasteMonitor = ({
           </Alert>
         )}
 
+        {/* Riwayat aktivitas paste (ekspansi) */}
         {isExpanded && pasteEvents.length > 0 && (
           <div className="mt-4 space-y-2">
             <div className="flex items-center justify-between">
@@ -173,6 +203,7 @@ const CopyPasteMonitor = ({
           </div>
         )}
 
+        {/* Tombol monitoring dan branding */}
         <div className="flex justify-between items-center mt-4 pt-3 border-t">
           <button
             onClick={() => toggleMonitoring(!isMonitoring)}
@@ -184,7 +215,6 @@ const CopyPasteMonitor = ({
           >
             {isMonitoring ? "Matikan Monitor" : "Aktifkan Monitor"}
           </button>
-
           <span className="text-xs text-gray-500">
             Protextify Anti-Plagiarism
           </span>

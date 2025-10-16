@@ -1,4 +1,5 @@
 // src/components/forms/ExportModal.jsx
+
 import { useState } from "react";
 import {
   Download,
@@ -23,15 +24,32 @@ import {
   calculateSubmissionStatistics,
 } from "../../utils/exportUtils";
 
+/**
+ * Komponen modal untuk mengekspor data submissions ke berbagai format file.
+ * Menyediakan opsi format, pengaturan lanjutan, dan penamaan file kustom.
+ *
+ * Props:
+ * - isOpen: boolean, status modal terbuka/tutup
+ * - onClose: function, handler untuk menutup modal
+ * - submissions: array, data submissions yang akan diekspor
+ * - assignmentTitle: string, judul assignment untuk penamaan file
+ */
 export default function ExportModal({
   isOpen,
   onClose,
   submissions,
   assignmentTitle,
 }) {
+  // State untuk status proses ekspor
   const [exporting, setExporting] = useState(false);
+
+  // State untuk format file yang dipilih
   const [selectedFormat, setSelectedFormat] = useState("csv");
+
+  // State untuk menampilkan opsi lanjutan
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
+
+  // State untuk opsi ekspor lanjutan
   const [options, setOptions] = useState({
     includeContent: false,
     includeTimestamps: true,
@@ -44,6 +62,7 @@ export default function ExportModal({
     customFilename: "",
   });
 
+  // Daftar format ekspor yang tersedia
   const exportFormats = [
     {
       id: "csv",
@@ -75,14 +94,20 @@ export default function ExportModal({
     },
   ];
 
+  /**
+   * Fungsi utama untuk menangani proses ekspor data submissions.
+   * Menyesuaikan proses berdasarkan format dan opsi yang dipilih.
+   */
   const handleExport = async () => {
     try {
       setExporting(true);
-      let fileName = options.customFilename
+
+      // Penentuan nama file, menggunakan customFilename jika tersedia
+      const fileName = options.customFilename
         ? options.customFilename
         : `${assignmentTitle}_${new Date().toISOString()}`;
 
-      // Hanya field yang tersedia di BE
+      // Proses ekspor berdasarkan format yang dipilih
       switch (selectedFormat) {
         case "csv":
           if (options.includeStatistics) {
@@ -102,6 +127,7 @@ export default function ExportModal({
             });
           }
           break;
+
         case "excel":
           if (options.includeStatistics) {
             const statistics = calculateSubmissionStatistics(submissions);
@@ -127,6 +153,7 @@ export default function ExportModal({
             });
           }
           break;
+
         case "json":
           exportSubmissionsToJSON(submissions, fileName, {
             prettify: options.prettifyJSON,
@@ -136,6 +163,7 @@ export default function ExportModal({
             includeGrades: options.includeGrades,
           });
           break;
+
         case "xml":
           exportSubmissionsToXML(submissions, fileName, {
             includeContent: options.includeContent,
@@ -144,6 +172,7 @@ export default function ExportModal({
             includeGrades: options.includeGrades,
           });
           break;
+
         default:
           throw new Error("Format tidak dikenal");
       }
@@ -158,14 +187,16 @@ export default function ExportModal({
     }
   };
 
+  // Render UI modal ekspor
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Ekspor Submissions">
       <div className="space-y-4">
+        {/* Informasi jumlah submissions yang akan diekspor */}
         <p className="text-gray-600">
           Ekspor {submissions.length} submission ke format yang diinginkan
         </p>
 
-        {/* Format Selection */}
+        {/* Pilihan format ekspor */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {exportFormats.map((format) => (
             <Card
@@ -197,7 +228,7 @@ export default function ExportModal({
           ))}
         </div>
 
-        {/* Advanced Options Toggle */}
+        {/* Tombol untuk menampilkan/sembunyikan opsi lanjutan */}
         <div className="flex items-center justify-between pt-4 border-t">
           <Button
             variant="outline"
@@ -209,7 +240,7 @@ export default function ExportModal({
           </Button>
         </div>
 
-        {/* Advanced Options */}
+        {/* Opsi lanjutan untuk ekspor */}
         {showAdvancedOptions && (
           <Card className="p-4 bg-gray-50">
             <h4 className="font-medium text-gray-900 mb-4 flex items-center gap-2">
@@ -218,10 +249,11 @@ export default function ExportModal({
             </h4>
 
             <div className="space-y-4">
-              {/* Custom Filename */}
+              {/* Input nama file kustom */}
               <div>
                 <Input
                   label="Nama File Kustom"
+                  id="custom-filename-input"
                   placeholder="Masukkan nama file (tanpa ekstensi)"
                   value={options.customFilename}
                   onChange={(e) =>
@@ -231,13 +263,17 @@ export default function ExportModal({
                 />
               </div>
 
-              {/* Export Options */}
+              {/* Switch untuk berbagai opsi ekspor */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700">
+                  <label
+                    className="text-sm font-medium text-gray-700"
+                    htmlFor="include-content-switch"
+                  >
                     Sertakan Konten Lengkap
                   </label>
                   <Switch
+                    id="include-content-switch"
                     checked={options.includeContent}
                     onCheckedChange={(checked) =>
                       setOptions({ ...options, includeContent: checked })
@@ -246,10 +282,14 @@ export default function ExportModal({
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700">
+                  <label
+                    className="text-sm font-medium text-gray-700"
+                    htmlFor="include-timestamps-switch"
+                  >
                     Sertakan Timestamp
                   </label>
                   <Switch
+                    id="include-timestamps-switch"
                     checked={options.includeTimestamps}
                     onCheckedChange={(checked) =>
                       setOptions({ ...options, includeTimestamps: checked })
@@ -258,10 +298,14 @@ export default function ExportModal({
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700">
+                  <label
+                    className="text-sm font-medium text-gray-700"
+                    htmlFor="include-plagiarism-details-switch"
+                  >
                     Detail Plagiarisme
                   </label>
                   <Switch
+                    id="include-plagiarism-details-switch"
                     checked={options.includePlagiarismDetails}
                     onCheckedChange={(checked) =>
                       setOptions({
@@ -273,10 +317,14 @@ export default function ExportModal({
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700">
+                  <label
+                    className="text-sm font-medium text-gray-700"
+                    htmlFor="include-grades-switch"
+                  >
                     Sertakan Nilai
                   </label>
                   <Switch
+                    id="include-grades-switch"
                     checked={options.includeGrades}
                     onCheckedChange={(checked) =>
                       setOptions({ ...options, includeGrades: checked })
@@ -285,10 +333,14 @@ export default function ExportModal({
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700">
+                  <label
+                    className="text-sm font-medium text-gray-700"
+                    htmlFor="include-statistics-switch"
+                  >
                     Sertakan Statistik
                   </label>
                   <Switch
+                    id="include-statistics-switch"
                     checked={options.includeStatistics}
                     onCheckedChange={(checked) =>
                       setOptions({ ...options, includeStatistics: checked })
@@ -296,12 +348,17 @@ export default function ExportModal({
                   />
                 </div>
 
+                {/* Opsi khusus format JSON */}
                 {selectedFormat === "json" && (
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-gray-700">
+                    <label
+                      className="text-sm font-medium text-gray-700"
+                      htmlFor="prettify-json-switch"
+                    >
                       Format JSON Rapi
                     </label>
                     <Switch
+                      id="prettify-json-switch"
                       checked={options.prettifyJSON}
                       onCheckedChange={(checked) =>
                         setOptions({ ...options, prettifyJSON: checked })
@@ -310,12 +367,17 @@ export default function ExportModal({
                   </div>
                 )}
 
+                {/* Opsi khusus format Excel */}
                 {selectedFormat === "excel" && (
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-gray-700">
+                    <label
+                      className="text-sm font-medium text-gray-700"
+                      htmlFor="separate-sheets-switch"
+                    >
                       Pisah Sheet by Status
                     </label>
                     <Switch
+                      id="separate-sheets-switch"
                       checked={options.separateSheetsByStatus}
                       onCheckedChange={(checked) =>
                         setOptions({
@@ -331,7 +393,7 @@ export default function ExportModal({
           </Card>
         )}
 
-        {/* Action Buttons */}
+        {/* Tombol aksi ekspor dan batal */}
         <div className="flex justify-end space-x-3 pt-4 border-t">
           <Button variant="outline" onClick={onClose} disabled={exporting}>
             Batal

@@ -1,10 +1,21 @@
 // src/components/instructor/RecentActivity.jsx
+
 import { Link } from "react-router-dom";
 import { FileText, DollarSign, Clock, CheckCircle, Eye } from "lucide-react";
 import { Button, Card, CardHeader, CardTitle, CardContent } from "../ui";
 
+/**
+ * Komponen RecentActivity
+ * Menampilkan daftar aktivitas terbaru berupa submission dan transaksi.
+ * Props:
+ * - submissions: array data submission
+ * - transactions: array data transaksi
+ */
 const RecentActivity = ({ submissions, transactions }) => {
-  // Combine and sort recent activities
+  /**
+   * Menggabungkan dan mengurutkan aktivitas terbaru dari submissions dan transactions.
+   * Hanya mengambil 3 submission dan 2 transaksi terbaru.
+   */
   const activities = [
     ...submissions.slice(0, 3).map((s) => ({
       type: "submission",
@@ -32,6 +43,12 @@ const RecentActivity = ({ submissions, transactions }) => {
     })),
   ].sort((a, b) => new Date(b.time) - new Date(a.time));
 
+  /**
+   * Fungsi untuk mendapatkan ikon status berdasarkan tipe dan status aktivitas.
+   * @param {string} type - Tipe aktivitas ("submission" atau "transaction")
+   * @param {string} status - Status aktivitas
+   * @returns {JSX.Element} Ikon status
+   */
   const getStatusIcon = (type, status) => {
     if (type === "submission") {
       switch (status) {
@@ -51,6 +68,12 @@ const RecentActivity = ({ submissions, transactions }) => {
     }
   };
 
+  /**
+   * Fungsi untuk mendapatkan warna latar belakang status berdasarkan tipe dan status aktivitas.
+   * @param {string} type - Tipe aktivitas
+   * @param {string} status - Status aktivitas
+   * @returns {string} Kelas warna background
+   */
   const getStatusColor = (type, status) => {
     if (type === "submission") {
       switch (status) {
@@ -78,6 +101,7 @@ const RecentActivity = ({ submissions, transactions }) => {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
+          {/* Menampilkan daftar aktivitas terbaru */}
           {activities.slice(0, 6).map((activity) => (
             <div
               key={`${activity.type}-${activity.id}`}
@@ -109,6 +133,7 @@ const RecentActivity = ({ submissions, transactions }) => {
                     : "-"}
                 </div>
               </div>
+              {/* Tombol untuk melihat detail submission */}
               {activity.type === "submission" && (
                 <Link to={`/instructor/submissions/${activity.id}/grade`}>
                   <Button variant="ghost" size="sm">
@@ -119,6 +144,7 @@ const RecentActivity = ({ submissions, transactions }) => {
             </div>
           ))}
 
+          {/* Tampilkan pesan jika tidak ada aktivitas */}
           {activities.length === 0 && (
             <div className="text-center py-8">
               <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />

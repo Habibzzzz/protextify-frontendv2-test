@@ -11,6 +11,24 @@ import {
 import useAuth from "../../hooks/useAuth";
 import { getDefaultRoute, USER_ROLES } from "../../utils/constants";
 
+/**
+ * Komponen UserMenu untuk menampilkan menu pengguna berdasarkan varian tampilan.
+ *
+ * @param {Object} props - Properti yang diterima komponen.
+ * @param {"header"|"sidebar"|"mobile"} [props.variant="header"] - Varian tampilan menu (header, sidebar, atau mobile).
+ * @param {boolean} [props.showFullName=true] - Menentukan apakah nama lengkap pengguna ditampilkan.
+ * @param {boolean} [props.showRole=true] - Menentukan apakah peran pengguna ditampilkan.
+ * @param {string} [props.className=""] - Kelas CSS tambahan untuk komponen.
+ *
+ * @returns {JSX.Element|null} Komponen menu pengguna sesuai varian, atau null jika tidak terautentikasi.
+ *
+ * Fitur:
+ * - Menampilkan avatar, nama, dan peran pengguna.
+ * - Menampilkan daftar menu sesuai peran pengguna.
+ * - Mendukung varian tampilan: header, sidebar, dan mobile.
+ * - Menutup menu saat klik di luar area menu atau saat perubahan rute.
+ * - Logout pengguna dan navigasi ke halaman utama.
+ */
 export default function UserMenu({
   variant = "header", // "header" | "sidebar" | "mobile"
   showFullName = true,

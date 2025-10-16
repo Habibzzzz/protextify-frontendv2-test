@@ -103,7 +103,9 @@ export default function AdvancedPDFOptions({
       setShowModal(false);
     } catch (error) {
       console.error("PDF generation error:", error);
-      toast.error("Gagal menghasilkan PDF: " + error.message);
+      // Contoh perbaikan prefer-template
+      // toast.error("Gagal generate PDF: " + error.message);
+      toast.error(`Gagal generate PDF: ${error.message}`);
     } finally {
       setGenerating(false);
     }
@@ -187,8 +189,14 @@ export default function AdvancedPDFOptions({
             </h4>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">Include Header</label>
+                <label
+                  className="text-sm font-medium"
+                  htmlFor="modal-include-header"
+                >
+                  Include Header
+                </label>
                 <Switch
+                  id="modal-include-header"
                   checked={options.includeHeader}
                   onCheckedChange={(checked) =>
                     handleOptionChange("includeHeader", checked)
@@ -197,8 +205,14 @@ export default function AdvancedPDFOptions({
               </div>
 
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">Include Footer</label>
+                <label
+                  className="text-sm font-medium"
+                  htmlFor="modal-include-footer"
+                >
+                  Include Footer
+                </label>
                 <Switch
+                  id="modal-include-footer"
                   checked={options.includeFooter}
                   onCheckedChange={(checked) =>
                     handleOptionChange("includeFooter", checked)
@@ -207,8 +221,14 @@ export default function AdvancedPDFOptions({
               </div>
 
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">Cover Page</label>
+                <label
+                  className="text-sm font-medium"
+                  htmlFor="modal-include-cover-page"
+                >
+                  Cover Page
+                </label>
                 <Switch
+                  id="modal-include-cover-page"
                   checked={options.includeCoverPage}
                   onCheckedChange={(checked) =>
                     handleOptionChange("includeCoverPage", checked)
@@ -217,8 +237,14 @@ export default function AdvancedPDFOptions({
               </div>
 
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">Metadata</label>
+                <label
+                  className="text-sm font-medium"
+                  htmlFor="modal-include-metadata"
+                >
+                  Metadata
+                </label>
                 <Switch
+                  id="modal-include-metadata"
                   checked={options.includeMetadata}
                   onCheckedChange={(checked) =>
                     handleOptionChange("includeMetadata", checked)
@@ -233,8 +259,14 @@ export default function AdvancedPDFOptions({
             <h4 className="font-medium mb-4">Content Options</h4>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">Attachments</label>
+                <label
+                  className="text-sm font-medium"
+                  htmlFor="modal-attachments"
+                >
+                  Attachments
+                </label>
                 <Switch
+                  id="modal-attachments"
                   checked={options.includeAttachments}
                   onCheckedChange={(checked) =>
                     handleOptionChange("includeAttachments", checked)
@@ -243,8 +275,14 @@ export default function AdvancedPDFOptions({
               </div>
 
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">Plagiarism Report</label>
+                <label
+                  className="text-sm font-medium"
+                  htmlFor="modal-plagiarism-report"
+                >
+                  Plagiarism Report
+                </label>
                 <Switch
+                  id="modal-plagiarism-report"
                   checked={options.includePlagiarismReport}
                   onCheckedChange={(checked) =>
                     handleOptionChange("includePlagiarismReport", checked)
@@ -259,10 +297,14 @@ export default function AdvancedPDFOptions({
             <h4 className="font-medium mb-4">Format Options</h4>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium block mb-2">
+                <label
+                  className="text-sm font-medium block mb-2"
+                  htmlFor="format-page-size"
+                >
                   Page Size
                 </label>
                 <select
+                  id="format-page-size"
                   value={options.pageFormat}
                   onChange={(e) =>
                     handleOptionChange("pageFormat", e.target.value)
@@ -277,10 +319,14 @@ export default function AdvancedPDFOptions({
               </div>
 
               <div>
-                <label className="text-sm font-medium block mb-2">
+                <label
+                  className="text-sm font-medium block mb-2"
+                  htmlFor="format-orientation"
+                >
                   Orientation
                 </label>
                 <select
+                  id="format-orientation"
                   value={options.orientation}
                   onChange={(e) =>
                     handleOptionChange("orientation", e.target.value)
@@ -293,10 +339,14 @@ export default function AdvancedPDFOptions({
               </div>
 
               <div>
-                <label className="text-sm font-medium block mb-2">
+                <label
+                  className="text-sm font-medium block mb-2"
+                  htmlFor="format-font-size"
+                >
                   Font Size
                 </label>
                 <select
+                  id="format-font-size"
                   value={options.fontSize}
                   onChange={(e) =>
                     handleOptionChange("fontSize", e.target.value)
@@ -312,10 +362,14 @@ export default function AdvancedPDFOptions({
               </div>
 
               <div>
-                <label className="text-sm font-medium block mb-2">
+                <label
+                  className="text-sm font-medium block mb-2"
+                  htmlFor="format-line-spacing"
+                >
                   Line Spacing
                 </label>
                 <select
+                  id="format-line-spacing"
                   value={options.lineSpacing}
                   onChange={(e) =>
                     handleOptionChange("lineSpacing", e.target.value)
@@ -339,86 +393,284 @@ export default function AdvancedPDFOptions({
             </h4>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium block mb-2">
-                  Watermark Text
-                </label>
-                <Input
-                  value={options.watermark}
-                  onChange={(e) =>
-                    handleOptionChange("watermark", e.target.value)
-                  }
-                  placeholder="Enter watermark text (optional)"
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium block mb-2">
+                <label
+                  htmlFor="pdf-header-text"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Header Text
                 </label>
                 <Input
+                  id="pdf-header-text"
                   value={options.headerText}
                   onChange={(e) =>
                     handleOptionChange("headerText", e.target.value)
                   }
-                  placeholder="Custom header text (optional)"
-                  className="w-full"
+                  placeholder="Judul header (opsional)"
                 />
               </div>
-
               <div>
-                <label className="text-sm font-medium block mb-2">
+                <label
+                  htmlFor="pdf-footer-text"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Footer Text
                 </label>
                 <Input
+                  id="pdf-footer-text"
                   value={options.footerText}
                   onChange={(e) =>
                     handleOptionChange("footerText", e.target.value)
                   }
-                  placeholder="Custom footer text (optional)"
-                  className="w-full"
+                  placeholder="Footer (opsional)"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="pdf-watermark"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Watermark
+                </label>
+                <Input
+                  id="pdf-watermark"
+                  value={options.watermark}
+                  onChange={(e) =>
+                    handleOptionChange("watermark", e.target.value)
+                  }
+                  placeholder="Watermark (opsional)"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="pdf-page-format"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Format Halaman
+                </label>
+                <Select
+                  id="pdf-page-format"
+                  value={options.pageFormat}
+                  onChange={(e) =>
+                    handleOptionChange("pageFormat", e.target.value)
+                  }
+                >
+                  <option value="a4">A4</option>
+                  <option value="letter">Letter</option>
+                </Select>
+              </div>
+              <div>
+                <label
+                  htmlFor="pdf-orientation"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Orientasi
+                </label>
+                <Select
+                  id="pdf-orientation"
+                  value={options.orientation}
+                  onChange={(e) =>
+                    handleOptionChange("orientation", e.target.value)
+                  }
+                >
+                  <option value="portrait">Portrait</option>
+                  <option value="landscape">Landscape</option>
+                </Select>
+              </div>
+              <div>
+                <label
+                  htmlFor="pdf-margins"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Margin
+                </label>
+                <Select
+                  id="pdf-margins"
+                  value={options.margins}
+                  onChange={(e) =>
+                    handleOptionChange("margins", e.target.value)
+                  }
+                >
+                  <option value="normal">Normal</option>
+                  <option value="wide">Wide</option>
+                  <option value="narrow">Narrow</option>
+                </Select>
+              </div>
+              <div>
+                <label
+                  htmlFor="pdf-font-size"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Ukuran Font
+                </label>
+                <Input
+                  id="pdf-font-size"
+                  type="number"
+                  min={8}
+                  max={20}
+                  value={options.fontSize}
+                  onChange={(e) =>
+                    handleOptionChange("fontSize", e.target.value)
+                  }
+                  placeholder="Ukuran font"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="pdf-line-spacing"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Spasi Baris
+                </label>
+                <Select
+                  id="pdf-line-spacing"
+                  value={options.lineSpacing}
+                  onChange={(e) =>
+                    handleOptionChange("lineSpacing", e.target.value)
+                  }
+                >
+                  <option value="1">1</option>
+                  <option value="1.15">1.15</option>
+                  <option value="1.5">1.5</option>
+                  <option value="2">2</option>
+                </Select>
+              </div>
+              <div>
+                <label
+                  htmlFor="pdf-include-header"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Sertakan Header
+                </label>
+                <Switch
+                  id="pdf-include-header"
+                  checked={options.includeHeader}
+                  onCheckedChange={(checked) =>
+                    handleOptionChange("includeHeader", checked)
+                  }
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="pdf-include-footer"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Sertakan Footer
+                </label>
+                <Switch
+                  id="pdf-include-footer"
+                  checked={options.includeFooter}
+                  onCheckedChange={(checked) =>
+                    handleOptionChange("includeFooter", checked)
+                  }
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="pdf-include-metadata"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Sertakan Metadata
+                </label>
+                <Switch
+                  id="pdf-include-metadata"
+                  checked={options.includeMetadata}
+                  onCheckedChange={(checked) =>
+                    handleOptionChange("includeMetadata", checked)
+                  }
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="pdf-include-cover-page"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Sertakan Cover Page
+                </label>
+                <Switch
+                  id="pdf-include-cover-page"
+                  checked={options.includeCoverPage}
+                  onCheckedChange={(checked) =>
+                    handleOptionChange("includeCoverPage", checked)
+                  }
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="pdf-include-attachments"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Sertakan Lampiran
+                </label>
+                <Switch
+                  id="pdf-include-attachments"
+                  checked={options.includeAttachments}
+                  onCheckedChange={(checked) =>
+                    handleOptionChange("includeAttachments", checked)
+                  }
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="pdf-include-plagiarism-report"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Sertakan Laporan Plagiarisme
+                </label>
+                <Switch
+                  id="pdf-include-plagiarism-report"
+                  checked={options.includePlagiarismReport}
+                  onCheckedChange={(checked) =>
+                    handleOptionChange("includePlagiarismReport", checked)
+                  }
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="pdf-separate-files"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Pisahkan File per Siswa
+                </label>
+                <Switch
+                  id="pdf-separate-files"
+                  checked={options.separateFiles}
+                  onCheckedChange={(checked) =>
+                    handleOptionChange("separateFiles", checked)
+                  }
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="pdf-include-index"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Sertakan Index
+                </label>
+                <Switch
+                  id="pdf-include-index"
+                  checked={options.includeIndex}
+                  onCheckedChange={(checked) =>
+                    handleOptionChange("includeIndex", checked)
+                  }
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="pdf-group-by-status"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Kelompokkan Berdasarkan Status
+                </label>
+                <Switch
+                  id="pdf-group-by-status"
+                  checked={options.groupByStatus}
+                  onCheckedChange={(checked) =>
+                    handleOptionChange("groupByStatus", checked)
+                  }
                 />
               </div>
             </div>
           </Card>
-
-          {/* Bulk Options */}
-          {type === "bulk" && (
-            <Card className="p-4">
-              <h4 className="font-medium mb-4">Bulk Options</h4>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">Separate Files</label>
-                  <Switch
-                    checked={options.separateFiles}
-                    onCheckedChange={(checked) =>
-                      handleOptionChange("separateFiles", checked)
-                    }
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">Include Index</label>
-                  <Switch
-                    checked={options.includeIndex}
-                    onCheckedChange={(checked) =>
-                      handleOptionChange("includeIndex", checked)
-                    }
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">Group by Status</label>
-                  <Switch
-                    checked={options.groupByStatus}
-                    onCheckedChange={(checked) =>
-                      handleOptionChange("groupByStatus", checked)
-                    }
-                  />
-                </div>
-              </div>
-            </Card>
-          )}
 
           {/* Modal Actions */}
           <div className="flex justify-end gap-3 pt-4 border-t">

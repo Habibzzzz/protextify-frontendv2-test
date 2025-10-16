@@ -22,6 +22,11 @@ import {
 
 const LowPriority = 1;
 
+/**
+ * Komponen toolbar mengambang untuk format teks.
+ * Menampilkan tombol-tombol format (bold, italic, underline, dll) di atas teks yang terseleksi.
+ * @param {Object} props - Properti komponen
+ */
 function TextFormatFloatingToolbar({
   editor,
   anchorElem,
@@ -34,6 +39,9 @@ function TextFormatFloatingToolbar({
 }) {
   const popupCharStylesEditorRef = useRef(null);
 
+  /**
+   * Fungsi untuk menyisipkan atau menghapus link pada teks yang terseleksi.
+   */
   const insertLink = useCallback(() => {
     if (!isLink) {
       editor.dispatchCommand(TOGGLE_LINK_COMMAND, "https://");
@@ -42,9 +50,11 @@ function TextFormatFloatingToolbar({
     }
   }, [editor, isLink]);
 
+  /**
+   * Fungsi untuk memperbarui posisi toolbar mengambang sesuai seleksi teks.
+   */
   const updateTextFormatFloatingToolbar = useCallback(() => {
     const selection = $getSelection();
-
     const popupCharStylesEditorElem = popupCharStylesEditorRef.current;
     const nativeSelection = window.getSelection();
 
@@ -61,11 +71,13 @@ function TextFormatFloatingToolbar({
       rootElement.contains(nativeSelection.anchorNode)
     ) {
       const rangeRect = getDOMRangeRect(nativeSelection, rootElement);
-
       setFloatingElemPosition(rangeRect, popupCharStylesEditorElem, anchorElem);
     }
   }, [editor, anchorElem]);
 
+  /**
+   * Efek untuk memperbarui posisi toolbar saat window di-resize atau anchorElem di-scroll.
+   */
   useEffect(() => {
     const scrollerElem = anchorElem;
 
@@ -88,6 +100,9 @@ function TextFormatFloatingToolbar({
     };
   }, [editor, updateTextFormatFloatingToolbar, anchorElem]);
 
+  /**
+   * Efek untuk memperbarui posisi toolbar saat terjadi perubahan pada editor state atau seleksi.
+   */
   useEffect(() => {
     editor.getEditorState().read(() => {
       updateTextFormatFloatingToolbar();
@@ -98,7 +113,6 @@ function TextFormatFloatingToolbar({
           updateTextFormatFloatingToolbar();
         });
       }),
-
       editor.registerCommand(
         SELECTION_CHANGE_COMMAND,
         () => {
@@ -118,7 +132,7 @@ function TextFormatFloatingToolbar({
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold");
             }}
-            className={"popup-item spaced " + (isBold ? "active" : "")}
+            className={`popup-item spaced${isBold ? " active" : ""}`}
             aria-label="Format text as bold"
           >
             <Bold className="format" />
@@ -127,7 +141,7 @@ function TextFormatFloatingToolbar({
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic");
             }}
-            className={"popup-item spaced " + (isItalic ? "active" : "")}
+            className={`popup-item spaced${isItalic ? " active" : ""}`}
             aria-label="Format text as italics"
           >
             <Italic className="format" />
@@ -136,7 +150,7 @@ function TextFormatFloatingToolbar({
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, "underline");
             }}
-            className={"popup-item spaced " + (isUnderline ? "active" : "")}
+            className={`popup-item spaced${isUnderline ? " active" : ""}`}
             aria-label="Format text to underlined"
           >
             <Underline className="format" />
@@ -145,7 +159,7 @@ function TextFormatFloatingToolbar({
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, "strikethrough");
             }}
-            className={"popup-item spaced " + (isStrikethrough ? "active" : "")}
+            className={`popup-item spaced${isStrikethrough ? " active" : ""}`}
             aria-label="Format text with a strikethrough"
           >
             <Strikethrough className="format" />
@@ -154,14 +168,14 @@ function TextFormatFloatingToolbar({
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, "code");
             }}
-            className={"popup-item spaced " + (isCode ? "active" : "")}
+            className={`popup-item spaced${isCode ? " active" : ""}`}
             aria-label="Insert code block"
           >
             <Code className="format" />
           </button>
           <button
             onClick={insertLink}
-            className={"popup-item spaced " + (isLink ? "active" : "")}
+            className={`popup-item spaced${isLink ? " active" : ""}`}
             aria-label="Insert link"
           >
             <Link className="format" />
@@ -172,6 +186,13 @@ function TextFormatFloatingToolbar({
   );
 }
 
+/**
+ * Hook untuk mengatur dan menampilkan toolbar format teks mengambang.
+ * Mengelola state format teks dan menampilkan toolbar jika seleksi valid.
+ * @param {Object} editor - Editor Lexical
+ * @param {HTMLElement} anchorElem - Elemen anchor untuk portal
+ * @returns {ReactPortal|null}
+ */
 function useFloatingTextFormatToolbar(editor, anchorElem) {
   const [isText, setIsText] = useState(false);
   const [isLink, setIsLink] = useState(false);
@@ -181,6 +202,9 @@ function useFloatingTextFormatToolbar(editor, anchorElem) {
   const [isStrikethrough, setIsStrikethrough] = useState(false);
   const [isCode, setIsCode] = useState(false);
 
+  /**
+   * Fungsi untuk memperbarui state format teks berdasarkan seleksi saat ini.
+   */
   const updatePopup = useCallback(() => {
     editor.getEditorState().read(() => {
       if (editor.isComposing()) {
@@ -231,6 +255,9 @@ function useFloatingTextFormatToolbar(editor, anchorElem) {
     });
   }, [editor]);
 
+  /**
+   * Efek untuk memperbarui popup saat terjadi perubahan seleksi pada dokumen.
+   */
   useEffect(() => {
     document.addEventListener("selectionchange", updatePopup);
     return () => {
@@ -238,6 +265,9 @@ function useFloatingTextFormatToolbar(editor, anchorElem) {
     };
   }, [updatePopup]);
 
+  /**
+   * Efek untuk memperbarui popup saat terjadi perubahan pada editor atau root element.
+   */
   useEffect(() => {
     return mergeRegister(
       editor.registerUpdateListener(() => {
@@ -270,6 +300,10 @@ function useFloatingTextFormatToolbar(editor, anchorElem) {
   );
 }
 
+/**
+ * Plugin utama untuk menampilkan toolbar format teks mengambang.
+ * @param {Object} props - Properti plugin
+ */
 export function FloatingTextFormatToolbarPlugin({
   anchorElem = document.body,
 }) {
@@ -277,6 +311,11 @@ export function FloatingTextFormatToolbarPlugin({
   return useFloatingTextFormatToolbar(editor, anchorElem);
 }
 
+/**
+ * Fungsi untuk mendapatkan node yang terseleksi pada editor.
+ * @param {RangeSelection} selection - Seleksi saat ini
+ * @returns {LexicalNode}
+ */
 function getSelectedNode(selection) {
   const anchor = selection.anchor;
   const focus = selection.focus;
@@ -293,6 +332,11 @@ function getSelectedNode(selection) {
   }
 }
 
+/**
+ * Fungsi untuk mengecek apakah titik seleksi berada di akhir node.
+ * @param {PointType} point - Titik seleksi
+ * @returns {boolean}
+ */
 function $isAtNodeEnd(point) {
   if (point.type === "text") {
     return point.offset === point.getNode().getTextContentSize();
@@ -300,13 +344,19 @@ function $isAtNodeEnd(point) {
   return point.offset === point.getNode().getChildrenSize();
 }
 
+/**
+ * Fungsi untuk mendapatkan posisi (rect) dari range seleksi pada DOM.
+ * @param {Selection} nativeSelection - Seleksi native browser
+ * @param {HTMLElement} rootElement - Elemen root editor
+ * @returns {DOMRect}
+ */
 function getDOMRangeRect(nativeSelection, rootElement) {
   const domRange = nativeSelection.getRangeAt(0);
   let rect;
 
   if (nativeSelection.anchorNode === rootElement) {
     let inner = rootElement;
-    while (inner.firstElementChild != null) {
+    while (inner.firstElementChild !== null) {
       inner = inner.firstElementChild;
     }
     rect = inner.getBoundingClientRect();
@@ -317,8 +367,15 @@ function getDOMRangeRect(nativeSelection, rootElement) {
   return rect;
 }
 
+/**
+ * Fungsi untuk mengatur posisi toolbar mengambang di atas seleksi teks.
+ * @param {DOMRect} targetRect - Rect seleksi
+ * @param {HTMLElement} floatingElem - Elemen toolbar mengambang
+ * @param {HTMLElement} anchorElem - Elemen anchor
+ */
 function setFloatingElemPosition(targetRect, floatingElem, anchorElem) {
-  const scrollerRect = anchorElem.getBoundingClientRect();
+  // Hapus scrollerRect yang tidak digunakan
+  // const scrollerRect = anchorElem.getBoundingClientRect();
 
   if (targetRect === null) {
     floatingElem.style.opacity = "0";

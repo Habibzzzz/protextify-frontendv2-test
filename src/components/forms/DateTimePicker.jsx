@@ -3,6 +3,24 @@ import { Calendar as CalendarIcon, Clock, AlertCircle } from "lucide-react";
 import { format, parseISO, isValid, addHours, endOfDay } from "date-fns";
 import { id } from "date-fns/locale";
 
+/**
+ * Komponen DateTimePicker
+ * Komponen input tanggal dan waktu dengan validasi, preset, dan tampilan informasi.
+ * Props:
+ * - label: Label input
+ * - value: Nilai tanggal dan waktu (ISO string atau Date)
+ * - onChange: Fungsi callback saat nilai berubah
+ * - error: Pesan error eksternal
+ * - minDate: Tanggal minimal yang bisa dipilih
+ * - maxDate: Tanggal maksimal yang bisa dipilih
+ * - placeholder: Placeholder input
+ * - disabled: Status disabled input
+ * - required: Apakah input wajib diisi
+ * - timezone: Nama timezone (informasi saja)
+ * - showSeconds: Tampilkan detik pada input
+ * - showTimezone: Tampilkan info timezone
+ * - presets: Array preset custom
+ */
 export default function DateTimePicker({
   label,
   value,
@@ -18,11 +36,15 @@ export default function DateTimePicker({
   showTimezone = false,
   presets = [],
 }) {
+  // State internal untuk input dan validasi
   const [internalValue, setInternalValue] = useState("");
   const [isValidInput, setIsValidInput] = useState(true);
   const [validationMessage, setValidationMessage] = useState("");
 
-  // Convert value to internal format for input[type=datetime-local]
+  /**
+   * Efek: Konversi value eksternal ke format input[type=datetime-local]
+   * Berjalan saat value atau showSeconds berubah.
+   */
   useEffect(() => {
     if (value) {
       try {
@@ -54,7 +76,11 @@ export default function DateTimePicker({
     }
   }, [value, showSeconds]);
 
-  // Validasi sesuai kebutuhan BE
+  /**
+   * Fungsi validasi tanggal dan waktu sesuai kebutuhan backend.
+   * @param {string} dateTimeValue - Nilai input tanggal dan waktu
+   * @returns {boolean} - Status validasi
+   */
   const validateDateTime = (dateTimeValue) => {
     if (!dateTimeValue) {
       if (required) {
@@ -110,14 +136,18 @@ export default function DateTimePicker({
     }
   };
 
-  // Handle input change
+  /**
+   * Handler perubahan input tanggal dan waktu.
+   * Mengupdate state dan memanggil onChange jika valid.
+   * @param {object} e - Event perubahan input
+   */
   const handleDateTimeChange = (e) => {
     const dateTimeValue = e.target.value;
     setInternalValue(dateTimeValue);
 
     if (validateDateTime(dateTimeValue)) {
       if (dateTimeValue) {
-        // Convert to ISO string for BE
+        // Konversi ke ISO string untuk backend
         const selectedDate = new Date(dateTimeValue);
         onChange?.(selectedDate.toISOString());
       } else {
@@ -126,7 +156,11 @@ export default function DateTimePicker({
     }
   };
 
-  // Format display value for info
+  /**
+   * Format nilai tanggal untuk tampilan informasi.
+   * @param {string|Date} value - Nilai tanggal
+   * @returns {string} - Teks tanggal terformat
+   */
   const formatDisplayValue = (value) => {
     if (!value) return "";
     try {
@@ -139,7 +173,10 @@ export default function DateTimePicker({
     }
   };
 
-  // Get timezone offset (for info only)
+  /**
+   * Mendapatkan offset timezone lokal (informasi saja).
+   * @returns {string} - Offset GMT
+   */
   const getTimezoneOffset = () => {
     const offset = new Date().getTimezoneOffset();
     const hours = Math.floor(Math.abs(offset) / 60);
@@ -150,7 +187,11 @@ export default function DateTimePicker({
       .padStart(2, "0")}`;
   };
 
-  // Preset handlers (FE only)
+  /**
+   * Handler klik preset tanggal.
+   * Mengupdate nilai input dan memanggil onChange.
+   * @param {object} preset - Objek preset
+   */
   const handlePresetClick = (preset) => {
     const date = preset.getValue();
     const formatted = format(
@@ -161,7 +202,9 @@ export default function DateTimePicker({
     onChange?.(date.toISOString());
   };
 
-  // Default presets
+  /**
+   * Preset default untuk pemilihan cepat tanggal dan waktu.
+   */
   const defaultPresets = [
     {
       label: "1 jam dari sekarang",
@@ -181,9 +224,14 @@ export default function DateTimePicker({
     },
   ];
 
+  // Gabungan preset custom dan default
   const allPresets = presets.length > 0 ? presets : defaultPresets;
 
-  // Format min/max for input
+  /**
+   * Format tanggal min/max untuk atribut input.
+   * @param {string|Date} date - Tanggal min/max
+   * @returns {string|undefined} - Format input
+   */
   const formatMinMax = (date) => {
     if (!date) return undefined;
     try {
@@ -197,8 +245,10 @@ export default function DateTimePicker({
     }
   };
 
+  // Render komponen
   return (
     <div className="space-y-2">
+      {/* Label input */}
       {label && (
         <label className="block text-sm font-medium text-gray-700">
           {label}
@@ -206,7 +256,7 @@ export default function DateTimePicker({
         </label>
       )}
 
-      {/* Main Input */}
+      {/* Input utama tanggal dan waktu */}
       <div className="relative">
         <input
           type="datetime-local"
@@ -233,12 +283,13 @@ export default function DateTimePicker({
           step={showSeconds ? 1 : 60}
         />
 
+        {/* Ikon kalender di input */}
         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
           <CalendarIcon className="h-5 w-5 text-gray-400" />
         </div>
       </div>
 
-      {/* Preset Buttons */}
+      {/* Tombol preset tanggal dan waktu */}
       {!disabled && allPresets.length > 0 && (
         <div className="flex flex-wrap gap-2">
           <span className="text-xs text-gray-500 self-center">
@@ -257,7 +308,7 @@ export default function DateTimePicker({
         </div>
       )}
 
-      {/* Enhanced Display Value */}
+      {/* Tampilan nilai terformat dan info timezone */}
       {value && isValidInput && (
         <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <div className="flex items-start space-x-2">
@@ -276,7 +327,7 @@ export default function DateTimePicker({
         </div>
       )}
 
-      {/* Error Messages */}
+      {/* Pesan error validasi */}
       {(error || !isValidInput) && (
         <div className="flex items-center space-x-2 text-red-600">
           <AlertCircle className="h-4 w-4 flex-shrink-0" />
@@ -284,7 +335,7 @@ export default function DateTimePicker({
         </div>
       )}
 
-      {/* Help Text */}
+      {/* Bantuan format dan info min/max */}
       {!error && !validationMessage && (
         <div className="text-xs text-gray-500 space-y-1">
           <p>Format: DD/MM/YYYY HH:MM</p>

@@ -1,25 +1,34 @@
 // src/components/home/HeroSection.jsx
+
 import { Link } from "react-router-dom";
 import { ArrowRight, Play, Sparkles } from "lucide-react";
 import { Button, Container, Badge } from "../../components";
 
+/**
+ * Komponen HeroSection
+ * Menampilkan bagian utama (hero) pada halaman depan aplikasi.
+ * Berisi background animasi, heading, deskripsi, dan tombol CTA.
+ */
 export default function HeroSection() {
   return (
+    // Section utama dengan background gradasi dan elemen dekoratif
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#23407a] via-[#1a2f5c] to-[#0f1b3a]">
-      {/* Background Elements */}
+      {/* Elemen Background Dekoratif */}
       <div className="absolute inset-0">
-        {/* Animated gradient blobs */}
+        {/* Blob gradasi biru di kiri atas */}
         <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+        {/* Blob gradasi ungu di kanan bawah */}
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        {/* Blob gradasi besar di tengah */}
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-full blur-3xl"></div>
-
-        {/* Grid pattern */}
+        {/* Pola grid transparan sebagai latar */}
         <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px]"></div>
       </div>
 
+      {/* Kontainer utama konten hero */}
       <Container className="relative z-10 py-20">
         <div className="max-w-5xl mx-auto text-center">
-          {/* Badge */}
+          {/* Badge AI-Powered Platform */}
           <div className="mb-8 flex justify-center">
             <Badge
               variant="glass"
@@ -30,7 +39,7 @@ export default function HeroSection() {
             </Badge>
           </div>
 
-          {/* Main Heading */}
+          {/* Judul utama hero */}
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-8 leading-tight">
             Platform Deteksi{" "}
             <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
@@ -40,15 +49,16 @@ export default function HeroSection() {
             untuk Dunia Akademik Modern
           </h1>
 
-          {/* Subtitle */}
+          {/* Subjudul / deskripsi singkat */}
           <p className="text-xl md:text-2xl text-white/80 mb-12 max-w-3xl mx-auto leading-relaxed">
             Protextify membantu institusi pendidikan mendeteksi plagiarisme
             dengan teknologi AI terdepan, mengelola kelas dengan mudah, dan
             memberikan pengalaman menulis yang optimal untuk siswa.
           </p>
 
-          {/* CTA Buttons */}
+          {/* Tombol Call To Action (CTA) */}
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
+            {/* Tombol untuk registrasi */}
             <Link to="/auth/register">
               <Button
                 size="xl"
@@ -59,6 +69,7 @@ export default function HeroSection() {
               </Button>
             </Link>
 
+            {/* Tombol untuk melihat demo */}
             <Button
               size="xl"
               variant="ghost"
@@ -69,12 +80,17 @@ export default function HeroSection() {
             </Button>
           </div>
 
-          {/* Trust Indicators
+          {/* 
+            Indikator Kepercayaan (Trust Indicators)
+            Komentar: Bagian ini menampilkan institusi yang telah menggunakan platform.
+            Dapat diaktifkan jika diperlukan.
+          */}
+          {/*
           <div className="text-white/60 text-sm">
             <p className="mb-4">Dipercaya oleh 1000+ institusi pendidikan</p>
             <div className="flex justify-center items-center space-x-8 opacity-60">
-              Logo universitas placeholder
-              <div className="h-8 w-24 bg-white/20 rounded"></div>
+              {/* Logo universitas placeholder */}
+          {/* <div className="h-8 w-24 bg-white/20 rounded"></div>
               <div className="h-8 w-24 bg-white/20 rounded"></div>
               <div className="h-8 w-24 bg-white/20 rounded"></div>
               <div className="h-8 w-24 bg-white/20 rounded"></div>
