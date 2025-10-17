@@ -6,20 +6,14 @@ import {
   HelpCircle,
   MessageCircle,
   Mail,
-  Phone,
+  Instagram,
   FileQuestion,
   ChevronDown,
   ChevronUp,
   ExternalLink,
   ArrowRight,
 } from "lucide-react";
-import {
-  Button,
-  Container,
-  Card,
-  CardContent,
-  Badge,
-} from "../../components";
+import { Button, Container, Card, CardContent, Badge } from "../../components";
 
 export default function Help() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -117,8 +111,8 @@ export default function Help() {
       icon: <Mail className="w-6 h-6" />,
       title: "Email Support",
       description: "Kirim email dan kami akan balas dalam 24 jam",
-      action: "support@protextify.com",
-      link: "mailto:support@protextify.com",
+      action: "protextify2025@gmail.com",
+      link: "mailto:protextify2025@gmail.com",
       color: "blue",
     },
     {
@@ -126,15 +120,15 @@ export default function Help() {
       title: "WhatsApp Chat",
       description: "Chat langsung via WhatsApp dengan tim support",
       action: "Chat WhatsApp",
-      link: "https://wa.me/6281234567890?text=Halo,%20saya%20butuh%20bantuan%20tentang%20Protextify",
+      link: "https://wa.me/6282363343710?text=Halo,%20saya%20butuh%20bantuan%20tentang%20Protextify",
       color: "green",
     },
     {
-      icon: <Phone className="w-6 h-6" />,
-      title: "Telepon",
-      description: "Hubungi kami di jam kerja (09.00 - 17.00)",
-      action: "+62 812 3456 7890",
-      link: "tel:+6281234567890",
+      icon: <Instagram className="w-6 h-6" />,
+      title: "Instagram",
+      description: "Chat langsung via Instagram dengan tim support",
+      action: "Chat Instagram",
+      link: "https://www.instagram.com/protextify/",
       color: "purple",
     },
   ];
@@ -153,7 +147,7 @@ export default function Help() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#23407a] via-[#1a2f5c] to-[#0f1b3a]">
+      <section className="relative min-h-[100vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#23407a] via-[#1a2f5c] to-[#0f1b3a]">
         {/* Background Elements */}
         <div className="absolute inset-0">
           <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
@@ -189,7 +183,7 @@ export default function Help() {
             </p>
 
             {/* Search Bar */}
-            <div className="max-w-2xl mx-auto">
+            {/* <div className="max-w-2xl mx-auto">
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
@@ -205,7 +199,7 @@ export default function Help() {
                   Ditemukan {filteredFaqs.length} hasil untuk "{searchQuery}"
                 </p>
               )}
-            </div>
+            </div> */}
           </div>
         </Container>
       </section>
@@ -239,10 +233,7 @@ export default function Help() {
                       className="w-full p-6 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
                     >
                       <div className="flex-1">
-                        <Badge
-                          variant="outline"
-                          className="mb-2 text-xs"
-                        >
+                        <Badge variant="outline" className="mb-2 text-xs">
                           {faq.category}
                         </Badge>
                         <h3 className="text-lg font-semibold text-gray-900">
@@ -302,7 +293,11 @@ export default function Help() {
                   key={index}
                   href={option.link}
                   target={option.title === "WhatsApp Chat" ? "_blank" : "_self"}
-                  rel={option.title === "WhatsApp Chat" ? "noopener noreferrer" : ""}
+                  rel={
+                    option.title === "WhatsApp Chat"
+                      ? "noopener noreferrer"
+                      : ""
+                  }
                   className="block"
                 >
                   <Card className="border-0 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full">
@@ -324,10 +319,7 @@ export default function Help() {
                       <p className="text-gray-600 text-sm mb-6">
                         {option.description}
                       </p>
-                      <Button
-                        variant="outline"
-                        className="w-full"
-                      >
+                      <Button variant="outline" className="w-full">
                         {option.action}
                         <ExternalLink className="w-4 h-4 ml-2" />
                       </Button>
@@ -380,4 +372,3 @@ export default function Help() {
     </div>
   );
 }
-

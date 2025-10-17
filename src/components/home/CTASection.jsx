@@ -79,7 +79,7 @@ export default function CTASection() {
           {[
             {
               icon: <Users className="w-8 h-8" />,
-              title: "10,000+",
+              title: "500+",
               subtitle: "Pengguna Aktif",
               description: "Dipercaya institusi pendidikan",
             },

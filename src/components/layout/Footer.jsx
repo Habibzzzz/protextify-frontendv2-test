@@ -1,15 +1,10 @@
 // src/components/layout/Footer.jsx
 import { Link } from "react-router-dom";
-import {
-  Github,
-  Twitter,
-  Linkedin,
-  Mail,
-  Heart,
-  ArrowRight,
-} from "lucide-react";
+import { Instagram, Phone, Mail, Heart, ArrowRight } from "lucide-react";
 import { Button, Container } from "../../components";
 import logoPutih from "@/assets/logo-protextify-putih.png";
+import komdigiLogo from "@/assets/logo-komdigi.png";
+import pseLogo from "@/assets/logo-pse.png";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -21,7 +16,7 @@ export default function Footer() {
 
   const support = [
     { label: "Bantuan", href: "/help" },
-    { label: "Dokumentasi", href: "/docs" },
+    // { label: "Dokumentasi", href: "/docs" },
   ];
 
   const legal = [
@@ -47,44 +42,37 @@ export default function Footer() {
                 Platform deteksi plagiarisme dengan teknologi AI terdepan untuk
                 institusi pendidikan.
               </p>
-              {/* Contact */}
-              <div className="space-y-2 mb-8 text-sm">
-                <a
-                  href="mailto:support@protextify.com"
-                  className="flex items-center text-white/60 hover:text-white transition-colors"
-                >
-                  <Mail className="h-4 w-4 mr-3" />
-                  support@protextify.com
-                </a>
-              </div>
               {/* Social Links */}
-              <div className="flex space-x-3">
+              <div className="space-y-2">
                 <a
-                  href="https://github.com/protextify"
-                  className="text-white/60 hover:text-white"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="GitHub Protextify"
+                  href="mailto:protextify2025@gmail.com"
+                  className="flex items-center space-x-3 text-white/80 hover:text-white transition-colors text-sm"
+                  aria-label="Email Protextify"
                 >
-                  <Github className="h-5 w-5" />
+                  <Mail className="h-5 w-5" />
+                  <span>protextify2025@gmail.com</span>
                 </a>
+
                 <a
-                  href="https://twitter.com/protextify"
-                  className="text-white/60 hover:text-white"
+                  href="https://www.instagram.com/protextify/"
+                  className="flex items-center space-x-3 text-white/80 hover:text-white transition-colors text-sm"
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="Twitter Protextify"
+                  aria-label="Instagram Protextify"
                 >
-                  <Twitter className="h-5 w-5" />
+                  <Instagram className="h-5 w-5" />
+                  <span>protextify</span>
                 </a>
+
                 <a
-                  href="https://linkedin.com/company/protextify"
-                  className="text-white/60 hover:text-white"
+                  href="https://wa.me/6282363343710"
+                  className="flex items-center space-x-3 text-white/80 hover:text-white transition-colors text-sm"
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="LinkedIn Protextify"
+                  aria-label="WhatsApp Protextify"
                 >
-                  <Linkedin className="h-5 w-5" />
+                  <Phone className="h-5 w-5" />
+                  <span>+62 823-6334-3710</span>
                 </a>
               </div>
             </div>
@@ -166,7 +154,31 @@ export default function Footer() {
               </div>
             </div>
           </div>
+
+          {/* Terdaftar Sebagai: Kominfo & PSE */}
+          <div className="mt-8 pt-6">
+            <p className="text-white/70 text-sm mb-3">
+              Website ini telah terdaftar sebagai:
+            </p>
+            <div className="flex items-center space-x-4">
+              <span className="bg-white rounded px-2 py-1 inline-flex items-center justify-center">
+                <img
+                  src={komdigiLogo}
+                  alt="Kominfo - KOMDIGI"
+                  className="h-6 object-contain"
+                />
+              </span>
+              <span className="bg-white rounded px-2 py-1 inline-flex items-center justify-center">
+                <img
+                  src={pseLogo}
+                  alt="PSE Lingkup Privat"
+                  className="h-6 object-contain"
+                />
+              </span>
+            </div>
+          </div>
         </div>
+
         {/* Bottom Bar */}
         <div className="border-t border-white/10 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">

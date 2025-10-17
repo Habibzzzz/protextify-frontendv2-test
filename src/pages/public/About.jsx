@@ -64,18 +64,18 @@ export default function About() {
   const achievements = [
     {
       icon: <Users className="w-8 h-8" />,
-      value: 10000,
+      value: 500,
       label: "Pengguna Aktif",
       suffix: "+",
       color: "blue",
     },
-    {
-      icon: <Globe className="w-8 h-8" />,
-      value: 50,
-      label: "Institusi Partner",
-      suffix: "+",
-      color: "green",
-    },
+    // {
+    //   icon: <Globe className="w-8 h-8" />,
+    //   value: 50,
+    //   label: "Institusi Partner",
+    //   suffix: "+",
+    //   color: "green",
+    // },
     {
       icon: <Award className="w-8 h-8" />,
       value: 99,
@@ -94,20 +94,11 @@ export default function About() {
 
   const team = [
     {
-      name: "Esa Ghanim Fadhallah S.Pi, M.Si",
-      role: "Supervisor",
-      description:
-        "Supervisor bertugas memberikan bimbingan dan pengawasan terhadap seluruh operasional perusahaan untuk memastikan kualitas dan standar yang tinggi.",
-      skills: ["Supervision", "Mentoring", "Quality Control"],
-      avatar: "👨‍🏫",
-      photo: "/src/assets/people/esa.png", // Ganti dengan URL foto atau path foto, contoh: "/images/esa.jpg" atau "https://example.com/foto.jpg"
-    },
-    {
       name: "Lukman Hakim",
       role: "Chief Executive Officer",
       description:
         "Chief Executive Officer berperan dalam mengatur dan mengarahkan operasional perusahaan secara keseluruhan.",
-      skills: ["Leadership", "Team Work"],
+      skills: ["Leadership", "Team Work", "Branding", "Social Media"],
       avatar: "👨‍💻",
       photo: "/src/assets/people/lukman.png", // Ganti dengan URL foto atau path foto, contoh: "/images/esa.jpg" atau "https://example.com/foto.jpg"
     },
@@ -116,7 +107,7 @@ export default function About() {
       role: "Chief Technology Officer",
       description:
         "Chief Technology Officer bertugas mengelola dan mengembangkan teknologi terkini untuk meningkatkan performa dan keamanan platform.",
-      skills: ["Web Development", "Frontend Development"],
+      skills: ["Social Media", "Frontend Development", "Branding"],
       avatar: "🤖",
       photo: "/src/assets/people/kerin.png", // Ganti dengan URL foto atau path foto, contoh: "/images/esa.jpg" atau "https://example.com/foto.jpg"
     },
@@ -125,7 +116,12 @@ export default function About() {
       role: "Chief Operating Officer",
       description:
         "Chief Operating Officer bertugas mengelola dan mengoperasikan operasional perusahaan secara efisien dan efektif.",
-      skills: ["Team Work", "Educational Tech", "Analytics"],
+      skills: [
+        "Team Work",
+        "Educational Tech",
+        "Analytics",
+        "Frontend Development",
+      ],
       avatar: "🎯",
       photo: "/src/assets/people/habib.png", // Ganti dengan URL foto atau path foto, contoh: "/images/esa.jpg" atau "https://example.com/foto.jpg"
     },
@@ -134,7 +130,7 @@ export default function About() {
       role: "Chief Marketing Officer",
       description:
         "Chief Marketing Officer bertugas mengelola dan mengembangkan strategi pemasaran perusahaan untuk meningkatkan brand awareness dan pertumbuhan bisnis.",
-      skills: ["Marketing", "Sales", "Branding"],
+      skills: ["Marketing", "Sales", "Branding", "Backend Developer"],
       avatar: "🔍",
       photo: "/src/assets/people/asep.png", // Ganti dengan URL foto atau path foto, contoh: "/images/esa.jpg" atau "https://example.com/foto.jpg"
     },
@@ -143,11 +139,19 @@ export default function About() {
       role: "Chief Financial Officer",
       description:
         "Chief Financial Officer bertugas mengelola dan mengembangkan strategi keuangan perusahaan untuk meningkatkan kesehatan keuangan dan pertumbuhan bisnis.",
-      skills: ["Finance", "Accounting", "Tax"],
+      skills: ["Finance", "Accounting", "Tax", "Social Media"],
       avatar: "💬",
       photo: "/src/assets/people/arsit.png", // Ganti dengan URL foto atau path foto, contoh: "/images/esa.jpg" atau "https://example.com/foto.jpg"
-    }
-    
+    },
+    {
+      name: "Esa Ghanim Fadhallah S.Pi, M.Si",
+      role: "Supervisor",
+      description:
+        "Supervisor bertugas memberikan bimbingan dan pengawasan terhadap seluruh operasional perusahaan untuk memastikan kualitas dan standar yang tinggi.",
+      skills: ["Supervision", "Mentoring", "Quality Control"],
+      avatar: "👨‍🏫",
+      photo: "/src/assets/people/esa.png", // Ganti dengan URL foto atau path foto, contoh: "/images/esa.jpg" atau "https://example.com/foto.jpg"
+    },
   ];
 
   const techStack = {
@@ -250,7 +254,7 @@ export default function About() {
             </div>
 
             {/* Achievement Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
               {achievements.map((achievement, index) => (
                 <div key={index} className="text-center group">
                   <div
@@ -567,58 +571,9 @@ export default function About() {
             </p>
           </div>
 
-          {/* First Row - 1 Card (Supervisor) */}
-          <div className="flex justify-center mb-8">
-            <div className="grid grid-cols-1 max-w-md">
-              {team.slice(0, 1).map((member, index) => (
-              <Card
-                key={index}
-                className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-[#23407a]/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                <CardContent className="p-8 text-center relative z-10">
-                  <div className="w-24 h-24 bg-gradient-to-br from-[#23407a] to-[#3b5fa4] rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-all duration-300 shadow-lg">
-                    {member.photo ? (
-                      <img 
-                        src={member.photo} 
-                        alt={member.name}
-                        className="w-full h-full object-cover rounded-2xl"
-                      />
-                    ) : (
-                      <span className="text-3xl">{member.avatar}</span>
-                    )}
-                  </div>
-                  <CardTitle className="mb-2 text-xl group-hover:text-[#23407a] transition-colors">
-                    {member.name}
-                  </CardTitle>
-                  <p className="text-[#23407a] font-semibold mb-4 text-lg">
-                    {member.role}
-                  </p>
-                  <p className="text-gray-600 mb-6 leading-relaxed">
-                    {member.description}
-                  </p>
-
-                  {/* Skills */}
-                  <div className="flex flex-wrap gap-2 justify-center">
-                    {member.skills.map((skill, skillIndex) => (
-                      <span
-                        key={skillIndex}
-                        className="px-3 py-1 bg-[#23407a]/10 text-[#23407a] rounded-full text-xs font-medium hover:bg-[#23407a] hover:text-white transition-colors"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            </div>
-          </div>
-
           {/* Second Row - 3 Cards (CEO, CTO, COO) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            {team.slice(1, 4).map((member, index) => (
+            {team.slice(0, 3).map((member, index) => (
               <Card
                 key={index + 3}
                 className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
@@ -628,8 +583,8 @@ export default function About() {
                 <CardContent className="p-8 text-center relative z-10">
                   <div className="w-24 h-24 bg-gradient-to-br from-[#23407a] to-[#3b5fa4] rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-all duration-300 shadow-lg">
                     {member.photo ? (
-                      <img 
-                        src={member.photo} 
+                      <img
+                        src={member.photo}
                         alt={member.name}
                         className="w-full h-full object-cover rounded-2xl"
                       />
@@ -664,52 +619,51 @@ export default function About() {
           </div>
 
           {/* Third Row - 2 Cards (CMO, CFO) - Centered */}
-          <div className="flex justify-center">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
-              {team.slice(4, 6).map((member, index) => (
-                <Card
-                  key={index + 4}
-                  className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#23407a]/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-                  <CardContent className="p-8 text-center relative z-10">
-                    <div className="w-24 h-24 bg-gradient-to-br from-[#23407a] to-[#3b5fa4] rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-all duration-300 shadow-lg">
-                      {member.photo ? (
-                      <img 
-                        src={member.photo} 
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            {team.slice(3, 6).map((member, index) => (
+              <Card
+                key={index + 4}
+                className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-[#23407a]/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                <CardContent className="p-8 text-center relative z-10">
+                  <div className="w-24 h-24 bg-gradient-to-br from-[#23407a] to-[#3b5fa4] rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-all duration-300 shadow-lg">
+                    {member.photo ? (
+                      <img
+                        src={member.photo}
                         alt={member.name}
                         className="w-full h-full object-cover rounded-2xl"
                       />
                     ) : (
                       <span className="text-3xl">{member.avatar}</span>
                     )}
-                    </div>
-                    <CardTitle className="mb-2 text-xl group-hover:text-[#23407a] transition-colors">
-                      {member.name}
-                    </CardTitle>
-                    <p className="text-[#23407a] font-semibold mb-4 text-lg">
-                      {member.role}
-                    </p>
-                    <p className="text-gray-600 mb-6 leading-relaxed">
-                      {member.description}
-                    </p>
+                  </div>
+                  <CardTitle className="mb-2 text-xl group-hover:text-[#23407a] transition-colors">
+                    {member.name}
+                  </CardTitle>
+                  <p className="text-[#23407a] font-semibold mb-4 text-lg">
+                    {member.role}
+                  </p>
+                  <p className="text-gray-600 mb-6 leading-relaxed">
+                    {member.description}
+                  </p>
 
-                    {/* Skills */}
-                    <div className="flex flex-wrap gap-2 justify-center">
-                      {member.skills.map((skill, skillIndex) => (
-                        <span
-                          key={skillIndex}
-                          className="px-3 py-1 bg-[#23407a]/10 text-[#23407a] rounded-full text-xs font-medium hover:bg-[#23407a] hover:text-white transition-colors"
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  {/* Skills */}
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {member.skills.map((skill, skillIndex) => (
+                      <span
+                        key={skillIndex}
+                        className="px-3 py-1 bg-[#23407a]/10 text-[#23407a] rounded-full text-xs font-medium hover:bg-[#23407a] hover:text-white transition-colors"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </Container>
       </section>

@@ -16,7 +16,7 @@ const LABEL_MAP = {
   submissions: "Submission",
   transactions: "Transaksi",
   profile: "Profil",
-  help: "Bantuan",
+  help: "Panduan",
   pricing: "Harga",
   about: "Tentang",
   docs: "Dokumentasi",

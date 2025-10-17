@@ -43,7 +43,7 @@ export default function FeaturesSection() {
     },
     {
       icon: <Zap className="w-8 h-8" />,
-      title: "Real-time Collaboration",
+      title: "Editor Auto-Save",
       description:
         "Editor real-time dengan auto-save dan monitoring aktivitas untuk pengalaman menulis optimal",
       category: "Collaboration",

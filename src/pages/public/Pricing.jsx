@@ -13,19 +13,22 @@ import {
   Zap,
   TrendingUp,
 } from "lucide-react";
-import {
-  Button,
-  Container,
-  Card,
-  CardContent,
-  Badge,
-} from "../../components";
+import { Button, Container, Card, CardContent, Badge } from "../../components";
 
 export default function Pricing() {
   const features = [
-    { text: "Deteksi plagiarisme dengan teknologi AI", icon: <Sparkles className="w-5 h-5" /> },
-    { text: "Real-time collaboration editor", icon: <Zap className="w-5 h-5" /> },
-    { text: "Analytics & reporting lengkap", icon: <TrendingUp className="w-5 h-5" /> },
+    {
+      text: "Deteksi plagiarisme dengan teknologi AI",
+      icon: <Sparkles className="w-5 h-5" />,
+    },
+    {
+      text: "Real-time collaboration editor",
+      icon: <Zap className="w-5 h-5" />,
+    },
+    {
+      text: "Analytics & reporting lengkap",
+      icon: <TrendingUp className="w-5 h-5" />,
+    },
     { text: "Export PDF & DOCX", icon: <FileText className="w-5 h-5" /> },
     { text: "Manajemen kelas unlimited", icon: <Users className="w-5 h-5" /> },
     { text: "Support prioritas 24/7", icon: <Shield className="w-5 h-5" /> },
@@ -62,7 +65,7 @@ export default function Pricing() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#23407a] via-[#1a2f5c] to-[#0f1b3a]">
+      <section className="relative min-h-[100vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#23407a] via-[#1a2f5c] to-[#0f1b3a]">
         {/* Background Elements */}
         <div className="absolute inset-0">
           <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
@@ -100,9 +103,13 @@ export default function Pricing() {
             {/* Price Highlight */}
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 max-w-md mx-auto border border-white/20">
               <div className="text-center">
-                <p className="text-white/80 text-sm mb-2">Biaya per tugas per siswa</p>
+                <p className="text-white/80 text-sm mb-2">
+                  Biaya per tugas per siswa
+                </p>
                 <div className="flex items-baseline justify-center gap-2 mb-2">
-                  <span className="text-5xl font-bold text-white">Rp 2.700</span>
+                  <span className="text-5xl font-bold text-white">
+                    Rp 2.700
+                  </span>
                 </div>
                 <p className="text-white/60 text-sm">
                   Sudah termasuk semua fitur premium
@@ -132,23 +139,30 @@ export default function Pricing() {
                     Cara Kerja Pembayaran
                   </h2>
                   <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                    Sistem pembayaran yang sederhana dan transparan untuk pengajar
+                    Sistem pembayaran yang sederhana dan transparan untuk
+                    pengajar
                   </p>
                 </div>
 
                 {/* Price Box */}
                 <div className="bg-gradient-to-r from-[#23407a] to-purple-600 rounded-2xl p-8 text-center mb-8">
-                  <p className="text-white/80 text-sm mb-2">Biaya per tugas per siswa</p>
+                  <p className="text-white/80 text-sm mb-2">
+                    Biaya per tugas per siswa
+                  </p>
                   <div className="flex items-baseline justify-center gap-2 mb-2">
-                    <span className="text-6xl font-bold text-white">Rp 2.700</span>
+                    <span className="text-6xl font-bold text-white">
+                      Rp 2.700
+                    </span>
                   </div>
                   <p className="text-white/80 text-sm mb-6">
                     Hanya dibayar oleh instructor saat membuat tugas
                   </p>
-                  
+
                   {/* Example */}
                   <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 mt-6">
-                    <p className="text-white/90 font-semibold mb-3">Contoh Perhitungan:</p>
+                    <p className="text-white/90 font-semibold mb-3">
+                      Contoh Perhitungan:
+                    </p>
                     <div className="space-y-2 text-white/80 text-sm">
                       <p>1 tugas × 30 siswa = Rp 81.000</p>
                       <p>2 tugas × 40 siswa = Rp 216.000</p>
@@ -181,7 +195,9 @@ export default function Pricing() {
                         {feature.icon}
                       </div>
                       <div>
-                        <p className="text-gray-700 font-medium">{feature.text}</p>
+                        <p className="text-gray-700 font-medium">
+                          {feature.text}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -324,4 +340,3 @@ export default function Pricing() {
     </div>
   );
 }
-

@@ -146,7 +146,7 @@ export default function Register() {
               <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <div className="text-2xl font-bold text-white">10K+</div>
+                    <div className="text-2xl font-bold text-white">500</div>
                     <div className="text-sm text-white/70">Pengguna Aktif</div>
                   </div>
                   <div>

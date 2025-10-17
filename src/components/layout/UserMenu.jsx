@@ -89,7 +89,7 @@ export default function UserMenu({
       show: user.role === USER_ROLES.INSTRUCTOR,
     },
     {
-      label: "Bantuan",
+      label: "Panduan",
       icon: HelpCircle,
       path: "/help",
       show: true,
