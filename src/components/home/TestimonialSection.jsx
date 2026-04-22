@@ -2,6 +2,9 @@
 
 import { Container, Card, CardContent } from "../../components";
 import { Star, Quote } from "lucide-react";
+import fotoEsa from "@/assets/esa.jpg";
+import fotoRaisya from "@/assets/raisya.jpg";
+import fotoRenti from "@/assets/renti.jpg";
 
 /**
  * Komponen TestimonialSection
@@ -12,28 +15,28 @@ export default function TestimonialSection() {
   // Daftar testimonial yang akan ditampilkan pada halaman
   const testimonials = [
     {
-      name: "Dr. Sarah Wijaya",
-      role: "Kepala Jurusan Informatika, Universitas ABC",
+      name: "Esa Ghanim Fadhallah, S. Pi., M. Si.",
+      role: "Dosen Teknologi Hasil Pertanian",
       content:
-        "Protextify telah merevolusi cara kami mengelola tugas mahasiswa. Deteksi plagiarisme yang akurat dan interface yang user-friendly membuat pekerjaan kami jauh lebih efisien.",
+        "Setelah menggunakan platform ini, saya merasa sangat terbantu dalam mencapai target pembelajaran yang saya harapkan dari mahasiswa saya. Platform ini membantu mahasiswa saya untuk lebih memahami substansi tugas yang saya berikan. Saya paling senang dengan fitur anti-copy paste ini, karena memungkinkan untuk digunakan sebagai lembar jawaban essay Ujian Tengah Semester ataupun Ujian Akhir Semester.",
       rating: 5,
-      avatar: "/avatars/sarah.jpg",
+      avatar: fotoEsa,
     },
     {
-      name: "Prof. Ahmad Rahman",
-      role: "Dosen Senior, Institut XYZ",
+      name: "Raisya Qonita",
+      role: "Mahasiswa Universitas Lampung",
       content:
-        "Platform yang luar biasa! Fitur real-time collaboration membantu mahasiswa dalam proses penulisan, sementara sistem deteksi plagiarisme memberikan hasil yang sangat akurat.",
-      rating: 5,
-      avatar: "/avatars/ahmad.jpg",
+        "fitur-fitur yang ada di protextify sangat menarik, terutama pada editor teks dan pendeteksi plagiarisme, fitur tersebut sangat berpengaruh untuk diri saya sebagai mahasiswa untuk membuat tugas dengan orisinalitas tinggi.",
+      rating: 4,
+      avatar: fotoRaisya,
     },
     {
-      name: "Maya Sari",
-      role: "Mahasiswa Pascasarjana",
+      name: "Renti Oktaria, M.Pd",
+      role: "Dosen PG PAUD",
       content:
-        "Sebagai mahasiswa, saya sangat terbantu dengan fitur auto-save dan feedback real-time. Interface yang intuitif membuat proses penulisan menjadi lebih menyenangkan.",
+        "Inovasi yang sangat bagus, saya tertarik untuk menggunakan platform ini disaat nantinya akan aktif mengajar, karena menurut saya paltform ini sangat membantu terutama dizaman sekarang banyak mahasiswa mengerjakan tugas itu hanya mengandalkan copy paste dari AI secara instan dan juga kemampuan berpikir kritis berkurang.",
       rating: 5,
-      avatar: "/avatars/maya.jpg",
+      avatar: fotoRenti,
     },
   ];
 
@@ -80,14 +83,13 @@ export default function TestimonialSection() {
 
                 {/* Bagian identitas pemberi testimonial */}
                 <div className="flex items-center">
-                  {/* Avatar berupa inisial nama */}
-                  <div className="w-12 h-12 bg-[#23407a]/10 rounded-full flex items-center justify-center mr-4">
-                    <span className="text-[#23407a] font-semibold">
-                      {testimonial.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </span>
+                  {/* Avatar berupa foto asli */}
+                  <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
+                    <img 
+                      src={testimonial.avatar} 
+                      alt={testimonial.name}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   {/* Nama dan peran pemberi testimonial */}
                   <div>

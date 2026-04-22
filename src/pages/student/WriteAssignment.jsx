@@ -245,7 +245,8 @@ export default function WriteAssignment() {
         localSubmissionId
       );
       setSubmission(updated);
-      navigate(`/dashboard/classes/${assignment?.classId}`);
+      // Redirect to submissions list and force refetch
+      navigate("/dashboard/submissions", { state: { refresh: true } });
     } catch (error) {
       toast.error("Gagal mengumpulkan tugas");
       throw error; // Re-throw error for the modal handler

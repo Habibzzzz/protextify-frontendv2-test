@@ -55,12 +55,24 @@ export default function CreateClass() {
       const response = await classesService.createClass(data);
 
       toast.success("Kelas berhasil dibuat!");
-      navigate(`/instructor/classes/${response.id}`, {
+      
+      // Navigate to dashboard first to refresh data
+      navigate("/instructor/dashboard", {
         state: {
-          classToken: response.classToken,
-          isNewClass: true,
+          refreshDashboard: true,
+          newClass: response,
         },
       });
+      
+      // Then navigate to class detail after a short delay
+      setTimeout(() => {
+        navigate(`/instructor/classes/${response.id}`, {
+          state: {
+            classToken: response.classToken,
+            isNewClass: true,
+          },
+        });
+      }, 1000);
     } catch (error) {
       console.error("Error creating class:", error);
       // Error sudah ditangani oleh api interceptor

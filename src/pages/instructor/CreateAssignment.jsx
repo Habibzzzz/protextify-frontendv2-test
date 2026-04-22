@@ -88,7 +88,13 @@ export default function CreateAssignment() {
         );
       } else {
         toast.success("Assignment berhasil dibuat dan aktif!");
-        navigate(`/instructor/classes/${classId}`);
+        // Navigate to classes list with refresh flag
+        navigate("/instructor/classes", {
+          state: {
+            refreshClasses: true,
+            newAssignment: response,
+          },
+        });
       }
     } catch (error) {
       console.error("Error creating assignment:", error);

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import {
   Users,
   FileText,
@@ -37,6 +37,7 @@ import { useInstructorDashboard } from "../../hooks/useInstructorDashboard";
 
 export default function InstructorDashboard() {
   const { user } = useAuth();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState("overview");
 
   const {
@@ -50,7 +51,16 @@ export default function InstructorDashboard() {
       analyticsData,
     },
     refetch,
+    forceRefresh,
   } = useInstructorDashboard();
+
+  // Handle refresh when coming from create class
+  useEffect(() => {
+    if (location.state?.refreshDashboard) {
+      console.log("🔄 Refreshing dashboard after class creation");
+      forceRefresh();
+    }
+  }, [location.state?.refreshDashboard, forceRefresh]);
 
   if (loading) {
     return (

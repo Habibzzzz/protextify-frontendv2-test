@@ -79,15 +79,15 @@ export default function CTASection() {
           {[
             {
               icon: <Users className="w-8 h-8" />,
-              title: "500+",
+              title: "191",
               subtitle: "Pengguna Aktif",
               description: "Dipercaya institusi pendidikan",
             },
             {
               icon: <Star className="w-8 h-8" />,
-              title: "4.9/5",
-              subtitle: "Rating Pengguna",
-              description: "Kepuasan tinggi dari educator",
+              title: "< 2 Detik",
+              subtitle: "Cek Plagiarisme Cepat",
+              description: "Kurang dari 2 Detik untuk Cek Plagiarisme",
             },
             {
               icon: <Sparkles className="w-8 h-8" />,

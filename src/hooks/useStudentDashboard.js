@@ -39,6 +39,14 @@ export const useStudentDashboard = () => {
           ? classesData.value
           : [];
 
+      // Debug: Log classes data
+      console.log("🔍 Student Dashboard - Classes Data:", {
+        status: classesData.status,
+        value: classesData.value,
+        safeData: safeClassesData,
+        count: safeClassesData.length
+      });
+
       // Safe handling untuk submissionsData
       const safeSubmissionsData =
         submissionsData.status === "fulfilled" &&
@@ -122,6 +130,21 @@ export const useStudentDashboard = () => {
   }, [fetchDashboardData]);
 
   const refetch = useCallback(() => {
+    console.log("🔄 Refreshing student dashboard data...");
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  const forceRefresh = useCallback(() => {
+    console.log("🔄 Force refreshing student dashboard data...");
+    setStats({
+      totalClasses: 0,
+      activeAssignments: 0,
+      completedAssignments: 0,
+      pendingSubmissions: 0,
+    });
+    setRecentClasses([]);
+    setRecentAssignments([]);
+    setActivityTimeline([]);
     fetchDashboardData();
   }, [fetchDashboardData]);
 
@@ -133,6 +156,7 @@ export const useStudentDashboard = () => {
     recentAssignments,
     activityTimeline,
     refetch,
+    forceRefresh,
   };
 };
 

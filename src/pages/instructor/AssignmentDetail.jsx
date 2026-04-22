@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   ArrowLeft,
@@ -47,7 +47,8 @@ export default function AssignmentDetail() {
     refetch,
   } = useAsyncData(
     () => assignmentsService.getAssignmentSubmissionsOverview(assignmentId),
-    [assignmentId]
+    [assignmentId],
+    { refetchOnWindowFocus: true, pollIntervalMs: 30000 }
   );
 
   const { assignment, stats, submissions } = overviewData || {};
@@ -72,6 +73,17 @@ export default function AssignmentDetail() {
       return matchesSearch && matchesFilter;
     });
   }, [submissions, searchQuery, filterStatus]);
+
+  // Auto refresh after grading: refetch on window focus and light polling
+  useEffect(() => {
+    const onFocus = () => refetch();
+    window.addEventListener("focus", onFocus);
+    const interval = setInterval(() => refetch(), 30000);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      clearInterval(interval);
+    };
+  }, [refetch]);
 
   const handleCheckPlagiarism = async (submissionId) => {
     if (!submissionId) return;

@@ -40,7 +40,8 @@ export default function TransactionDetail() {
     refetch,
   } = useAsyncData(
     () => paymentsService.getTransactionById(transactionId),
-    [transactionId]
+    [transactionId],
+    { refetchOnWindowFocus: true, pollIntervalMs: 30000 }
   );
 
   const getStatusVariant = (status) => {

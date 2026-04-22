@@ -36,7 +36,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-	maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
         globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
         runtimeCaching: [
           {
@@ -70,6 +70,13 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
+    // --- TAMBAHAN INI YANG MEMPERBAIKI ERROR 502 ---
+    allowedHosts: [
+      'protextify.id', // WAJIB: Memperbolehkan domain Anda
+      'localhost',    // Opsional, tapi disarankan
+      '127.0.0.1'     // Opsional, tapi disarankan
+    ],
+    // ------------------------------------------------
   },
   preview: {
     port: 4173,

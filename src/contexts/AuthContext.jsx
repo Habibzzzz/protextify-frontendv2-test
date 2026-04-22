@@ -1,6 +1,8 @@
 import { createContext, useContext, useReducer, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import authService from "../services/auth";
+import { sessionManager } from "../utils/sessionManager";
+import { multiDeviceHandler } from "../utils/multiDeviceHandler";
 
 const AuthContext = createContext();
 
@@ -67,7 +69,12 @@ export const AuthProvider = ({ children }) => {
 
   // Check auth status on mount
   useEffect(() => {
-    checkAuthStatus();
+    // Initialize multi-device handler first
+    const conflictHandled = multiDeviceHandler.initializeMultiDeviceHandler();
+    
+    if (!conflictHandled) {
+      checkAuthStatus();
+    }
     // eslint-disable-next-line
   }, []);
 
@@ -83,21 +90,30 @@ export const AuthProvider = ({ children }) => {
   }, [state.isAuthenticated]);
 
   const checkAuthStatus = async () => {
+    // Check if session is valid using session manager
+    if (!sessionManager.isSessionValid()) {
+      console.log("No valid session found, clearing auth state");
+      // Clear session data without redirect
+      authService.clearSession();
+      dispatch({ type: "LOGOUT" });
+      dispatch({ type: "SET_LOADING", payload: false });
+      return;
+    }
+
     const token = authService.getToken();
 
-    if (token) {
-      try {
-        const user = await authService.getCurrentUser();
-        dispatch({
-          type: "LOGIN_SUCCESS",
-          payload: { user, token },
-        });
-      } catch (error) {
-        // Token invalid or expired
-        authService.logout();
-        dispatch({ type: "LOGOUT" });
-      }
-    } else {
+    try {
+      const user = await authService.getCurrentUser();
+      
+      dispatch({
+        type: "LOGIN_SUCCESS",
+        payload: { user, token },
+      });
+    } catch (error) {
+      // Token invalid or expired
+      console.error("Auth check failed:", error);
+      // Clear session data without redirect
+      authService.clearSession();
       dispatch({ type: "LOGOUT" });
     }
 
@@ -108,11 +124,15 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: "LOGIN_START" });
 
     try {
-      const response = await authService.login(credentials);
-
-      if (response.accessToken) {
-        localStorage.setItem("token", response.accessToken);
+      // Check if login should be allowed
+      if (!multiDeviceHandler.shouldAllowLogin()) {
+        throw new Error("Terlalu banyak percobaan login. Silakan tunggu sebentar.");
       }
+      
+      // Clear any existing session data first
+      authService.clearSession();
+      
+      const response = await authService.login(credentials);
 
       dispatch({
         type: "LOGIN_SUCCESS",

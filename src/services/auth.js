@@ -1,4 +1,5 @@
 import api from "./api";
+import { sessionManager } from "../utils/sessionManager";
 
 /**
  * Login dengan email dan password
@@ -8,6 +9,12 @@ import api from "./api";
 const login = async (credentials) => {
   try {
     const response = await api.post("/auth/login", credentials);
+    
+    // Initialize session with proper cleanup
+    if (response.accessToken) {
+      sessionManager.initializeSession(response.user, response.accessToken);
+    }
+    
     return response;
   } catch (error) {
     throw error;
@@ -35,6 +42,24 @@ const register = async (userData) => {
 const getCurrentUser = async () => {
   try {
     const response = await api.get("/users/me");
+    
+    // Validate session consistency
+    const storedUser = localStorage.getItem("user");
+    
+    if (storedUser) {
+      const parsedStoredUser = JSON.parse(storedUser);
+      
+      // Use session manager for validation
+      if (!sessionManager.validateSessionConsistency(response, parsedStoredUser)) {
+        console.warn("Session inconsistency detected, clearing session");
+        clearSession();
+        throw new Error("Session data inconsistent");
+      }
+      
+      // Update stored user data with fresh data from server
+      localStorage.setItem("user", JSON.stringify(response));
+    }
+    
     return response;
   } catch (error) {
     throw error;
@@ -133,8 +158,19 @@ const getInstructorOnly = async () => {
  * Logout (clear local data)
  */
 const logout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
+  // Use session manager for comprehensive cleanup
+  sessionManager.clearSessionData();
+  
+  // Redirect to login instead of reload
+  window.location.href = '/auth/login';
+};
+
+/**
+ * Clear session data without redirect (for internal use)
+ */
+const clearSession = () => {
+  // Use session manager for comprehensive cleanup
+  sessionManager.clearSessionData();
 };
 
 /**
@@ -201,6 +237,7 @@ const authService = {
   getGoogleCallbackJson,
   getInstructorOnly,
   logout,
+  clearSession,
   isAuthenticated,
   getToken,
   refreshToken,

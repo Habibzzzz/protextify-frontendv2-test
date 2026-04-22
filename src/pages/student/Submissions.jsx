@@ -5,8 +5,8 @@
  * - Tidak render data/fitur yang tidak dikirim BE.
  */
 
-import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import {
   Container,
   Card,
@@ -38,14 +38,22 @@ import { formatDate } from "../../utils/helpers";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function StudentSubmissions() {
+  const location = useLocation();
   const {
     data: submissions,
     loading,
     error,
     refetch,
-  } = useAsyncData(() => submissionsService.getHistory(), []);
+  } = useAsyncData(() => submissionsService.getHistory(), [], { refetchOnWindowFocus: true, pollIntervalMs: 30000 });
 
   const [activeTab, setActiveTab] = useState("all");
+
+  // Refetch when redirected after submit
+  useEffect(() => {
+    if (location.state?.refresh) {
+      refetch();
+    }
+  }, [location.state?.refresh, refetch]);
 
   const filteredSubmissions = useMemo(() => {
     if (!submissions) return [];

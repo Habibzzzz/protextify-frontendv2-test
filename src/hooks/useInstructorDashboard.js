@@ -69,6 +69,32 @@ export const useInstructorDashboard = () => {
   }, [fetchDashboardData]);
 
   const refetch = useCallback(() => {
+    console.log("🔄 Refreshing instructor dashboard data...");
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  const forceRefresh = useCallback(() => {
+    console.log("🔄 Force refreshing instructor dashboard data...");
+    setData({
+      stats: {
+        totalClasses: 0,
+        totalStudents: 0,
+        activeAssignments: 0,
+        pendingGrading: 0,
+        completionRate: 0,
+        averageGrade: 0,
+        totalRevenue: 0,
+        monthlyRevenue: 0,
+      },
+      recentClasses: [],
+      recentSubmissions: [],
+      recentTransactions: [],
+      analyticsData: {
+        classActivity: [],
+        submissionTrends: [],
+        gradingTrends: [],
+      },
+    });
     fetchDashboardData();
   }, [fetchDashboardData]);
 
@@ -77,6 +103,7 @@ export const useInstructorDashboard = () => {
     error,
     data,
     refetch,
+    forceRefresh,
   };
 };
 

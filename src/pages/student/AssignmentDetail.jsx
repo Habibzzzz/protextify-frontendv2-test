@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   Container,
@@ -36,37 +36,48 @@ export default function AssignmentDetail() {
   const [error, setError] = useState(null);
 
   // Fetch assignment & submission
-  useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      setError(null);
-      try {
-        const assignmentData = await assignmentsService.getAssignmentById(
-          assignmentId
-        );
-        setAssignment(assignmentData);
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const assignmentData = await assignmentsService.getAssignmentById(
+        assignmentId
+      );
+      setAssignment(assignmentData);
 
-        if (assignmentData?.id) {
-          const submissionData =
-            await submissionsService.getSubmissionByAssignmentId(
-              assignmentData.id
-            );
-          setSubmission(submissionData);
-        }
-      } catch (err) {
-        setError({
-          statusCode: err?.response?.data?.statusCode || err?.statusCode || 400,
-          message:
-            err?.response?.data?.message ||
-            err?.message ||
-            "Gagal memuat detail assignment",
-        });
-      } finally {
-        setLoading(false);
+      if (assignmentData?.id) {
+        const submissionData = await submissionsService.getSubmissionByAssignmentId(
+          assignmentData.id
+        );
+        setSubmission(submissionData);
       }
+    } catch (err) {
+      setError({
+        statusCode: err?.response?.data?.statusCode || err?.statusCode || 400,
+        message:
+          err?.response?.data?.message ||
+          err?.message ||
+          "Gagal memuat detail assignment",
+      });
+    } finally {
+      setLoading(false);
     }
-    fetchData();
   }, [assignmentId]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Auto refresh when window/tab gains focus and short polling
+  useEffect(() => {
+    const onFocus = () => fetchData();
+    window.addEventListener("focus", onFocus);
+    const interval = setInterval(() => fetchData(), 30000);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      clearInterval(interval);
+    };
+  }, [fetchData]);
 
   // Loading/Error states
   if (loading) {

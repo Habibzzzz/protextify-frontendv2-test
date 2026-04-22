@@ -13,21 +13,21 @@ export default function StatsSection() {
   const stats = [
     {
       icon: <Users className="w-8 h-8" />,
-      value: 500,
+      value: 191,
       label: "Pengguna Aktif",
-      suffix: "+",
+      suffix: "",
     },
     {
       icon: <BookOpen className="w-8 h-8" />,
-      value: 50,
+      value: 6,
       label: "Kelas Dibuat",
-      suffix: "+",
+      suffix: "",
     },
     {
       icon: <FileText className="w-8 h-8" />,
-      value: 1000,
+      value: 185,
       label: "Tugas Dianalisis",
-      suffix: "+",
+      suffix: "",
     },
     {
       icon: <Award className="w-8 h-8" />,

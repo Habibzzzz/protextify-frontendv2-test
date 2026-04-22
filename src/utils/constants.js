@@ -51,6 +51,14 @@ export const AUTH_STORAGE_KEYS = {
   TOKEN: "token",
   USER: "user",
   REFRESH_TOKEN: "refreshToken",
+  SESSION_ID: "sessionId",
+};
+
+// Cache busting for production
+export const CACHE_BUSTING = {
+  ENABLED: import.meta.env.PROD,
+  VERSION: import.meta.env.VITE_APP_VERSION || "1.0.0",
+  TIMESTAMP: Date.now(),
 };
 
 export const TOKEN_REFRESH_THRESHOLD = 5 * 60 * 1000; // 5 minutes before expiry

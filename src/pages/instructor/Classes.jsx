@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Search,
   Plus,
@@ -50,6 +50,7 @@ const sortOptions = [
 
 export default function InstructorClasses() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -60,7 +61,26 @@ export default function InstructorClasses() {
     loading,
     error,
     refetch,
-  } = useAsyncData(classesService.getClasses, []);
+  } = useAsyncData(classesService.getClasses, [], { refetchOnWindowFocus: true, pollIntervalMs: 30000 });
+
+  // Handle refresh when coming from assignment creation or other changes
+  useEffect(() => {
+    if (location.state?.refreshClasses) {
+      console.log("🔄 Refreshing classes after assignment creation");
+      refetch();
+    }
+  }, [location.state?.refreshClasses, refetch]);
+
+  // Force refresh function for debugging
+  const forceRefresh = () => {
+    console.log("🔄 Force refreshing classes...");
+    refetch();
+  };
+
+  // Make forceRefresh available globally for debugging
+  if (typeof window !== 'undefined') {
+    window.forceRefreshClasses = forceRefresh;
+  }
 
   const filteredAndSortedClasses = useMemo(() => {
     if (!classes) return [];

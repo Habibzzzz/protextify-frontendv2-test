@@ -101,6 +101,17 @@ export default function TransactionHistory() {
     fetchTransactions(parseInt(searchParams.get("page")) || 1);
   }, []);
 
+  // Auto refresh: on window focus and lightweight polling
+  useEffect(() => {
+    const onFocus = () => fetchTransactions(pagination.page);
+    window.addEventListener("focus", onFocus);
+    const interval = setInterval(() => fetchTransactions(pagination.page), 30000);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      clearInterval(interval);
+    };
+  }, [pagination.page, filters]);
+
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
