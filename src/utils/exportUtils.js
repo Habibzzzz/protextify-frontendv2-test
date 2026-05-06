@@ -1,4 +1,53 @@
 // src/utils/exportUtils.js
+const downloadBlob = (blob, filename) => {
+  const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  link.setAttribute("href", url);
+  link.setAttribute("download", filename);
+  link.style.visibility = "hidden";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
+const createExcelWorkbook = async () => {
+  const ExcelJS = await import("exceljs");
+  const Workbook = ExcelJS.Workbook || ExcelJS.default?.Workbook;
+
+  if (!Workbook) {
+    throw new Error("Excel export library tidak dapat dimuat");
+  }
+
+  return new Workbook();
+};
+
+const addJsonWorksheet = (workbook, sheetName, rows) => {
+  const worksheet = workbook.addWorksheet(sheetName);
+  const columns = Object.keys(rows[0] || {});
+
+  worksheet.columns = columns.map((column) => ({
+    header: column,
+    key: column,
+    width: Math.max(14, Math.min(40, column.length + 4)),
+  }));
+
+  rows.forEach((row) => worksheet.addRow(row));
+  worksheet.getRow(1).font = { bold: true };
+
+  return worksheet;
+};
+
+const writeExcelFile = async (workbook, filename) => {
+  const buffer = await workbook.xlsx.writeBuffer();
+  downloadBlob(
+    new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    }),
+    filename
+  );
+};
+
 export const exportSubmissionsToCSV = (submissions, assignmentTitle) => {
   const headers = [
     "Nama Siswa",
@@ -54,11 +103,8 @@ export const exportSubmissionsToExcel = async (
   submissions,
   assignmentTitle
 ) => {
-  // Install xlsx: npm install xlsx
-  const XLSX = await import("xlsx");
-
-  const worksheet = XLSX.utils.json_to_sheet(
-    submissions.map((submission) => ({
+  const workbook = await createExcelWorkbook();
+  const data = submissions.map((submission) => ({
       "Nama Siswa": submission.student?.fullName || "",
       Email: submission.student?.email || "",
       Status: getStatusLabel(submission.status),
@@ -73,13 +119,10 @@ export const exportSubmissionsToExcel = async (
       "Terakhir Update": submission.updatedAt
         ? new Date(submission.updatedAt).toLocaleString("id-ID")
         : "",
-    }))
-  );
+    }));
 
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Submissions");
-
-  XLSX.writeFile(
+  addJsonWorksheet(workbook, "Submissions", data);
+  await writeExcelFile(
     workbook,
     `submissions_${assignmentTitle}_${
       new Date().toISOString().split("T")[0]
@@ -342,8 +385,7 @@ export const exportSubmissionsToExcelAdvanced = async (
     separateSheetsByStatus = false,
   } = options;
 
-  const XLSX = await import("xlsx");
-  const workbook = XLSX.utils.book_new();
+  const workbook = await createExcelWorkbook();
 
   // Main submissions sheet
   const submissionsData = submissions.map((submission) => ({
@@ -363,8 +405,7 @@ export const exportSubmissionsToExcelAdvanced = async (
       : "",
   }));
 
-  const submissionsSheet = XLSX.utils.json_to_sheet(submissionsData);
-  XLSX.utils.book_append_sheet(workbook, submissionsSheet, "All Submissions");
+  addJsonWorksheet(workbook, "All Submissions", submissionsData);
 
   // Separate sheets by status
   if (separateSheetsByStatus) {
@@ -387,8 +428,7 @@ export const exportSubmissionsToExcelAdvanced = async (
         Kata: submission.wordCount || 0,
       }));
 
-      const statusSheet = XLSX.utils.json_to_sheet(statusData);
-      XLSX.utils.book_append_sheet(workbook, statusSheet, status);
+      addJsonWorksheet(workbook, status, statusData);
     });
   }
 
@@ -406,12 +446,11 @@ export const exportSubmissionsToExcelAdvanced = async (
       { Metric: "Submission Rate", Value: `${stats.submissionRate}%` },
     ];
 
-    const statsSheet = XLSX.utils.json_to_sheet(statsData);
-    XLSX.utils.book_append_sheet(workbook, statsSheet, "Statistics");
+    addJsonWorksheet(workbook, "Statistics", statsData);
   }
 
   // Download file
-  XLSX.writeFile(
+  await writeExcelFile(
     workbook,
     `submissions_${assignmentTitle}_${
       new Date().toISOString().split("T")[0]

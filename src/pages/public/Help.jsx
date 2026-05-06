@@ -6,7 +6,7 @@ import {
   HelpCircle,
   MessageCircle,
   Mail,
-  Instagram,
+  Camera as Instagram,
   FileQuestion,
   ChevronDown,
   ChevronUp,

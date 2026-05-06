@@ -1,6 +1,6 @@
 // src/components/layout/Footer.jsx
 import { Link } from "react-router-dom";
-import { Instagram, Phone, Mail, Heart, ArrowRight } from "lucide-react";
+import { Camera as Instagram, Phone, Mail, Heart, ArrowRight } from "lucide-react";
 import { Button, Container } from "../../components";
 import logoPutih from "@/assets/logo-protextify-putih.png";
 import komdigiLogo from "@/assets/logo-komdigi.png";
