@@ -3,7 +3,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles, Star, Users } from "lucide-react";
 import { Button, Container, Card, CardContent } from "../../components";
-import LogoUnila from "../../assets/logo-unila.png";
+import LogoUnila from "../../assets/logo-unila.webp";
 
 /**
  * Komponen CTASection
@@ -128,6 +128,8 @@ export default function CTASection() {
             <img
               src={LogoUnila}
               alt="Universitas Lampung"
+              loading="lazy"
+              decoding="async"
               className="h-7 w-auto object-contain"
               title="Universitas Lampung"
             />

@@ -59,6 +59,9 @@ export default function WriteAssignment() {
 
   const draftManager = useDraftManager(localSubmissionId);
 
+  const extractPlainText = (html = "") =>
+    html.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
+
   // Load assignment data
   useEffect(() => {
     const loadAssignmentData = async () => {
@@ -204,7 +207,7 @@ export default function WriteAssignment() {
     if (!localSubmissionId) return;
 
     // Perbaikan: Ubah validasi untuk memeriksa plain text, bukan HTML mentah.
-    const plainText = content.replace(/<[^>]*>/g, "").trim();
+    const plainText = extractPlainText(content);
     if (plainText === "") {
       toast.error("Tidak bisa menyimpan draft kosong.");
       return;
@@ -216,12 +219,35 @@ export default function WriteAssignment() {
         localSubmissionId,
         content
       );
+      setInitialContent(content);
       toast.success("Draft berhasil disimpan");
     } catch (error) {
       toast.error("Gagal menyimpan draft");
     } finally {
       setSaving(false);
     }
+  };
+
+  const persistLatestDraftBeforeSubmit = async () => {
+    if (!localSubmissionId) {
+      throw new Error("Submission belum siap.");
+    }
+
+    const plainText = extractPlainText(content);
+    if (plainText === "") {
+      throw new Error("Konten tugas masih kosong.");
+    }
+
+    await submissionsService.updateSubmissionContent(localSubmissionId, content);
+    setInitialContent(content);
+    setSubmission((prev) =>
+      prev
+        ? {
+            ...prev,
+            content,
+          }
+        : prev
+    );
   };
 
   // Submit tugas
@@ -272,6 +298,7 @@ export default function WriteAssignment() {
           ? feedbackAnswers
           : undefined;
 
+      await persistLatestDraftBeforeSubmit();
       await draftManager.submitSubmission(answersToSend);
       setSubmission(
         await submissionsService.getSubmissionById(localSubmissionId)

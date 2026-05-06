@@ -1,12 +1,10 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
-  CardHeader,
-  CardTitle,
   CardContent,
   Button,
   Input,
-  Checkbox,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -14,6 +12,7 @@ import {
   Modal,
   Pagination,
 } from "../ui";
+import { classesService } from "../../services";
 import { formatDate } from "../../utils/helpers";
 import {
   Users,
@@ -32,9 +31,10 @@ import toast from "react-hot-toast";
  *
  * @param {Object} props
  * @param {Object} props.classDetail - Detail kelas beserta enrollments.
- * @param {Function} props.onRefresh - Callback untuk refresh data (tidak digunakan di sini).
+ * @param {Function} props.onRefresh - Callback untuk refresh data setelah aksi (mis. hapus anggota).
  */
-export default function MemberManagement({ classDetail, _onRefresh }) {
+export default function MemberManagement({ classDetail, onRefresh }) {
+  const navigate = useNavigate();
   // State untuk kata kunci pencarian anggota
   const [searchTerm, setSearchTerm] = useState("");
   // State untuk modal undangan anggota
@@ -43,10 +43,10 @@ export default function MemberManagement({ classDetail, _onRefresh }) {
   const [currentPage, setCurrentPage] = useState(1);
   // State jumlah anggota per halaman
   const [itemsPerPage] = useState(10);
-  // State untuk modal hapus anggota
-  const [setShowRemoveModal] = useState(false); // tambahkan showRemoveModal, jika diperlukan
-  // State untuk menyimpan anggota yang akan dihapus
-  const [setMemberToRemove] = useState(null); // tambahkan memberToRemove, jika diperlukan
+  const [showRemoveModal, setShowRemoveModal] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState(null);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileMember, setProfileMember] = useState(null);
 
   /**
    * Ambil data anggota dari enrollments (backend).
@@ -58,7 +58,7 @@ export default function MemberManagement({ classDetail, _onRefresh }) {
         fullName: e.student?.fullName,
         email: e.student?.email || "",
         institution: e.student?.institution || "",
-        joinedAt: e.createdAt || classDetail.currentUserEnrollment?.joinedAt,
+        joinedAt: e.joinedAt,
       }))
     : [];
 
@@ -66,11 +66,13 @@ export default function MemberManagement({ classDetail, _onRefresh }) {
    * Filter anggota berdasarkan kata kunci pencarian (nama/email).
    * Mengembalikan array anggota yang sesuai dengan pencarian.
    */
-  const filteredMembers = members.filter(
-    (member) =>
-      member.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredMembers = members.filter((member) => {
+    const q = searchTerm.toLowerCase();
+    return (
+      (member.fullName ?? "").toLowerCase().includes(q) ||
+      (member.email ?? "").toLowerCase().includes(q)
+    );
+  });
 
   /**
    * Ambil anggota sesuai halaman (pagination).
@@ -210,10 +212,30 @@ export default function MemberManagement({ classDetail, _onRefresh }) {
                               </Button>
                               {isOpen && (
                                 <DropdownMenuContent align="end">
-                                  <DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setProfileMember(member);
+                                      setShowProfileModal(true);
+                                      setIsOpen(false);
+                                    }}
+                                  >
                                     Lihat Profil
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      if (!member?.id || !classDetail?.id) {
+                                        toast.error(
+                                          "Data siswa tidak lengkap — tidak bisa membuka progress."
+                                        );
+                                        setIsOpen(false);
+                                        return;
+                                      }
+                                      navigate(
+                                        `/instructor/classes/${classDetail.id}/history?studentId=${member.id}`
+                                      );
+                                      setIsOpen(false);
+                                    }}
+                                  >
                                     Lihat Progress
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
@@ -276,14 +298,77 @@ export default function MemberManagement({ classDetail, _onRefresh }) {
         classDetail={classDetail}
       />
 
-      {/* Modal hapus anggota (opsional, implementasi sesuai kebutuhan) */}
-      {/* <RemoveMemberModal
+      <StudentProfileModal
+        isOpen={showProfileModal}
+        onClose={() => {
+          setShowProfileModal(false);
+          setProfileMember(null);
+        }}
+        member={profileMember}
+      />
+
+      <RemoveMemberModal
         isOpen={showRemoveModal}
-        onClose={() => setShowRemoveModal(false)}
+        onClose={() => {
+          setShowRemoveModal(false);
+          setMemberToRemove(null);
+        }}
         member={memberToRemove}
         classDetail={classDetail}
-      /> */}
+        onSuccess={() => onRefresh?.()}
+      />
     </div>
+  );
+}
+
+function StudentProfileModal({ isOpen, onClose, member }) {
+  const initial = (member?.fullName || "?").charAt(0).toUpperCase();
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Profil Siswa">
+      {member ? (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#23407a]/10 text-xl font-semibold text-[#23407a]">
+              {initial}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate font-semibold text-gray-900">
+                {member.fullName || "—"}
+              </p>
+              <p className="text-sm text-gray-500">Anggota kelas ini</p>
+            </div>
+          </div>
+          <dl className="space-y-3 text-sm">
+            <div>
+              <dt className="text-gray-500">Email</dt>
+              <dd className="break-all text-gray-900">
+                {member.email?.trim() ? member.email : "—"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">Institusi</dt>
+              <dd className="text-gray-900">
+                {member.institution?.trim() ? member.institution : "—"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-gray-500">Bergabung</dt>
+              <dd className="text-gray-900">{formatDate(member.joinedAt)}</dd>
+            </div>
+          </dl>
+          <p className="text-xs leading-relaxed text-gray-500">
+            Bio dan foto profil hanya bisa diubah oleh siswa dari akun mereka.
+            Ini ringkasan yang instruktur lihat untuk konteks kelas.
+          </p>
+          <div className="flex justify-end pt-2">
+            <Button variant="outline" onClick={onClose}>
+              Tutup
+            </Button>
+          </div>
+        </div>
+      ) : null}
+    </Modal>
   );
 }
 
@@ -338,16 +423,63 @@ function InviteModal({ isOpen, onClose, classDetail }) {
   );
 }
 
-/**
- * Komponen modal untuk menghapus anggota dari kelas.
- * Implementasi sesuai kebutuhan (tidak tersedia di kode ini).
- *
- * @param {Object} props
- * @param {boolean} props.isOpen - Status modal terbuka/tutup.
- * @param {Function} props.onClose - Fungsi untuk menutup modal.
- * @param {Object} props.member - Data anggota yang akan dihapus.
- * @param {Object} props.classDetail - Detail kelas.
- */
-// function RemoveMemberModal({ isOpen, onClose, member, classDetail }) {
-//   // Implementasi modal hapus anggota sesuai kebutuhan
-// }
+function RemoveMemberModal({
+  isOpen,
+  onClose,
+  member,
+  classDetail,
+  onSuccess,
+}) {
+  const [removing, setRemoving] = useState(false);
+
+  const handleConfirm = async () => {
+    if (!member?.id || !classDetail?.id) return;
+    setRemoving(true);
+    try {
+      await toast.promise(
+        classesService.removeStudentFromClass(classDetail.id, member.id),
+        {
+          loading: "Mengeluarkan siswa...",
+          success: "Siswa berhasil dikeluarkan dari kelas",
+          error: (err) =>
+            err?.response?.data?.message ||
+            err?.message ||
+            "Gagal mengeluarkan siswa dari kelas",
+        }
+      );
+      onSuccess?.();
+      onClose();
+    } catch {
+      // Error sudah ditampilkan oleh toast.promise
+    } finally {
+      setRemoving(false);
+    }
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Keluarkan dari kelas?">
+      <div className="space-y-4">
+        <p className="text-sm text-gray-600">
+          Yakin ingin mengeluarkan{" "}
+          <span className="font-medium text-gray-900">
+            {member?.fullName ?? "siswa ini"}
+          </span>{" "}
+          dari kelas ini? Siswa tidak lagi melihat kelas ini; riwayat tugas yang
+          sudah ada tetap tersimpan.
+        </p>
+        <div className="flex justify-end gap-2 pt-2">
+          <Button variant="outline" onClick={onClose} disabled={removing}>
+            Batal
+          </Button>
+          <Button
+            className="bg-red-600 hover:bg-red-700 text-white"
+            onClick={handleConfirm}
+            disabled={removing}
+          >
+            Keluarkan
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}

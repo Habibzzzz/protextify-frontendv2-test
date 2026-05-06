@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../../contexts/AuthContext";
 import { authService } from "../../services";
+import { sessionManager } from "../../utils/sessionManager";
 import { getDefaultRoute } from "../../utils/constants";
 import {
   LoadingSpinner,
@@ -16,7 +17,7 @@ import logo from "@/assets/logo-protextify-warna.png";
 const GoogleCallback = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { clearError, isAuthenticated, user, ...authContext } = useAuth();
+  const { clearError, dispatch } = useAuth();
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -38,21 +39,16 @@ const GoogleCallback = () => {
           // Ambil user dari BE menggunakan token yang baru saja disimpan
           const response = await authService.getGoogleUser();
           const { accessToken, user } = response;
-          localStorage.setItem("token", accessToken);
-          localStorage.setItem("user", JSON.stringify(user));
-          // Update context secara manual
-          if (authContext && authContext.dispatch) {
-            authContext.dispatch({
-              type: "LOGIN_SUCCESS",
-              payload: { user, token: accessToken },
-            });
-          }
+          sessionManager.initializeSession(user, accessToken);
+          dispatch({
+            type: "LOGIN_SUCCESS",
+            payload: { user, token: accessToken },
+          });
           toast.success(`Selamat datang, ${user.fullName}!`);
           navigate(getDefaultRoute(user.role), { replace: true });
         } catch (error) {
           clearError();
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
+          authService.clearSession();
           toast.error(
             error?.response?.data?.message ||
               error?.message ||
@@ -68,7 +64,7 @@ const GoogleCallback = () => {
     };
 
     handleCallback();
-  }, [searchParams, navigate, clearError, authContext]);
+  }, [searchParams, navigate, clearError, dispatch]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#23407a] via-[#1a2f5c] to-[#0f1b3a] relative overflow-hidden">

@@ -18,6 +18,9 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    // Avoid stale authenticated data from browser/proxy caches.
+    config.headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+    config.headers.Pragma = "no-cache";
 
     // Add logging untuk development
     if (import.meta.env.VITE_ENABLE_ROUTER_LOGGING === "true") {

@@ -6,7 +6,6 @@ export const ROUTES = {
   ABOUT: "/about",
   PRICING: "/pricing",
   HELP: "/help",
-  DOCS: "/docs",
   PRIVACY: "/privacy",
   TERMS: "/terms",
 
@@ -48,7 +47,6 @@ export const getPublicRoutes = () => [
   ROUTES.ABOUT,
   ROUTES.PRICING,
   ROUTES.HELP,
-  ROUTES.DOCS,
   ROUTES.PRIVACY,
   ROUTES.TERMS,
   ROUTES.AUTH.LOGIN,

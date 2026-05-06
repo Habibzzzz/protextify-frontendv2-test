@@ -1,5 +1,6 @@
 // src/services/submissions.js
 import api from "./api";
+import { emitDataRefresh } from "../utils/refetchBus";
 
 /**
  * Membuat submission baru untuk assignment (student only)
@@ -107,6 +108,7 @@ const submitSubmission = async (submissionId, answers) => {
       `/submissions/${submissionId}/submit`,
       payload
     );
+    emitDataRefresh("submissions", { action: "submit", submissionId });
     return {
       id: response.id,
       status: response.status,
@@ -130,6 +132,7 @@ const gradeSubmission = async (submissionId, gradeData) => {
       `/submissions/${submissionId}/grade`,
       gradeData
     );
+    emitDataRefresh("submissions", { action: "grade", submissionId });
     return {
       id: response.id,
       grade: response.grade,
@@ -150,6 +153,10 @@ const gradeSubmission = async (submissionId, gradeData) => {
 const bulkGradeSubmissions = async (bulkData) => {
   try {
     const response = await api.patch("/submissions/bulk-grade", bulkData);
+    emitDataRefresh("submissions", {
+      action: "bulk-grade",
+      count: Array.isArray(bulkData?.grades) ? bulkData.grades.length : 0,
+    });
     return response;
   } catch (error) {
     console.error("Failed to bulk grade submissions:", error);

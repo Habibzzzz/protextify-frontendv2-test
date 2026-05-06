@@ -44,7 +44,10 @@ export default function StudentSubmissions() {
     loading,
     error,
     refetch,
-  } = useAsyncData(() => submissionsService.getHistory(), [], { refetchOnWindowFocus: true, pollIntervalMs: 30000 });
+  } = useAsyncData(() => submissionsService.getHistory(), [], {
+    refetchOnWindowFocus: true,
+    pollIntervalMs: 10000,
+  });
 
   const [activeTab, setActiveTab] = useState("all");
 

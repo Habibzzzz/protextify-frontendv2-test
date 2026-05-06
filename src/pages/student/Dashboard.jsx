@@ -122,7 +122,7 @@ export default function StudentDashboard() {
                 </span>
               </div>
               <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3">
-                Selamat datang, {user?.fullName || "Student"}! ✨
+                Selamat datang, {user?.fullName || "Student"}!
               </h1>
               <p className="text-white/80 text-lg leading-relaxed max-w-2xl">
                 Kelola tugas dan kelas Anda dengan mudah. Tetap produktif dan

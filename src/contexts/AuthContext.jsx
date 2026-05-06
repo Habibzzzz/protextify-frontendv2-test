@@ -2,7 +2,6 @@ import { createContext, useContext, useReducer, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import authService from "../services/auth";
 import { sessionManager } from "../utils/sessionManager";
-import { multiDeviceHandler } from "../utils/multiDeviceHandler";
 
 const AuthContext = createContext();
 
@@ -69,12 +68,7 @@ export const AuthProvider = ({ children }) => {
 
   // Check auth status on mount
   useEffect(() => {
-    // Initialize multi-device handler first
-    const conflictHandled = multiDeviceHandler.initializeMultiDeviceHandler();
-    
-    if (!conflictHandled) {
-      checkAuthStatus();
-    }
+    checkAuthStatus();
     // eslint-disable-next-line
   }, []);
 
@@ -124,11 +118,6 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: "LOGIN_START" });
 
     try {
-      // Check if login should be allowed
-      if (!multiDeviceHandler.shouldAllowLogin()) {
-        throw new Error("Terlalu banyak percobaan login. Silakan tunggu sebentar.");
-      }
-      
       // Clear any existing session data first
       authService.clearSession();
       
@@ -151,6 +140,35 @@ export const AuthProvider = ({ children }) => {
         statusCode: error.response?.data?.statusCode || error.statusCode || 400,
         message:
           error.response?.data?.message || error.message || "Login gagal",
+      };
+      dispatch({ type: "LOGIN_ERROR", payload: formattedError });
+      toast.error(formattedError.message);
+      throw error;
+    }
+  };
+
+  const loginAdmin = async (credentials) => {
+    dispatch({ type: "LOGIN_START" });
+
+    try {
+      authService.clearSession();
+      const response = await authService.loginAdmin(credentials);
+
+      dispatch({
+        type: "LOGIN_SUCCESS",
+        payload: {
+          user: response.user,
+          token: response.accessToken,
+        },
+      });
+
+      toast.success(`Selamat datang, ${response.user.fullName}!`);
+      return response;
+    } catch (error) {
+      const formattedError = {
+        statusCode: error.response?.data?.statusCode || error.statusCode || 400,
+        message:
+          error.response?.data?.message || error.message || "Login admin gagal",
       };
       dispatch({ type: "LOGIN_ERROR", payload: formattedError });
       toast.error(formattedError.message);
@@ -224,6 +242,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     ...state,
     login,
+    loginAdmin,
     register,
     logout,
     updateUser,

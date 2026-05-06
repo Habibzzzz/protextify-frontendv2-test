@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,11 +8,10 @@ import {
   Save,
   User,
   Shield,
-  Upload,
   Building2,
   Phone,
-  Info,
   Mail,
+  KeyRound,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -23,14 +23,15 @@ import {
   CardContent,
   Button,
   Input,
-  Textarea,
   Breadcrumb,
 } from "../../components";
-import { storageService } from "../../services";
+import { storageService, authService } from "../../services";
 import { updateProfileSchema } from "../../utils/validation";
 
 export default function InstructorSettings() {
+  const navigate = useNavigate();
   const { user, updateUser } = useAuth();
+  const [sendingResetLink, setSendingResetLink] = useState(false);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(
     "/src/assets/logo-protextify-warna.png"
@@ -42,7 +43,6 @@ export default function InstructorSettings() {
     handleSubmit,
     formState: { errors, isDirty, isSubmitting },
     reset,
-    setValue,
   } = useForm({
     resolver: zodResolver(updateProfileSchema),
   });
@@ -53,7 +53,6 @@ export default function InstructorSettings() {
         fullName: user.fullName || "",
         institution: user.institution || "",
         phone: user.phone || "",
-        bio: user.bio || "",
         avatarUrl: user.avatarUrl || "",
       });
       setAvatarPreview(
@@ -172,12 +171,41 @@ export default function InstructorSettings() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600 mb-4">
-                  Fitur ganti kata sandi dan otentikasi dua faktor (2FA) akan
-                  segera tersedia.
+                <p className="text-sm text-gray-600 mb-4 flex items-start gap-2">
+                  <KeyRound className="w-4 h-4 mt-0.5 shrink-0 text-[#23407a]" />
+                  <span>
+                    Untuk mengubah kata sandi, kami mengirim tautan aman ke
+                    email terdaftar (sama seperti menu Pengaturan di desktop).
+                    Otentikasi dua faktor (2FA) tetap dalam rencana pengembangan.
+                  </span>
                 </p>
-                <Button variant="outline" disabled className="w-full">
-                  Ubah Kata Sandi (Coming Soon)
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  disabled={sendingResetLink || !user?.email}
+                  loading={sendingResetLink}
+                  onClick={async () => {
+                    if (!user?.email) return;
+                    setSendingResetLink(true);
+                    try {
+                      await toast.promise(
+                        authService.forgotPassword(user.email),
+                        {
+                          loading: "Mengirim tautan...",
+                          success:
+                            "Tautan reset terkirim — periksa email Anda.",
+                          error: (err) =>
+                            err?.response?.data?.message ||
+                            "Gagal mengirim tautan reset.",
+                        }
+                      );
+                    } finally {
+                      setSendingResetLink(false);
+                    }
+                  }}
+                >
+                  Kirim Tautan Reset Kata Sandi
                 </Button>
               </CardContent>
             </Card>
@@ -218,16 +246,6 @@ export default function InstructorSettings() {
                     error={errors.phone?.message}
                     placeholder="+62 812-3456-7890"
                     icon={Phone}
-                  />
-                </div>
-                <div>
-                  <Textarea
-                    label="Bio"
-                    {...register("bio")}
-                    error={errors.bio?.message}
-                    rows={4}
-                    placeholder="Ceritakan peran dan keahlian Anda..."
-                    icon={Info}
                   />
                 </div>
 

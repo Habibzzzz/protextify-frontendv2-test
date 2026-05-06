@@ -36,7 +36,10 @@ export default function StudentClasses() {
     loading,
     error,
     refetch,
-  } = useAsyncData(() => classesService.getClasses(), []);
+  } = useAsyncData(() => classesService.getClasses(), [], {
+    refetchOnWindowFocus: true,
+    pollIntervalMs: 10000,
+  });
 
   // Handle success message from join class
   useEffect(() => {
@@ -97,7 +100,7 @@ export default function StudentClasses() {
                 </span>
               </div>
               <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3">
-                Kelola Kelas Anda ✨
+                Kelola Kelas Anda
               </h1>
               <p className="text-white/80 text-lg leading-relaxed max-w-2xl">
                 Daftar kelas yang Anda ikuti ({classes?.length || 0} kelas

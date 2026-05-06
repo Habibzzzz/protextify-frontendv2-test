@@ -1,5 +1,6 @@
 // src/services/classes.js
 import api from "./api";
+import { emitDataRefresh } from "../utils/refetchBus";
 
 /**
  * Mendapat daftar semua kelas untuk user saat ini (student/instructor)
@@ -88,7 +89,8 @@ const getClassById = async (id) => {
             student: {
               id: e.student?.id,
               fullName: e.student?.fullName,
-              // Hapus email dan institution karena tidak ada di response
+              email: e.student?.email ?? "",
+              institution: e.student?.institution ?? "",
             },
           }))
         : [],
@@ -123,6 +125,7 @@ const getClassById = async (id) => {
 const createClass = async (classData) => {
   try {
     const response = await api.post("/classes", classData);
+    emitDataRefresh("classes", { action: "create" });
     return response;
   } catch (error) {
     throw error;
@@ -137,6 +140,7 @@ const createClass = async (classData) => {
 const joinClass = async (classToken) => {
   try {
     const response = await api.post("/classes/join", { classToken });
+    emitDataRefresh("classes", { action: "join" });
     return response;
   } catch (error) {
     if (error.response?.status === 404) {
@@ -241,6 +245,7 @@ const getClassHistory = async (classId, params) => {
 const updateClass = async (classId, updateData) => {
   try {
     const response = await api.patch(`/classes/${classId}`, updateData);
+    emitDataRefresh("classes", { action: "update", classId });
     return response;
   } catch (error) {
     throw error;
@@ -255,6 +260,7 @@ const updateClass = async (classId, updateData) => {
 const deleteClass = async (classId) => {
   try {
     const response = await api.delete(`/classes/${classId}`);
+    emitDataRefresh("classes", { action: "delete", classId });
     return response;
   } catch (error) {
     throw error;
@@ -269,6 +275,28 @@ const deleteClass = async (classId) => {
 const regenerateClassToken = async (classId) => {
   try {
     const response = await api.post(`/classes/${classId}/regenerate-token`);
+    emitDataRefresh("classes", { action: "regenerate-token", classId });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Keluarkan siswa dari kelas (instructor only)
+ * @param {string} classId
+ * @param {string} studentId
+ */
+const removeStudentFromClass = async (classId, studentId) => {
+  try {
+    const response = await api.delete(
+      `/classes/${classId}/students/${studentId}`
+    );
+    emitDataRefresh("classes", {
+      action: "remove-student",
+      classId,
+      studentId,
+    });
     return response;
   } catch (error) {
     throw error;
@@ -304,6 +332,7 @@ const classesService = {
   updateClass,
   deleteClass,
   regenerateClassToken,
+  removeStudentFromClass,
   getClassActivityFeed, // <-- Tambahkan fungsi baru
 };
 

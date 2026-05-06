@@ -48,7 +48,7 @@ export default function AssignmentDetail() {
   } = useAsyncData(
     () => assignmentsService.getAssignmentSubmissionsOverview(assignmentId),
     [assignmentId],
-    { refetchOnWindowFocus: true, pollIntervalMs: 30000 }
+    { refetchOnWindowFocus: true, pollIntervalMs: 10000 }
   );
 
   const { assignment, stats, submissions } = overviewData || {};
@@ -74,11 +74,11 @@ export default function AssignmentDetail() {
     });
   }, [submissions, searchQuery, filterStatus]);
 
-  // Auto refresh after grading: refetch on window focus and light polling
+  // Auto refresh after grading: refetch on window focus and short polling
   useEffect(() => {
     const onFocus = () => refetch();
     window.addEventListener("focus", onFocus);
-    const interval = setInterval(() => refetch(), 30000);
+    const interval = setInterval(() => refetch(), 10000);
     return () => {
       window.removeEventListener("focus", onFocus);
       clearInterval(interval);

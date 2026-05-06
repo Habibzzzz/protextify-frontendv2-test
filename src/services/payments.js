@@ -1,5 +1,6 @@
 // src/services/payments.js
 import api from "./api";
+import { emitDataRefresh } from "../utils/refetchBus";
 
 /**
  * Membuat transaksi pembayaran untuk aktivasi assignment atau top-up kredit.
@@ -16,6 +17,7 @@ const createTransaction = async (transactionData) => {
       payload.assignmentId = transactionData.assignmentId;
     }
     const response = await api.post("/payments/create-transaction", payload);
+    emitDataRefresh("payments", { action: "create-transaction" });
     return response;
   } catch (error) {
     throw error;
@@ -146,6 +148,7 @@ const cancelPayment = async (transactionId) => {
     const response = await api.patch(
       `/payments/transactions/${transactionId}/cancel`
     );
+    emitDataRefresh("payments", { action: "cancel", transactionId });
     return response;
   } catch (error) {
     throw error;

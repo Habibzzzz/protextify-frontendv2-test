@@ -106,7 +106,7 @@ export default function InstructorDashboard() {
                 </span>
               </div>
               <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3">
-                Selamat datang, {user?.fullName}! 👨‍🏫
+                Selamat datang, {user?.fullName}! 
               </h1>
               <p className="text-white/80 text-lg leading-relaxed max-w-2xl">
                 Kelola kelas dan monitor progress siswa dengan mudah.

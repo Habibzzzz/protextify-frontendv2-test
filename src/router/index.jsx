@@ -1,5 +1,7 @@
+import { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import { USER_ROLES } from "../utils/constants";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
 
 // Layouts
 import RootLayout from "../layouts/RootLayout";
@@ -16,59 +18,83 @@ import {
   About,
   Pricing,
   Help,
-  Docs,
   Privacy,
   Terms,
   NotFound,
 } from "../pages/public";
 
-// Auth Pages
-import {
-  Login,
-  Register,
-  EmailVerification,
-  GoogleCallback,
-  ForgotPassword,
-  ResetPassword,
-} from "../pages/auth";
+const Login = lazy(() => import("../pages/auth/Login"));
+const Register = lazy(() => import("../pages/auth/Register"));
+const EmailVerification = lazy(() =>
+  import("../pages/auth/EmailVerification")
+);
+const GoogleCallback = lazy(() => import("../pages/auth/GoogleCallback"));
+const ForgotPassword = lazy(() => import("../pages/auth/ForgotPassword"));
+const ResetPassword = lazy(() => import("../pages/auth/ResetPassword"));
+const AdminLogin = lazy(() => import("../pages/admin/AdminLogin"));
+const AdminDashboard = lazy(() => import("../pages/admin/AdminDashboard"));
 
-// Student Pages
-import {
-  StudentDashboard,
-  StudentClasses,
-  JoinClass,
-  StudentAssignments,
-  StudentSubmissions,
-  WriteAssignment,
-  StudentClassDetail,
-  StudentProfile,
-  SubmissionDetail,
-  PlagiarismReport,
-  StorageHealth,
-  ClassAssignments,
-  AssignmentDetail, // <-- dari student
-} from "../pages/student";
+const StudentDashboard = lazy(() => import("../pages/student/Dashboard"));
+const StudentClasses = lazy(() => import("../pages/student/Classes"));
+const JoinClass = lazy(() => import("../pages/student/JoinClass"));
+const StudentAssignments = lazy(() => import("../pages/student/Assignments"));
+const StudentSubmissions = lazy(() => import("../pages/student/Submissions"));
+const WriteAssignment = lazy(() => import("../pages/student/WriteAssignment"));
+const StudentClassDetail = lazy(() =>
+  import("../pages/student/StudentClassDetail")
+);
+const StudentProfile = lazy(() => import("../pages/student/Profile"));
+const SubmissionDetail = lazy(() => import("../pages/student/SubmissionDetail"));
+const PlagiarismReport = lazy(() =>
+  import("../pages/student/PlagiarismReport")
+);
+const StorageHealth = lazy(() => import("../pages/student/StorageHealth"));
+const ClassAssignments = lazy(() => import("../pages/student/ClassAssignments"));
+const AssignmentDetail = lazy(() => import("../pages/student/AssignmentDetail"));
 
-// Instructor Pages
-import {
-  InstructorDashboard,
-  InstructorClasses,
-  CreateClass,
-  ClassDetail,
-  ClassSettings,
-  CreateAssignment,
-  MonitorSubmissions,
-  GradeSubmission,
-  InstructorAnalytics,
-  InstructorSettings,
-  BulkGrade,
-  AssignmentAnalytics,
-  InstructorAssignmentDetail, // <-- gunakan alias
-  PlagiarismAnalysis,
-  TransactionHistory,
-  TransactionDetail,
-  ClassHistory,
-} from "../pages/instructor";
+const InstructorDashboard = lazy(() => import("../pages/instructor/Dashboard"));
+const InstructorClasses = lazy(() => import("../pages/instructor/Classes"));
+const CreateClass = lazy(() => import("../pages/instructor/CreateClass"));
+const ClassDetail = lazy(() => import("../pages/instructor/ClassDetail"));
+const ClassSettings = lazy(() => import("../pages/instructor/ClassSettings"));
+const CreateAssignment = lazy(() =>
+  import("../pages/instructor/CreateAssignment")
+);
+const MonitorSubmissions = lazy(() =>
+  import("../pages/instructor/MonitorSubmissions")
+);
+const GradeSubmission = lazy(() => import("../pages/instructor/GradeSubmission"));
+const InstructorAnalytics = lazy(() => import("../pages/instructor/Analytics"));
+const InstructorSettings = lazy(() => import("../pages/instructor/Settings"));
+const BulkGrade = lazy(() => import("../pages/instructor/BulkGrade"));
+const AssignmentAnalytics = lazy(() =>
+  import("../pages/instructor/AssignmentAnalytics")
+);
+const InstructorAssignmentDetail = lazy(() =>
+  import("../pages/instructor/AssignmentDetail")
+);
+const PlagiarismAnalysis = lazy(() =>
+  import("../pages/instructor/PlagiarismAnalysis")
+);
+const TransactionHistory = lazy(() =>
+  import("../pages/instructor/TransactionHistory")
+);
+const TransactionDetail = lazy(() =>
+  import("../pages/instructor/TransactionDetail")
+);
+const ClassHistory = lazy(() => import("../pages/instructor/ClassHistory"));
+
+const renderLazy = (Component) => (
+  <Suspense
+    fallback={
+      <div className="min-h-[40vh] flex items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    }
+  >
+    <Component />
+  </Suspense>
+);
 
 const router = createBrowserRouter([
   // Public routes
@@ -81,7 +107,6 @@ const router = createBrowserRouter([
       { path: "about", element: <About /> },
       { path: "pricing", element: <Pricing /> },
       { path: "help", element: <Help /> },
-      { path: "docs", element: <Docs /> },
       { path: "privacy", element: <Privacy /> },
       { path: "terms", element: <Terms /> },
       // Auth routes (only for non-authenticated users)
@@ -93,7 +118,7 @@ const router = createBrowserRouter([
             path: "login",
             element: (
               <PublicRoute>
-                <Login />
+                {renderLazy(Login)}
               </PublicRoute>
             ),
           },
@@ -101,7 +126,7 @@ const router = createBrowserRouter([
             path: "register",
             element: (
               <PublicRoute>
-                <Register />
+                {renderLazy(Register)}
               </PublicRoute>
             ),
           },
@@ -109,7 +134,7 @@ const router = createBrowserRouter([
             path: "email-verification",
             element: (
               <PublicRoute>
-                <EmailVerification />
+                {renderLazy(EmailVerification)}
               </PublicRoute>
             ),
           },
@@ -117,7 +142,7 @@ const router = createBrowserRouter([
             path: "callback",
             element: (
               <PublicRoute>
-                <GoogleCallback />
+                {renderLazy(GoogleCallback)}
               </PublicRoute>
             ),
           },
@@ -125,7 +150,7 @@ const router = createBrowserRouter([
             path: "google/callback",
             element: (
               <PublicRoute>
-                <GoogleCallback />
+                {renderLazy(GoogleCallback)}
               </PublicRoute>
             ),
           },
@@ -133,7 +158,7 @@ const router = createBrowserRouter([
             path: "forgot-password",
             element: (
               <PublicRoute>
-                <ForgotPassword />
+                {renderLazy(ForgotPassword)}
               </PublicRoute>
             ),
           },
@@ -141,13 +166,33 @@ const router = createBrowserRouter([
             path: "reset-password",
             element: (
               <PublicRoute>
-                <ResetPassword />
+                {renderLazy(ResetPassword)}
               </PublicRoute>
             ),
           },
         ],
       },
-      { path: "verify-email", element: <EmailVerification /> },
+      {
+        path: "admin/login",
+        element: (
+          <PublicRoute redirectTo="/admin/dashboard">
+            {renderLazy(AdminLogin)}
+          </PublicRoute>
+        ),
+      },
+      {
+        path: "payment/success",
+        element: <Navigate to="/instructor/transactions" replace />,
+      },
+      {
+        path: "payment/pending",
+        element: <Navigate to="/instructor/transactions" replace />,
+      },
+      {
+        path: "payment/error",
+        element: <Navigate to="/instructor/transactions" replace />,
+      },
+      { path: "verify-email", element: renderLazy(EmailVerification) },
     ],
   },
 
@@ -161,22 +206,22 @@ const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <Navigate to="overview" replace /> },
-      { path: "overview", element: <StudentDashboard /> },
-      { path: "classes", element: <StudentClasses /> },
-      { path: "classes/:classId/assignments", element: <ClassAssignments /> },
-      { path: "join-class", element: <JoinClass /> },
-      { path: "assignments", element: <StudentAssignments /> },
-      { path: "assignments/:assignmentId", element: <AssignmentDetail /> },
-      { path: "assignments/:id/write", element: <WriteAssignment /> },
-      { path: "submissions", element: <StudentSubmissions /> },
-      { path: "submissions/:id", element: <SubmissionDetail /> },
+      { path: "overview", element: renderLazy(StudentDashboard) },
+      { path: "classes", element: renderLazy(StudentClasses) },
+      { path: "classes/:classId/assignments", element: renderLazy(ClassAssignments) },
+      { path: "join-class", element: renderLazy(JoinClass) },
+      { path: "assignments", element: renderLazy(StudentAssignments) },
+      { path: "assignments/:assignmentId", element: renderLazy(AssignmentDetail) },
+      { path: "assignments/:id/write", element: renderLazy(WriteAssignment) },
+      { path: "submissions", element: renderLazy(StudentSubmissions) },
+      { path: "submissions/:id", element: renderLazy(SubmissionDetail) },
       {
         path: "submissions/:id/plagiarism-report",
-        element: <PlagiarismReport />,
+        element: renderLazy(PlagiarismReport),
       },
-      { path: "classes/:classId", element: <StudentClassDetail /> },
-      { path: "profile", element: <StudentProfile /> },
-      { path: "storage-health", element: <StorageHealth /> },
+      { path: "classes/:classId", element: renderLazy(StudentClassDetail) },
+      { path: "profile", element: renderLazy(StudentProfile) },
+      { path: "storage-health", element: renderLazy(StorageHealth) },
     ],
   },
 
@@ -192,70 +237,84 @@ const router = createBrowserRouter([
       { index: true, element: <Navigate to="dashboard" replace /> },
       {
         path: "dashboard",
-        element: <InstructorDashboard />,
+        element: renderLazy(InstructorDashboard),
       },
       {
         path: "analytics",
-        element: <InstructorAnalytics />,
+        element: renderLazy(InstructorAnalytics),
       },
       {
         path: "classes",
-        element: <InstructorClasses />,
+        element: renderLazy(InstructorClasses),
       },
       {
         path: "create-class",
-        element: <CreateClass />,
+        element: renderLazy(CreateClass),
       },
       {
         path: "classes/:classId",
-        element: <ClassDetail />,
+        element: renderLazy(ClassDetail),
       },
       {
         path: "classes/:classId/history",
-        element: <ClassHistory />,
+        element: renderLazy(ClassHistory),
       },
       {
         path: "classes/:classId/settings",
-        element: <ClassSettings />,
+        element: renderLazy(ClassSettings),
       },
       {
         path: "classes/:classId/create-assignment",
-        element: <CreateAssignment />,
+        element: renderLazy(CreateAssignment),
       },
       {
         path: "assignments/:assignmentId",
-        element: <InstructorAssignmentDetail />,
+        element: renderLazy(InstructorAssignmentDetail),
       },
       {
         path: "assignments/:assignmentId/monitor",
-        element: <MonitorSubmissions />,
+        element: renderLazy(MonitorSubmissions),
       },
       {
         path: "assignments/:assignmentId/bulk-grade",
-        element: <BulkGrade />,
+        element: renderLazy(BulkGrade),
       },
       {
         path: "assignments/:assignmentId/analytics",
-        element: <AssignmentAnalytics />,
+        element: renderLazy(AssignmentAnalytics),
       },
       {
         path: "assignments/:assignmentId/submissions",
-        element: <MonitorSubmissions />,
+        element: renderLazy(MonitorSubmissions),
       },
       {
         path: "submissions/:submissionId/plagiarism",
-        element: <PlagiarismAnalysis />,
+        element: renderLazy(PlagiarismAnalysis),
       },
       {
         path: "submissions/:submissionId/grade",
-        element: <GradeSubmission />,
+        element: renderLazy(GradeSubmission),
       },
-      { path: "transactions", element: <TransactionHistory /> },
-      { path: "transactions/:transactionId", element: <TransactionDetail /> },
+      { path: "transactions", element: renderLazy(TransactionHistory) },
+      { path: "transactions/:transactionId", element: renderLazy(TransactionDetail) },
       {
         path: "settings",
-        element: <InstructorSettings />,
+        element: renderLazy(InstructorSettings),
       },
+    ],
+  },
+
+  // Admin dashboard routes
+  {
+    path: "/admin",
+    element: (
+      <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+        <DashboardLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <Navigate to="dashboard" replace /> },
+      { path: "dashboard", element: renderLazy(AdminDashboard) },
     ],
   },
 
@@ -267,16 +326,16 @@ const router = createBrowserRouter([
         <DashboardLayout />
       </ProtectedRoute>
     ),
-    children: [{ index: true, element: <StudentProfile /> }],
+    children: [{ index: true, element: renderLazy(StudentProfile) }],
   },
 
   // Legacy redirects
   { path: "login", element: <Navigate to="/auth/login" replace /> },
   { path: "register", element: <Navigate to="/auth/register" replace /> },
-  { path: "reset-password", element: <ResetPassword /> }, // Direct access for query params
+  { path: "reset-password", element: renderLazy(ResetPassword) }, // Direct access for query params
   {
     path: "classes/:classId/assignments/:assignmentId/write",
-    element: <WriteAssignment />,
+    element: renderLazy(WriteAssignment),
   },
 
   // 404 fallback

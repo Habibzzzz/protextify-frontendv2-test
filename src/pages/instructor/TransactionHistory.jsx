@@ -31,7 +31,11 @@ import {
 
 import { paymentsService } from "../../services";
 import { PAYMENT_STATUS } from "../../utils/constants";
-import { formatCurrency, formatDate } from "../../utils/helpers";
+import {
+  formatCurrency,
+  formatDate,
+  resolvePresignedDownloadUrl,
+} from "../../utils/helpers";
 
 const statusOptions = [
   { value: "ALL", label: "🔄 Semua Status" },
@@ -145,15 +149,29 @@ export default function TransactionHistory() {
   };
 
   const handleExport = async () => {
-    const exportFilters = { ...filters };
-    if (exportFilters.status === "ALL") {
-      delete exportFilters.status;
+    const exportFilters = {};
+    if (filters.status && filters.status !== "ALL") {
+      exportFilters.status = filters.status;
+    }
+    if (filters.startDate?.trim()) {
+      exportFilters.startDate = filters.startDate.trim();
+    }
+    if (filters.endDate?.trim()) {
+      exportFilters.endDate = filters.endDate.trim();
+    }
+    if (filters.search?.trim()) {
+      exportFilters.search = filters.search.trim();
     }
 
     await toast.promise(paymentsService.exportTransactions(exportFilters), {
       loading: "Mengekspor data transaksi...",
       success: (response) => {
-        window.open(response.downloadUrl, "_blank");
+        const url = resolvePresignedDownloadUrl(response);
+        if (!url) {
+          console.error("Export response missing download URL:", response);
+          throw new Error("URL unduhan tidak valid.");
+        }
+        window.open(url, "_blank", "noopener,noreferrer");
         return "File ekspor berhasil dibuat dan siap diunduh!";
       },
       error: (err) => {
@@ -265,11 +283,11 @@ export default function TransactionHistory() {
   const getStatusLabel = (status) => {
     switch (status) {
       case PAYMENT_STATUS.SUCCESS:
-        return "✅ Berhasil";
+        return "Berhasil";
       case PAYMENT_STATUS.PENDING:
-        return "⏳ Pending";
+        return "Pending";
       case PAYMENT_STATUS.FAILED:
-        return "❌ Gagal";
+        return "Gagal";
       default:
         return status;
     }
@@ -290,7 +308,7 @@ export default function TransactionHistory() {
                 </span>
               </div>
               <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3">
-                Riwayat Transaksi 💳
+                Riwayat Transaksi
               </h1>
               <p className="text-white/80 text-lg leading-relaxed max-w-2xl">
                 Kelola dan monitor riwayat pembayaran assignment Anda.

@@ -26,7 +26,11 @@ import { InvoiceViewer, PaymentStatusTracker } from "../../components/payments";
 import { paymentsService } from "../../services";
 import { useAsyncData } from "../../hooks";
 import { PAYMENT_STATUS } from "../../utils/constants";
-import { formatCurrency, formatDate } from "../../utils/helpers";
+import {
+  formatCurrency,
+  formatDate,
+  resolvePresignedDownloadUrl,
+} from "../../utils/helpers";
 
 export default function TransactionDetail() {
   const { transactionId } = useParams();
@@ -61,7 +65,12 @@ export default function TransactionDetail() {
     await toast.promise(paymentsService.downloadInvoice(transactionId), {
       loading: "Membuat invoice...",
       success: (response) => {
-        window.open(response.downloadUrl, "_blank");
+        const url = resolvePresignedDownloadUrl(response);
+        if (!url) {
+          console.error("Invoice download missing URL:", response);
+          throw new Error("URL unduhan tidak valid.");
+        }
+        window.open(url, "_blank", "noopener,noreferrer");
         return "Invoice siap diunduh!";
       },
       error: (err) => err.response?.data?.message || "Gagal mengunduh invoice.",

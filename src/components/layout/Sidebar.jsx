@@ -56,6 +56,16 @@ export default function Sidebar() {
    * @returns {Array} Daftar menu yang akan ditampilkan di sidebar.
    */
   const getMenuItems = () => {
+    if (user?.role === USER_ROLES.ADMIN) {
+      return [
+        {
+          label: "Dashboard Admin",
+          icon: Home,
+          path: "/admin/dashboard",
+        },
+      ];
+    }
+
     if (user?.role === USER_ROLES.INSTRUCTOR) {
       return [
         {
@@ -191,6 +201,8 @@ export default function Sidebar() {
             <div className="text-xs text-gray-500">
               {user?.role === USER_ROLES.INSTRUCTOR
                 ? "Dashboard Instructor"
+                : user?.role === USER_ROLES.ADMIN
+                ? "Dashboard Admin"
                 : "Dashboard Student"}
             </div>
           </div>

@@ -36,15 +36,43 @@ export default defineConfig({
         ],
       },
       workbox: {
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: true,
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
-        globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
+        globPatterns: ["**/*.{js,css,ico,png,svg,webp,avif}"],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/api\.protextify\.com\/.*$/,
+            // Always try fresh HTML first to reduce stale shell/blank-page risk.
+            urlPattern: ({ request }) => request.mode === "navigate",
             handler: "NetworkFirst",
             options: {
-              cacheName: "api-cache",
-              networkTimeoutSeconds: 10,
+              cacheName: "html-cache",
+              networkTimeoutSeconds: 3,
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 24 * 60 * 60,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            // Static assets can be served from cache quickly and refreshed in background.
+            urlPattern: ({ request }) =>
+              request.destination === "style" ||
+              request.destination === "script" ||
+              request.destination === "worker" ||
+              request.destination === "image" ||
+              request.destination === "font",
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "static-assets-cache",
+              expiration: {
+                maxEntries: 300,
+                maxAgeSeconds: 30 * 24 * 60 * 60,
+              },
               cacheableResponse: {
                 statuses: [0, 200],
               },

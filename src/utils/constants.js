@@ -3,6 +3,7 @@ export const API_BASE_URL =
 export const WS_URL = import.meta.env.VITE_WS_URL || "wss://api.protextify.id";
 
 export const USER_ROLES = {
+  ADMIN: "ADMIN",
   STUDENT: "STUDENT",
   INSTRUCTOR: "INSTRUCTOR",
 };
@@ -16,6 +17,8 @@ export const ROUTES = {
   CLASSES: "/dashboard/classes",
   JOIN_CLASS: "/dashboard/join-class",
   INSTRUCTOR_DASHBOARD: "/instructor/dashboard", // Instructor dashboard
+  ADMIN_LOGIN: "/admin/login",
+  ADMIN_DASHBOARD: "/admin/dashboard",
   INSTRUCTOR_CLASSES: "/instructor/classes",
   CREATE_CLASS: "/instructor/create-class",
   GOOGLE_CALLBACK: "/auth/google/callback",
@@ -23,6 +26,7 @@ export const ROUTES = {
 
 // ✅ Perbaiki role-based routing constants
 export const ROLE_ROUTES = {
+  [USER_ROLES.ADMIN]: "/admin/dashboard",
   [USER_ROLES.STUDENT]: "/dashboard/overview", // ✅ Sesuai dengan route definition
   [USER_ROLES.INSTRUCTOR]: "/instructor/dashboard", // ✅ Sesuai dengan route definition
 };

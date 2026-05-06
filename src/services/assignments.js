@@ -1,5 +1,6 @@
 // src/services/assignments.js
 import api from "./api";
+import { emitDataRefresh } from "../utils/refetchBus";
 
 /**
  * Mendapat semua assignment (admin/instructor only)
@@ -26,6 +27,7 @@ const assignmentsService = {
         `/classes/${classId}/assignments`,
         assignmentData
       );
+      emitDataRefresh("assignments", { action: "create", classId });
       // Response sudah sesuai BE, tidak perlu mapping
       return response;
     } catch (error) {

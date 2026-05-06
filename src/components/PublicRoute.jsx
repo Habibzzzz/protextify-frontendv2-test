@@ -1,9 +1,10 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { getDefaultRoute } from "../utils/constants";
 import { LoadingSpinner } from "./ui";
 
-const PublicRoute = ({ children, redirectTo = "/dashboard" }) => {
-  const { isAuthenticated, loading } = useAuth();
+const PublicRoute = ({ children, redirectTo }) => {
+  const { isAuthenticated, loading, user } = useAuth();
 
   // Show loading spinner while checking authentication
   if (loading) {
@@ -17,9 +18,11 @@ const PublicRoute = ({ children, redirectTo = "/dashboard" }) => {
     );
   }
 
-  // Redirect to dashboard if already authenticated
+  // Redirect authenticated users to the intended route.
+  // If redirectTo is not provided, route is resolved from user role.
   if (isAuthenticated) {
-    return <Navigate to={redirectTo} replace />;
+    const targetRoute = redirectTo || getDefaultRoute(user?.role);
+    return <Navigate to={targetRoute} replace />;
   }
 
   return children;

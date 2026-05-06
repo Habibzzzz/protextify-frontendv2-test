@@ -22,6 +22,23 @@ const login = async (credentials) => {
 };
 
 /**
+ * Login khusus admin.
+ * @param {object} credentials { email, password }
+ * @returns {object} { accessToken, user }
+ */
+const loginAdmin = async (credentials) => {
+  try {
+    const response = await api.post("/auth/admin/login", credentials);
+    if (response.accessToken) {
+      sessionManager.initializeSession(response.user, response.accessToken);
+    }
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
  * Register user baru
  * @param {object} userData { email, password, fullName, role, institution }
  * @returns {object} { message, user }
@@ -227,6 +244,7 @@ const resetPassword = async ({ token, newPassword }) => {
 
 const authService = {
   login,
+  loginAdmin,
   register,
   getCurrentUser,
   updateProfile,

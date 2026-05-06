@@ -185,6 +185,7 @@ export default function SubmissionDetail() {
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-8">
           <ContentPreviewCard content={submission.content} />
+          <EditorAttachmentCard onDownload={handleDownload} downloading={downloading} />
           <AssignmentInfoCard assignment={submission.assignment} />
         </div>
 
@@ -365,6 +366,44 @@ function ContentPreviewCard({ content }) {
       <CardContent>
         <div className="prose prose-sm max-w-none h-64 overflow-y-auto p-4 bg-gray-50 rounded-lg border border-gray-200">
           <div dangerouslySetInnerHTML={{ __html: content || "Tidak ada konten." }} />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function EditorAttachmentCard({ onDownload, downloading }) {
+  return (
+    <Card className="border-0 shadow-lg">
+      <CardHeader>
+        <CardTitle>Lampiran (Dari Konten Editor)</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-sm text-gray-600">
+          Protextify tidak memakai upload file untuk tugas ini. Lampiran dibuat
+          otomatis dari konten editor dan bisa diunduh sebagai PDF atau DOCX.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Button
+            variant="outline"
+            className="justify-start"
+            onClick={() => onDownload("pdf")}
+            loading={downloading}
+            aria-label="Unduh attachment PDF"
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Attachment PDF
+          </Button>
+          <Button
+            variant="outline"
+            className="justify-start"
+            onClick={() => onDownload("docx")}
+            loading={downloading}
+            aria-label="Unduh attachment DOCX"
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Attachment DOCX
+          </Button>
         </div>
       </CardContent>
     </Card>

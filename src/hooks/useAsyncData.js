@@ -1,10 +1,12 @@
 // src/hooks/useAsyncData.js
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { subscribeDataRefresh } from "../utils/refetchBus";
 
 export const useAsyncData = (asyncFunction, dependencies = [], options = {}) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const lastRefreshAtRef = useRef(0);
 
   // Options with sensible defaults
   const {
@@ -51,6 +53,19 @@ export const useAsyncData = (asyncFunction, dependencies = [], options = {}) => 
     const interval = setInterval(() => fetchData(), pollIntervalMs);
     return () => clearInterval(interval);
   }, [fetchData, pollIntervalMs]);
+
+  // Global refetch bus for important mutations (class creation, payments, submissions, etc.)
+  useEffect(() => {
+    const unsubscribe = subscribeDataRefresh(() => {
+      const now = Date.now();
+      // Avoid burst refetches when multiple mutations happen back-to-back.
+      if (now - lastRefreshAtRef.current < 1200) return;
+      lastRefreshAtRef.current = now;
+      fetchData();
+    });
+
+    return unsubscribe;
+  }, [fetchData]);
 
   const refetch = useCallback(() => {
     fetchData();

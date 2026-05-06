@@ -30,6 +30,17 @@ export default function MobileBottomNav() {
    * @returns {Array} Array objek navigasi
    */
   const getNavItems = () => {
+    if (user?.role === "ADMIN") {
+      return [
+        {
+          icon: Home,
+          label: "Admin",
+          href: "/admin/dashboard",
+          active: location.pathname.startsWith("/admin/dashboard"),
+        },
+      ];
+    }
+
     if (user?.role === "INSTRUCTOR") {
       // Navigasi untuk INSTRUCTOR
       return [
@@ -61,8 +72,9 @@ export default function MobileBottomNav() {
         {
           icon: User,
           label: "Profil",
-          href: "/instructor/settings",
-          active: location.pathname === "/instructor/settings",
+          // Selaras dengan DashboardHeader: "Pengaturan" → /profile (bukan /instructor/settings)
+          href: "/profile",
+          active: location.pathname === "/profile",
         },
       ];
     } else {

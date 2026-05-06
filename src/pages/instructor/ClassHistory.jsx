@@ -49,6 +49,7 @@ export default function ClassHistory() {
     sortBy: "updatedAt",
     sortOrder: "desc",
   });
+  const filterStudentId = searchParams.get("studentId");
 
   const [historyData, setHistoryData] = useState({ data: [], total: 0 });
   const [loading, setLoading] = useState(true);
@@ -93,6 +94,17 @@ export default function ClassHistory() {
       (prev) => {
         prev.set(key, value);
         if (key !== "page") prev.set("page", "1");
+        return prev;
+      },
+      { replace: true }
+    );
+  };
+
+  const clearStudentFilter = () => {
+    setSearchParams(
+      (prev) => {
+        prev.delete("studentId");
+        prev.set("page", "1");
         return prev;
       },
       { replace: true }
@@ -183,7 +195,7 @@ export default function ClassHistory() {
         ),
       },
     ],
-    [searchParams]
+    [navigate, searchParams]
   );
 
   return (
@@ -207,6 +219,32 @@ export default function ClassHistory() {
           </p>
         </div>
       </div>
+
+      {filterStudentId ? (
+        <div className="mb-6 flex flex-col gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900 sm:flex-row sm:items-center sm:justify-between">
+          <p className="pr-2">
+            {!loading && historyData.data.length > 0 ? (
+              <>
+                Menampilkan progress:{" "}
+                <strong>{historyData.data[0].student.fullName}</strong>
+              </>
+            ) : !loading && historyData.data.length === 0 ? (
+              <>Belum ada submission untuk siswa ini di kelas ini.</>
+            ) : (
+              <>Memuat progress siswa…</>
+            )}
+          </p>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="shrink-0 border-blue-300 bg-white hover:bg-blue-100"
+            onClick={clearStudentFilter}
+          >
+            Tampilkan semua siswa
+          </Button>
+        </div>
+      ) : null}
 
       <Card className="mb-6 shadow-lg">
         <CardHeader>

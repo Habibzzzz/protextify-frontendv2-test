@@ -2,9 +2,9 @@
 
 import { Container, Card, CardContent } from "../../components";
 import { Star, Quote } from "lucide-react";
-import fotoEsa from "@/assets/esa.jpg";
-import fotoRaisya from "@/assets/raisya.jpg";
-import fotoRenti from "@/assets/renti.jpg";
+import fotoEsa from "@/assets/esa.webp";
+import fotoRaisya from "@/assets/raisya.webp";
+import fotoRenti from "@/assets/renti.webp";
 
 /**
  * Komponen TestimonialSection
@@ -88,6 +88,8 @@ export default function TestimonialSection() {
                     <img 
                       src={testimonial.avatar} 
                       alt={testimonial.name}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover"
                     />
                   </div>

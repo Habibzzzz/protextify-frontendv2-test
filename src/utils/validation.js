@@ -38,11 +38,6 @@ export const updateProfileSchema = z.object({
   fullName: requiredStringSchema.min(2, "Nama minimal 2 karakter"),
   institution: requiredStringSchema.min(2, "Institusi minimal 2 karakter"),
   phone: phoneSchema.optional().or(z.literal("")),
-  bio: z
-    .string()
-    .max(500, "Bio maksimal 500 karakter")
-    .optional()
-    .or(z.literal("")),
   avatarUrl: z
     .string()
     .url("URL avatar tidak valid")

@@ -61,7 +61,7 @@ export default function InstructorClasses() {
     loading,
     error,
     refetch,
-  } = useAsyncData(classesService.getClasses, [], { refetchOnWindowFocus: true, pollIntervalMs: 30000 });
+  } = useAsyncData(classesService.getClasses, [], { refetchOnWindowFocus: true, pollIntervalMs: 10000 });
 
   // Handle refresh when coming from assignment creation or other changes
   useEffect(() => {
@@ -167,7 +167,7 @@ export default function InstructorClasses() {
                 </span>
               </div>
               <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3">
-                Manajemen Kelas 👨‍🏫
+                Manajemen Kelas 
               </h1>
               <p className="text-white/80 text-lg leading-relaxed max-w-2xl">
                 Kelola semua kelas Anda dengan mudah.

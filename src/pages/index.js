@@ -9,3 +9,6 @@ export * from "./student";
 
 // Instructor pages
 export * from "./instructor";
+
+// Admin pages
+export * from "./admin";

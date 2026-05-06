@@ -226,7 +226,7 @@ export default function InstructorAnalytics() {
                 </span>
               </div>
               <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3">
-                Analytics Performa 📊
+                Analytics Performa 
               </h1>
               <p className="text-white/80 text-lg leading-relaxed max-w-2xl">
                 Dapatkan wawasan mendalam tentang aktivitas kelas, submission

@@ -1,16 +1,19 @@
 import { useState, useEffect } from "react";
-import { Outlet } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Outlet, useNavigate } from "react-router-dom";
+import { Menu, X, LogOut } from "lucide-react";
 import Sidebar from "../components/layout/Sidebar";
 import DashboardHeader from "../components/layout/DashboardHeader";
 import MobileBottomNav from "../components/layout/MobileBottomNav";
 // Removed floating WhatsApp to embed in Sidebar instead
 import { cn } from "../utils/helpers";
 import logoPutih from "@/assets/logo-protextify-putih.png";
+import useAuth from "../hooks/useAuth";
 
 export default function DashboardLayout() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [user, setUser] = useState(null);
+  const [isMobileProfileOpen, setIsMobileProfileOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   // Close mobile sidebar when route changes
   useEffect(() => {
@@ -32,9 +35,14 @@ export default function DashboardLayout() {
 
   useEffect(() => {
     // Simpan data user
-    const savedUser = JSON.parse(localStorage.getItem("user"));
-    setUser(savedUser);
+    setIsMobileProfileOpen(false);
   }, []);
+
+  const handleMobileLogout = () => {
+    logout();
+    setIsMobileProfileOpen(false);
+    navigate("/");
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -91,7 +99,7 @@ export default function DashboardLayout() {
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Mobile Header */}
-          <div className="lg:hidden bg-white/95 backdrop-blur-xl border-b border-gray-200/50 px-4 py-3 shadow-sm">
+          <div className="lg:hidden relative z-50 bg-white/95 backdrop-blur-xl border-b border-gray-200/50 px-4 py-3 shadow-sm">
             <div className="flex items-center justify-between">
               <button
                 onClick={() => setIsMobileSidebarOpen(true)}
@@ -111,11 +119,39 @@ export default function DashboardLayout() {
                 </span>
               </div>
 
-              {/* User avatar untuk mobile */}
-              <div className="w-10 h-10 bg-gradient-to-br from-[#23407a] to-[#3b5fa4] rounded-2xl flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-sm">
-                  {user?.fullName?.charAt(0)?.toUpperCase()}
-                </span>
+              {/* User avatar/menu untuk mobile */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsMobileProfileOpen((prev) => !prev)}
+                  className="w-10 h-10 bg-gradient-to-br from-[#23407a] to-[#3b5fa4] rounded-2xl flex items-center justify-center shadow-lg"
+                >
+                  <span className="text-white font-bold text-sm">
+                    {user?.fullName?.charAt(0)?.toUpperCase()}
+                  </span>
+                </button>
+
+                {isMobileProfileOpen && (
+                  <div className="fixed inset-0 z-[70]">
+                    <button
+                      type="button"
+                      onClick={() => setIsMobileProfileOpen(false)}
+                      aria-label="Tutup menu akun"
+                      className="absolute inset-0"
+                    />
+
+                    <div className="absolute right-4 top-[76px] w-44 bg-white rounded-xl shadow-2xl border border-gray-100 py-2">
+                      <button
+                        type="button"
+                        onClick={handleMobileLogout}
+                        className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

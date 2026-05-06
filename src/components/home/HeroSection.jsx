@@ -49,14 +49,14 @@ export default function HeroSection() {
             untuk Dunia Akademik Modern
           </h1>
 
-          {/* Subjudul / deskripsi singkat */}
+         
           <p className="text-xl md:text-2xl text-white/80 mb-12 max-w-3xl mx-auto leading-relaxed">
             Protextify membantu institusi pendidikan mendeteksi plagiarisme
             dengan teknologi AI terdepan, mengelola kelas dengan mudah, dan
             memberikan pengalaman menulis yang optimal untuk siswa.
           </p>
 
-          {/* Tombol Call To Action (CTA) */}
+        
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
             {/* Tombol untuk registrasi */}
             <Link to="/auth/register">

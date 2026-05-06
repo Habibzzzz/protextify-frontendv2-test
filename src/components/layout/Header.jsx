@@ -406,16 +406,6 @@ export default function Header() {
                   >
                     <span className="font-medium text-gray-900">Bantuan</span>
                   </Link>
-                  <Link
-                    to="/docs"
-                    className="mobile-nav-item"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <span className="font-medium text-gray-900">
-                      Dokumentasi
-                    </span>
-                  </Link>
-
                   {/* Menu user pada mobile jika sudah login */}
                   {isAuthenticated && (
                     <>

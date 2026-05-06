@@ -36,7 +36,11 @@ import {
   plagiarismService,
 } from "../../services";
 import { useAsyncData } from "../../hooks/useAsyncData";
-import { formatDate, formatRelativeTime } from "../../utils/helpers";
+import {
+  formatDate,
+  formatRelativeTime,
+  resolvePresignedDownloadUrl,
+} from "../../utils/helpers";
 
 export default function MonitorSubmissions() {
   const { assignmentId } = useParams();
@@ -74,7 +78,7 @@ export default function MonitorSubmissions() {
   useEffect(() => {
     if (assignment?.classId) {
       fetchSubmissions();
-      const interval = setInterval(fetchSubmissions, 30000);
+      const interval = setInterval(fetchSubmissions, 10000);
       return () => clearInterval(interval);
     }
   }, [assignment?.classId, fetchSubmissions]);
@@ -157,7 +161,12 @@ export default function MonitorSubmissions() {
       {
         loading: `Membuat file ${formatName}...`,
         success: (response) => {
-          window.open(response.downloadUrl, "_blank");
+          const url = resolvePresignedDownloadUrl(response);
+          if (!url) {
+            console.error("Bulk download missing URL:", response);
+            throw new Error("URL unduhan tidak valid.");
+          }
+          window.open(url, "_blank", "noopener,noreferrer");
           return `File ${formatName} siap diunduh!`;
         },
         error: (err) =>

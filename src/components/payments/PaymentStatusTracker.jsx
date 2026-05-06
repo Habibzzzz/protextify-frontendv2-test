@@ -5,9 +5,8 @@ import {
   XCircle,
   RefreshCw,
   AlertTriangle,
-  CreditCard,
   ExternalLink,
-  MessageCircle,
+  CreditCard,
 } from "lucide-react";
 
 import {
@@ -23,10 +22,6 @@ import {
 import { usePaymentTracker } from "../../hooks/usePaymentTracker";
 import { PAYMENT_STATUS } from "../../utils/constants";
 import { formatCurrency, formatDate } from "../../utils/helpers";
-import {
-  WHATSAPP_CONFIG,
-  generateWhatsAppUrl,
-} from "../../utils/whatsappConfig";
 
 /**
  * Komponen PaymentStatusTracker
@@ -211,32 +206,16 @@ export default function PaymentStatusTracker({
           </Alert>
         )}
 
-        {/* Tombol Aksi Pembayaran (WhatsApp) */}
+        {/* Tombol Aksi Pembayaran Midtrans */}
         {status === PAYMENT_STATUS.PENDING && transaction.paymentUrl && (
           <div className="border-t pt-4">
             <Button
-              className="w-full bg-green-600 hover:bg-green-700"
+              className="w-full bg-[#23407a] hover:bg-[#1a2f5c]"
               onClick={() => {
-                // Membuat pesan WhatsApp dengan detail transaksi
-                const whatsappMessage = `Halo! Saya ingin melakukan pembayaran untuk transaksi Protextify.
-
-📋 *Detail Transaksi:*
-• ID Transaksi: ${transaction.id}
-• Total Pembayaran: Rp ${formatCurrency(transaction.amount)}
-• Status: ${status}
-• Tanggal: ${formatDate(transaction.createdAt)}
-
-Mohon bantuan untuk proses pembayaran. Terima kasih!`;
-
-                // Membuka WhatsApp dengan pesan yang sudah diformat
-                const whatsappUrl = generateWhatsAppUrl(whatsappMessage);
-                window.open(whatsappUrl, "_blank");
-
-                // KOMENTAR: Kode Midtrans di bawah ini dinonaktifkan sementara
-                // window.open(transaction.paymentUrl, "_blank");
+                window.open(transaction.paymentUrl, "_blank");
               }}
             >
-              <MessageCircle className="h-4 w-4 mr-2" />
+              <CreditCard className="h-4 w-4 mr-2" />
               Lanjutkan Pembayaran
               <ExternalLink className="h-4 w-4 ml-2" />
             </Button>

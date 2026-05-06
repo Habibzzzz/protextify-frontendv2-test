@@ -161,3 +161,22 @@ export const formatRelativeTime = (date) => {
   }
   return rtf.format(diffInSeconds, "second");
 };
+
+/**
+ * Normalisasi URL unduhan dari BE: string langsung, atau bentuk lama { downloadUrl: { url } }.
+ * @param {{ downloadUrl?: string | { url?: string } }} payload
+ * @returns {string|null}
+ */
+export function resolvePresignedDownloadUrl(payload) {
+  const raw = payload?.downloadUrl;
+  if (typeof raw === "string" && raw.trim()) return raw.trim();
+  if (
+    raw &&
+    typeof raw === "object" &&
+    typeof raw.url === "string" &&
+    raw.url.trim()
+  ) {
+    return raw.url.trim();
+  }
+  return null;
+}

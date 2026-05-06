@@ -46,7 +46,10 @@ export default function StudentProfile() {
     loading,
     error,
     refetch,
-  } = useAsyncData(() => usersService.getCurrentUser(), []);
+  } = useAsyncData(() => usersService.getCurrentUser(), [], {
+    refetchOnWindowFocus: true,
+    pollIntervalMs: 10000,
+  });
 
   const [isEditing, setIsEditing] = useState(false);
 
@@ -98,6 +101,7 @@ export default function StudentProfile() {
   const avatar = user?.fullName
     ? user.fullName.charAt(0).toUpperCase()
     : user?.email?.charAt(0).toUpperCase() || "U";
+  const roleLabel = user?.role === "INSTRUCTOR" ? "Instructor" : "Student";
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -125,11 +129,11 @@ export default function StudentProfile() {
                 </span>
               </div>
               <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3">
-                Profil Akun Student
+                Profil Akun {roleLabel}
               </h1>
               <p className="text-white/80 text-lg leading-relaxed max-w-2xl">
-                Lihat dan perbarui data profil Anda. Pastikan data sesuai agar
-                proses belajar berjalan lancar.
+                Lihat dan perbarui data profil Anda agar informasi akun tetap
+                akurat dan mudah dikelola.
               </p>
             </div>
           </div>
