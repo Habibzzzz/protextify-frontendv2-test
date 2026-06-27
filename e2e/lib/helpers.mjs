@@ -84,17 +84,53 @@ export async function waitForMainLoginPage(driver, timeout = 25000) {
 export async function assertBodyIncludes(driver, substring, label) {
   const text = await getBodyText(driver);
   if (!text.includes(substring)) {
+    const url = await driver.getCurrentUrl().catch(() => "(unknown-url)");
     throw new Error(
-      `${label}: teks "${substring}" tidak ditemukan di halaman`
+      `${label}: teks "${substring}" tidak ditemukan di halaman. URL=${url}. Body=${text.slice(0, 300)}`
     );
   }
 }
 
-export async function assertBodyIncludesAny(driver, substrings, label) {
+export async function assertBodyIncludesAny(driver, substrings, label, timeout = 20000) {
+  let text = "";
+  await driver
+    .wait(async () => {
+      text = await getBodyText(driver);
+      return substrings.some((substring) => text.includes(substring));
+    }, timeout)
+    .catch(async () => {
+      const url = await driver.getCurrentUrl().catch(() => "(unknown-url)");
+      throw new Error(
+        `${label}: tidak menemukan salah satu teks: ${substrings.join(", ")}. URL=${url}. Body=${text.slice(0, 500)}`
+      );
+    });
+}
+
+export async function assertBodyHasContent(driver, label, timeout = 20000) {
+  let text = "";
+  await driver
+    .wait(async () => {
+      text = await getBodyText(driver);
+      return text.trim().length > 20;
+    }, timeout)
+    .catch(async () => {
+      const url = await driver.getCurrentUrl().catch(() => "(unknown-url)");
+      throw new Error(`${label}: halaman tidak memiliki konten cukup. URL=${url}. Body=${text.slice(0, 300)}`);
+    });
+}
+
+export async function assertBodyDoesNotInclude(driver, substring, label) {
+  const text = await getBodyText(driver);
+  if (text.includes(substring)) {
+    const url = await driver.getCurrentUrl().catch(() => "(unknown-url)");
+    throw new Error(`${label}: halaman memuat teks terlarang "${substring}". URL=${url}. Body=${text.slice(0, 300)}`);
+  }
+}
+
+export async function bodyIncludesAny(driver, substrings) {
   const text = await getBodyText(driver);
   if (!substrings.some((substring) => text.includes(substring))) {
-    throw new Error(
-      `${label}: tidak menemukan salah satu teks: ${substrings.join(", ")}`
-    );
+    return false;
   }
+  return true;
 }
