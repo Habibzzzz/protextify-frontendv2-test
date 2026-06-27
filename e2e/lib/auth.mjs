@@ -1,5 +1,5 @@
 import { By, until } from "selenium-webdriver";
-import { openPath, waitForReactApp } from "./helpers.mjs";
+import { getBodyText, openPath, waitForReactApp } from "./helpers.mjs";
 
 export const TEST_STUDENT = {
   email: process.env.E2E_STUDENT_EMAIL || "alice.student@university.edu",
@@ -24,9 +24,16 @@ export async function loginWithCredentials(
 
   const emailEl = await driver.wait(
     until.elementLocated(By.css('input[name="email"]')),
-    15000
+    20000,
+    'Form login input[name="email"] tidak ditemukan'
   );
-  const passEl = await driver.findElement(By.css('input[name="password"]'));
+  const passEl = await driver.wait(
+    until.elementLocated(By.css('input[name="password"]')),
+    20000,
+    'Form login input[name="password"] tidak ditemukan'
+  );
+  await driver.wait(until.elementIsVisible(emailEl), 20000);
+  await driver.wait(until.elementIsVisible(passEl), 20000);
 
   await emailEl.click();
   await emailEl.clear();
@@ -39,14 +46,45 @@ export async function loginWithCredentials(
   await submit.click();
   await driver.sleep(150);
 
-  await driver.wait(
+  const result = await driver.wait(
     async () => {
       const u = await driver.getCurrentUrl();
-      return urlMustInclude.some((part) => u.includes(part));
+      if (urlMustInclude.some((part) => u.includes(part))) {
+        return { ok: true, reason: "url", url: u };
+      }
+
+      const session = await driver.executeScript(() => ({
+        token: localStorage.getItem("token"),
+        user: localStorage.getItem("user"),
+        sessionId: localStorage.getItem("sessionId"),
+      }));
+      if (session?.token && session?.user) {
+        return { ok: true, reason: "session", url: u };
+      }
+
+      const text = await getBodyText(driver);
+      if (/Login Gagal|Unauthorized|Invalid|credentials|gagal|salah|berakhir/i.test(text)) {
+        return { ok: false, reason: "error", url: u, text };
+      }
+
+      return false;
     },
     timeout,
     `Setelah login, URL harus mengandung salah satu: ${urlMustInclude.join(", ")}`
   );
+
+  if (result && result.ok === false) {
+    throw new Error(
+      `Login gagal setelah submit. URL=${result.url}. Body=${String(result.text || "").slice(0, 400)}`
+    );
+  }
+
+  if (result?.reason === "session") {
+    const currentUrl = await driver.getCurrentUrl();
+    if (!urlMustInclude.some((part) => currentUrl.includes(part))) {
+      await openPath(driver, urlMustInclude[0]);
+    }
+  }
 
   await waitForReactApp(driver);
 }

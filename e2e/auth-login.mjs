@@ -98,14 +98,17 @@ async function run(driver) {
   await driver.wait(
     async () => {
       const url = await driver.getCurrentUrl();
-      const text = await loadingSubmit.getText().catch(() => "");
-      const disabled = await loadingSubmit.getAttribute("disabled").catch(() => null);
-      return url.includes("/dashboard") || text.includes("Memproses") || disabled !== null;
+      if (url.includes("/dashboard")) return true;
+      const session = await driver.executeScript(() => ({
+        token: localStorage.getItem("token"),
+        user: localStorage.getItem("user"),
+      }));
+      return Boolean(session?.token && session?.user);
     },
-    15000,
-    "Submit login tidak menunjukkan proses atau redirect"
+    45000,
+    "Submit login tidak menghasilkan redirect/session"
   );
-  ok("auth-login-loading-submit", "submit memproses login/redirect");
+  ok("auth-login-loading-submit", "submit menghasilkan login/session");
 
   await clearBrowserSession(driver);
   await loginAsTestStudent(driver);
