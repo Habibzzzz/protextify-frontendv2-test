@@ -7,7 +7,6 @@ export const PUBLIC_PAGES = [
   { id: "about", path: "/about", includes: "Protextify" },
   { id: "pricing", path: "/pricing", includes: "Protextify" },
   { id: "help", path: "/help", includes: "Protextify" },
-  { id: "docs", path: "/docs", includesAny: ["Dokumentasi", "Docs", "Panduan", "Protextify"] },
   { id: "privacy", path: "/privacy", includes: "Privasi" },
   { id: "terms", path: "/terms", includes: "Syarat" },
 ];
