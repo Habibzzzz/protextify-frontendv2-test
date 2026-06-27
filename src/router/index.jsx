@@ -18,6 +18,7 @@ import {
   About,
   Pricing,
   Help,
+  Docs,
   Privacy,
   Terms,
   NotFound,
@@ -108,6 +109,7 @@ const router = createBrowserRouter([
       { path: "about", element: <About /> },
       { path: "pricing", element: <Pricing /> },
       { path: "help", element: <Help /> },
+      { path: "docs", element: <Docs /> },
       { path: "privacy", element: <Privacy /> },
       { path: "terms", element: <Terms /> },
       // Auth routes (only for non-authenticated users)
