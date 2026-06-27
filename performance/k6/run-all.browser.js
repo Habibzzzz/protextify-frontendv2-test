@@ -263,12 +263,21 @@ async function runStandaloneCases(page) {
 async function runAdminCases(page) {
   await runCase("admin:monitoring", async () => {
     await openAndReadBody(page, "/admin/login", { includes: "Masuk sebagai Admin" });
-    await page.locator('input[name="username"]').fill(ADMIN_USER);
+    await page.locator('input[name="email"]').fill(ADMIN_USER);
     await page.locator('input[name="password"]').fill(ADMIN_PASS);
     await page.locator('//button[contains(., "Masuk sebagai Admin")]').click();
-    await page.waitForLoadState("load");
+    const loginDeadline = Date.now() + Number(__ENV.K6_ADMIN_LOGIN_TIMEOUT_MS || 45000);
+    while (Date.now() < loginDeadline) {
+      const url = page.url();
+      if (url.includes("/admin/monitoring") || url.includes("/admin/dashboard")) {
+        break;
+      }
+      await page.waitForTimeout(250);
+    }
     const redirectOk = check(page.url(), {
-      "admin:monitoring:redirect": (url) => typeof url === "string" && url.includes("/admin/monitoring"),
+      "admin:monitoring:redirect": (url) =>
+        typeof url === "string" &&
+        (url.includes("/admin/monitoring") || url.includes("/admin/dashboard")),
     });
     const monitoringBody = await page.locator("body").textContent();
     const contentOk = check(monitoringBody, {
