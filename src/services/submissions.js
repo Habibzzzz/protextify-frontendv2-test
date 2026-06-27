@@ -201,6 +201,7 @@ const getHistory = async () => {
       updatedAt: item.updatedAt,
       submittedAt: item.submittedAt || null,
       grade: typeof item.grade === "number" ? item.grade : null,
+      feedback: item.feedback || "",
       plagiarismScore:
         item.plagiarismChecks?.score ??
         (typeof item.plagiarismScore === "number"

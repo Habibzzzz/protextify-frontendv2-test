@@ -15,7 +15,25 @@
     "preview": "vite preview",
     "clean": "rm -rf dist node_modules/.vite",
     "type-check": "tsc --noEmit",
-    "analyze": "npm run build && npx vite-bundle-analyzer dist/stats.html"
+    "analyze": "npm run build && npx vite-bundle-analyzer dist/stats.html",
+    "test:e2e": "node e2e/run-all.mjs",
+    "test:e2e:smoke": "node e2e/smoke-home.mjs",
+    "test:e2e:auth-login": "node e2e/auth-login.mjs",
+    "test:e2e:auth": "node e2e/authenticated-flows.mjs",
+    "test:e2e:critical": "node e2e/critical-flows.mjs",
+    "test:perf:k6:home": "k6 run --summary-export=performance/results/home-summary.json --out json=performance/results/home-raw.ndjson performance/k6/home.browser.js",
+    "test:perf:k6:auth": "k6 run --summary-export=performance/results/auth-summary.json --out json=performance/results/auth-raw.ndjson performance/k6/auth-login.browser.js",
+    "test:perf:k6:run-all": "k6 run --summary-export=performance/results/run-all-summary.json --out json=performance/results/run-all-raw.ndjson performance/k6/run-all.browser.js",
+    "test:perf:k6:run-all:public": "k6 run -e K6_RUN_ALL_SUITE=public --summary-export=performance/results/k6-run-all-public-summary.json --out json=performance/results/k6-run-all-public-raw.ndjson performance/k6/run-all.browser.js",
+    "test:perf:k6:run-all:auth": "k6 run -e K6_RUN_ALL_SUITE=auth --summary-export=performance/results/k6-run-all-auth-summary.json --out json=performance/results/k6-run-all-auth-raw.ndjson performance/k6/run-all.browser.js",
+    "test:perf:k6:run-all:legacy": "k6 run -e K6_RUN_ALL_SUITE=legacy --summary-export=performance/results/k6-run-all-legacy-summary.json --out json=performance/results/k6-run-all-legacy-raw.ndjson performance/k6/run-all.browser.js",
+    "test:perf:k6:run-all:protected": "k6 run -e K6_RUN_ALL_SUITE=protected --summary-export=performance/results/k6-run-all-protected-summary.json --out json=performance/results/k6-run-all-protected-raw.ndjson performance/k6/run-all.browser.js",
+    "test:perf:k6:run-all:notfound": "k6 run -e K6_RUN_ALL_SUITE=notfound --summary-export=performance/results/k6-run-all-notfound-summary.json --out json=performance/results/k6-run-all-notfound-raw.ndjson performance/k6/run-all.browser.js",
+    "test:perf:k6:run-all:standalone": "k6 run -e K6_RUN_ALL_SUITE=standalone --summary-export=performance/results/k6-run-all-standalone-summary.json --out json=performance/results/k6-run-all-standalone-raw.ndjson performance/k6/run-all.browser.js",
+    "test:perf:k6:run-all:admin": "k6 run -e K6_RUN_ALL_SUITE=admin --summary-export=performance/results/k6-run-all-admin-summary.json --out json=performance/results/k6-run-all-admin-raw.ndjson performance/k6/run-all.browser.js",
+    "test:perf:k6:authenticated-flows": "k6 run --summary-export=performance/results/authenticated-summary.json --out json=performance/results/authenticated-raw.ndjson performance/k6/authenticated-flows.browser.js",
+    "test:perf:k6:critical": "k6 run --summary-export=performance/results/critical-summary.json --out json=performance/results/critical-raw.ndjson performance/k6/critical-flows.browser.js",
+    "test:perf:k6:all": "npm run test:perf:k6:home && npm run test:perf:k6:auth && npm run test:perf:k6:run-all && npm run test:perf:k6:authenticated-flows && npm run test:perf:k6:critical"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.10",
@@ -77,6 +95,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^16.5.0",
+    "selenium-webdriver": "^4.41.0",
     "vite": "^8.0.10"
   }
 }

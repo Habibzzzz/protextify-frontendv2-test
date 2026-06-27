@@ -74,9 +74,16 @@ export default function HeroSection() {
               size="xl"
               variant="ghost"
               className="text-white border-2 border-white/30 hover:bg-white/10 backdrop-blur-sm"
+              asChild
             >
-              <Play className="w-5 h-5 mr-2" />
-              Lihat Demo
+              <a
+                href="https://www.youtube.com/watch?v=7aoFTW45vps"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Play className="w-5 h-5 mr-2" />
+                Lihat Demo
+              </a>
             </Button>
           </div>
 

@@ -13,6 +13,8 @@ import {
   ChevronRight,
   CreditCard,
   MessageCircle,
+  BarChart3,
+  UserCog,
 } from "lucide-react";
 import useAuth from "../../hooks/useAuth";
 import { USER_ROLES } from "../../utils/constants";
@@ -59,9 +61,14 @@ export default function Sidebar() {
     if (user?.role === USER_ROLES.ADMIN) {
       return [
         {
-          label: "Dashboard Admin",
-          icon: Home,
-          path: "/admin/dashboard",
+          label: "Monitoring Sistem",
+          icon: BarChart3,
+          path: "/admin/monitoring",
+        },
+        {
+          label: "Kelola Pengguna",
+          icon: UserCog,
+          path: "/admin/users",
         },
       ];
     }

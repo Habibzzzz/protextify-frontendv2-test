@@ -33,6 +33,7 @@ const ForgotPassword = lazy(() => import("../pages/auth/ForgotPassword"));
 const ResetPassword = lazy(() => import("../pages/auth/ResetPassword"));
 const AdminLogin = lazy(() => import("../pages/admin/AdminLogin"));
 const AdminDashboard = lazy(() => import("../pages/admin/AdminDashboard"));
+const AdminUsers = lazy(() => import("../pages/admin/AdminUsers"));
 
 const StudentDashboard = lazy(() => import("../pages/student/Dashboard"));
 const StudentClasses = lazy(() => import("../pages/student/Classes"));
@@ -313,8 +314,10 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <Navigate to="dashboard" replace /> },
-      { path: "dashboard", element: renderLazy(AdminDashboard) },
+      { index: true, element: <Navigate to="monitoring" replace /> },
+      { path: "dashboard", element: <Navigate to="../monitoring" replace /> },
+      { path: "monitoring", element: renderLazy(AdminDashboard) },
+      { path: "users", element: renderLazy(AdminUsers) },
     ],
   },
 
