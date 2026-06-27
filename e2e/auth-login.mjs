@@ -46,26 +46,36 @@ async function assertBodyMatches(driver, pattern, label, timeout = 20000) {
   );
 }
 
+async function waitForLoginForm(driver) {
+  const email = await driver.wait(
+    until.elementLocated(By.css('input[name="email"]')),
+    20000,
+    'Form login input[name="email"] tidak ditemukan'
+  );
+  const password = await driver.wait(
+    until.elementLocated(By.css('input[name="password"]')),
+    20000,
+    'Form login input[name="password"] tidak ditemukan'
+  );
+  await driver.wait(until.elementIsVisible(email), 20000);
+  await driver.wait(until.elementIsVisible(password), 20000);
+  return { email, password };
+}
+
 async function run(driver) {
   await clearBrowserSession(driver);
 
   await openPath(driver, "/auth/login");
   await waitForReactApp(driver);
   await assertBodyMatches(driver, /Masuk ke Akun Anda|Masuk|Login|Akun/i, "judul-login");
-  await driver.wait(
-    until.elementLocated(By.css('input[name="email"]')),
-    15000
-  );
-  await driver.wait(
-    until.elementLocated(By.css('input[name="password"]')),
-    15000
-  );
+  await waitForLoginForm(driver);
   ok("auth-login-form", "email + password + judul");
 
   await openPath(driver, "/auth/login");
   await waitForReactApp(driver);
-  await driver.findElement(By.css('input[name="email"]')).sendKeys(TEST_STUDENT.email);
-  await driver.findElement(By.css('input[name="password"]')).sendKeys("password-salah");
+  const invalidForm = await waitForLoginForm(driver);
+  await invalidForm.email.sendKeys(TEST_STUDENT.email);
+  await invalidForm.password.sendKeys("password-salah");
   await driver.findElement(By.css('form button[type="submit"]')).click();
   await driver.wait(
     async () => {
@@ -80,8 +90,9 @@ async function run(driver) {
 
   await openPath(driver, "/auth/login");
   await waitForReactApp(driver);
-  await driver.findElement(By.css('input[name="email"]')).sendKeys(TEST_STUDENT.email);
-  await driver.findElement(By.css('input[name="password"]')).sendKeys(TEST_STUDENT.password);
+  const validForm = await waitForLoginForm(driver);
+  await validForm.email.sendKeys(TEST_STUDENT.email);
+  await validForm.password.sendKeys(TEST_STUDENT.password);
   const loadingSubmit = await driver.findElement(By.css('form button[type="submit"]'));
   await loadingSubmit.click();
   await driver.wait(
