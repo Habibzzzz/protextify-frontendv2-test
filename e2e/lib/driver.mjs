@@ -29,11 +29,12 @@ export async function createDriver() {
     "--disable-features=PasswordLeakDetection,PasswordManagerOnboarding,AutofillServerCommunication",
     "--disk-cache-size=1",
     "--media-cache-size=1",
+    "--window-size=1440,1000",
     `--user-data-dir=${profileDir}`,
     "--log-level=3"
   );
   if (process.env.HEADLESS === "1") {
-    options.addArguments("--headless=new", "--window-size=1280,900");
+    options.addArguments("--headless=new");
   }
 
   const driver = await new Builder()
@@ -46,6 +47,7 @@ export async function createDriver() {
     pageLoad: 45000,
     script: 30000,
   });
+  await driver.manage().window().setRect({ width: 1440, height: 1000 });
 
   const originalQuit = driver.quit.bind(driver);
   driver.quit = async () => {
