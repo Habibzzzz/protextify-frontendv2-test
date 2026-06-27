@@ -65,9 +65,9 @@ function isUuid(value) {
 }
 
 function hasVisibleLoadingText(text) {
-  return /(^|\s)(Memuat(?:\.\.\.| data| dashboard| riwayat| progress| transaksi| analytics)?|Loading)(\s|\.|…|$)/i.test(
-    text
-  );
+  const normalized = text.trim();
+  if (/Gagal memuat/i.test(normalized)) return false;
+  return /(^|\s)(Memuat(?:\.\.\.| data| dashboard| riwayat| progress| transaksi| analytics)?|Loading)(\s|\.|…|$)/i.test(normalized);
 }
 
 function createSettledBodyChecker() {
@@ -270,12 +270,7 @@ async function resolveStudentData(driver) {
     classId: ID_OVERRIDES.classId || selectedClass.id,
     assignmentId,
     submissionId: ID_OVERRIDES.submissionId || selectedSubmission.id,
-    plagiarismSubmissionId:
-      ID_OVERRIDES.submissionId && isUuid(ID_OVERRIDES.submissionId)
-        ? ID_OVERRIDES.submissionId
-        : history.find((item) => isUuid(item?.id) && item?.plagiarismChecks)?.id ||
-          history.find((item) => isUuid(item?.id))?.id ||
-          "",
+    plagiarismSubmissionId: ID_OVERRIDES.submissionId || selectedSubmission.id,
   };
 }
 
@@ -317,12 +312,7 @@ async function resolveInstructorData(driver) {
     classId,
     assignmentId,
     submissionId: ID_OVERRIDES.submissionId || selectedSubmission.id,
-    plagiarismSubmissionId:
-      ID_OVERRIDES.submissionId && isUuid(ID_OVERRIDES.submissionId)
-        ? ID_OVERRIDES.submissionId
-        : classHistory.find((item) => isUuid(item?.id) && item?.plagiarismChecks)?.id ||
-          classHistory.find((item) => isUuid(item?.id))?.id ||
-          "",
+    plagiarismSubmissionId: ID_OVERRIDES.submissionId || selectedSubmission.id,
     transactionId:
       ID_OVERRIDES.transactionId ||
       selectedTransaction?.id ||
@@ -414,24 +404,17 @@ async function runStudentFlows(driver) {
     )
   );
 
-  if (plagiarismSubmissionId) {
-    await runStep(
-      "student-plagiarism-report",
-      `/dashboard/submissions/${plagiarismSubmissionId}/plagiarism-report`,
-      () =>
-        assertPage(
-          driver,
-          `/dashboard/submissions/${plagiarismSubmissionId}/plagiarism-report`,
-          "Laporan Plagiarisme",
-          "student-plagiarism-report"
-        )
-    );
-  } else {
-    skip(
-      "student-plagiarism-report",
-      `data submission "${submissionId}" bukan UUID, sedangkan endpoint plagiarism mewajibkan UUID`
-    );
-  }
+  await runStep(
+    "student-plagiarism-report",
+    `/dashboard/submissions/${plagiarismSubmissionId}/plagiarism-report`,
+    () =>
+      assertPage(
+        driver,
+        `/dashboard/submissions/${plagiarismSubmissionId}/plagiarism-report`,
+        "Laporan Plagiarisme",
+        "student-plagiarism-report"
+      )
+  );
 
   await runStep("student-profile", "/dashboard/profile", () =>
     assertPage(
@@ -453,10 +436,6 @@ async function runStudentFlows(driver) {
       "Status Storage Akun",
       "student-storage-health"
     );
-    const text = await getBodyText(driver);
-    if (/Fitur storage usage belum tersedia di BE/i.test(text)) {
-      skip("student-storage-health-data", "endpoint storage usage belum tersedia di backend");
-    }
   });
 
   await runStep("student-forbidden-instructor-route", "/instructor/dashboard", () =>
@@ -674,24 +653,17 @@ async function runInstructorFlows(driver) {
       )
   );
 
-  if (plagiarismSubmissionId) {
-    await runStep(
-      "instructor-submission-plagiarism",
-      `/instructor/submissions/${plagiarismSubmissionId}/plagiarism`,
-      () =>
-        assertPage(
-          driver,
-          `/instructor/submissions/${plagiarismSubmissionId}/plagiarism`,
-          "Analisis Plagiarisme",
-          "instructor-submission-plagiarism"
-        )
-    );
-  } else {
-    skip(
-      "instructor-submission-plagiarism",
-      `data submission "${submissionId}" bukan UUID, sedangkan endpoint plagiarism mewajibkan UUID`
-    );
-  }
+  await runStep(
+    "instructor-submission-plagiarism",
+    `/instructor/submissions/${plagiarismSubmissionId}/plagiarism`,
+    () =>
+      assertPage(
+        driver,
+        `/instructor/submissions/${plagiarismSubmissionId}/plagiarism`,
+        "Analisis Plagiarisme",
+        "instructor-submission-plagiarism"
+      )
+  );
 
   await runStep(
     "instructor-submission-grade",
@@ -781,12 +753,22 @@ async function runInstructorFlows(driver) {
       20000,
       "Input nama kelas tidak ditemukan"
     );
-    await nameInput.clear();
-    await nameInput.sendKeys(`Pemrograman Web E2E ${Date.now()}`);
+    await driver.executeScript((input, value) => {
+      input.scrollIntoView({ block: "center", inline: "nearest" });
+      input.focus();
+      const setter = Object.getOwnPropertyDescriptor(
+        HTMLInputElement.prototype,
+        "value"
+      )?.set;
+      setter.call(input, value);
+      input.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: value }));
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+      input.blur();
+    }, nameInput, `Pemrograman Web E2E ${Date.now()}`);
     await driver.wait(
       async () =>
         driver.executeScript(() => {
-          const buttons = [...document.querySelectorAll("button")];
+          const buttons = [...document.querySelectorAll('form button[type="submit"], button')];
           const saveButton = buttons.find((button) =>
             /Simpan/i.test((button.innerText || button.textContent || "").trim())
           );

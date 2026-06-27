@@ -50,9 +50,24 @@ const updateProfile = async (updateData) => {
   }
 };
 
+const getStorageUsage = async () => {
+  try {
+    const response = await api.get("/users/storage");
+    return {
+      totalUsed: Number(response.totalUsed || 0),
+      limit: Number(response.limit || 100),
+      percentage: Number(response.percentage || 0),
+      files: Array.isArray(response.files) ? response.files : [],
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
 const usersService = {
   getCurrentUser,
   updateProfile,
+  getStorageUsage,
 };
 
 export default usersService;
