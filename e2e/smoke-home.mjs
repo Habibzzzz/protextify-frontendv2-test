@@ -23,10 +23,28 @@ try {
     20000,
     "Konten halaman utama tidak terdeteksi"
   );
+  const currentUrl = await driver.getCurrentUrl();
+  const rootInfo = await driver.executeScript(() => {
+    const root = document.getElementById("root");
+    const text = (document.body?.innerText || "").replace(/\s+/g, " ").trim();
+    return {
+      rootMounted: Boolean(root && root.children.length > 0),
+      rootChildren: root?.children.length || 0,
+      bodyTextLength: text.length,
+      preview: text.slice(0, 180),
+    };
+  });
 
   console.log("[e2e] OK — halaman terbuka");
-  console.log("[e2e]   URL:", BASE_URL);
+  console.log("[e2e]   URL:", currentUrl);
   console.log("[e2e]   Judul:", title?.trim() || "(kosong, diabaikan)");
+  console.log(
+    "[e2e]   Render:",
+    rootInfo.rootMounted
+      ? `OK (#root terisi ${rootInfo.rootChildren} node, ${rootInfo.bodyTextLength} karakter teks)`
+      : "GAGAL (#root kosong)"
+  );
+  console.log("[e2e]   Preview:", rootInfo.preview || "(body kosong)");
   console.log("[e2e] Smoke test lulus.");
 } catch (err) {
   console.error("[e2e] Gagal:", err.message);
