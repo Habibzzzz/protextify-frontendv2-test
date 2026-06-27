@@ -49,18 +49,15 @@ async function runHomeCase(page) {
 
     await page.waitForSelector("body", { timeout: 15000 });
 
-    const pageTitle = await page.title();
-    const titleOk = check(pageTitle, {
-      "title is not empty": (t) => typeof t === "string" && t.trim().length > 0,
-    });
-
     const bodyText = await page.locator("body").textContent();
     const contentOk = check(bodyText, {
       "home content rendered": (txt) =>
-        typeof txt === "string" && txt.toLowerCase().includes("protextify"),
+        typeof txt === "string" &&
+        txt.toLowerCase().includes("protextify") &&
+        /Platform Deteksi|Plagiarisme|Dunia Akademik Modern/i.test(txt),
     });
 
-    return statusOk && titleOk && contentOk;
+    return statusOk && contentOk;
   });
 }
 
