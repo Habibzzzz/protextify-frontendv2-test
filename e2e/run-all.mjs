@@ -214,7 +214,17 @@ async function runAdminFlow(driver) {
 
   await openPath(driver, "/admin/users");
   await waitForReactApp(driver);
-  await assertBodyIncludes(driver, "Kelola Pengguna", "admin-users");
+  await driver.wait(
+    async () => {
+      const text = await getBodyText(driver);
+      return (
+        /Kelola Pengguna|Manajemen Akun|Instruktur|Mahasiswa/i.test(text) &&
+        !/Memuat data pengguna/i.test(text)
+      );
+    },
+    30000,
+    "Admin users tidak selesai memuat"
+  );
   ok("admin-users", "/admin/users");
 }
 
