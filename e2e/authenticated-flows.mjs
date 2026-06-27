@@ -25,16 +25,23 @@ import {
   loginAsTestInstructor,
 } from "./lib/auth.mjs";
 
-/** Harus sama dengan seed database test. */
-const SEED = {
-  classId: process.env.E2E_CLASS_ID || "class-1",
-  assignmentId: process.env.E2E_ASSIGNMENT_ID || "assignment-1",
-  submissionId: process.env.E2E_SUBMISSION_ID || "submission-1",
-  transactionId: process.env.E2E_TRANSACTION_ID || "transaction-1",
+const API_BASE_URL = (
+  process.env.E2E_API_URL ||
+  process.env.API_URL ||
+  BASE_URL.replace(/:\d+$/, ":3001") + "/api"
+).replace(/\/$/, "");
+
+/** Override opsional. Jika kosong, ID diambil dari API data real setelah login. */
+const ID_OVERRIDES = {
+  classId: process.env.E2E_CLASS_ID || "",
+  assignmentId: process.env.E2E_ASSIGNMENT_ID || "",
+  submissionId: process.env.E2E_SUBMISSION_ID || "",
+  transactionId: process.env.E2E_TRANSACTION_ID || "",
 };
 
 let passed = 0;
 let failed = 0;
+let skipped = 0;
 
 function ok(id, detail = "") {
   passed += 1;
@@ -44,6 +51,17 @@ function ok(id, detail = "") {
 function fail(id, err) {
   failed += 1;
   console.error(`[e2e:auth] ✗ ${id}:`, err?.message || err);
+}
+
+function skip(id, detail = "") {
+  skipped += 1;
+  console.log(`[e2e:auth] ↷ ${id}${detail ? ` — ${detail}` : ""}`);
+}
+
+function isUuid(value) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+    String(value || "")
+  );
 }
 
 function hasVisibleLoadingText(text) {
@@ -88,13 +106,7 @@ async function assertPage(driver, path, substring, label) {
     async () => {
       const { settled, text } = await isSettled(driver);
       if (text.includes(substring) && settled) return true;
-      const url = await driver.getCurrentUrl();
-      return (
-        settled &&
-        url.includes(path) &&
-        !url.includes("/auth/login") &&
-        text.length > 80
-      );
+      return false;
     },
     45000,
     `${label}: halaman tidak selesai render atau teks "${substring}" tidak muncul`
@@ -109,13 +121,7 @@ async function assertPageRegex(driver, path, pattern, label) {
     async () => {
       const { settled, text } = await isSettled(driver);
       if (pattern.test(text) && settled) return true;
-      const url = await driver.getCurrentUrl();
-      return (
-        settled &&
-        url.includes(path) &&
-        !url.includes("/auth/login") &&
-        text.length > 80
-      );
+      return false;
     },
     45000,
     `${label}: tidak cocok /${pattern.source}/ dan halaman tidak selesai render`
@@ -189,12 +195,149 @@ async function clickVisibleButtonByText(driver, patterns, label) {
   return result;
 }
 
+async function apiGet(driver, path) {
+  const result = await driver.executeAsyncScript((apiBaseUrl, apiPath, done) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      done({ ok: false, status: 0, error: "Token login tidak ditemukan" });
+      return;
+    }
+
+    fetch(`${apiBaseUrl}${apiPath}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Cache-Control": "no-cache",
+      },
+    })
+      .then(async (response) => {
+        const text = await response.text();
+        let data = null;
+        try {
+          data = text ? JSON.parse(text) : null;
+        } catch {
+          data = text;
+        }
+        done({ ok: response.ok, status: response.status, data });
+      })
+      .catch((error) => done({ ok: false, status: 0, error: error.message }));
+  }, API_BASE_URL, path);
+
+  if (!result?.ok) {
+    throw new Error(
+      `API ${path} gagal. status=${result?.status}. error=${result?.error || JSON.stringify(result?.data)}`
+    );
+  }
+
+  return result.data;
+}
+
+function asArray(value) {
+  if (Array.isArray(value)) return value;
+  if (Array.isArray(value?.data)) return value.data;
+  if (Array.isArray(value?.items)) return value.items;
+  return [];
+}
+
+function firstId(items, label) {
+  const item = asArray(items).find((entry) => entry?.id);
+  if (!item?.id) throw new Error(`Data real untuk ${label} tidak ditemukan`);
+  return item.id;
+}
+
+async function resolveStudentData(driver) {
+  const classes = asArray(await apiGet(driver, "/classes"));
+  const history = asArray(await apiGet(driver, "/submissions/history"));
+  const selectedClass =
+    classes.find((item) => item?.id === ID_OVERRIDES.classId) ||
+    classes.find((item) => Array.isArray(item?.assignments) && item.assignments.length > 0) ||
+    classes[0];
+  if (!selectedClass?.id) throw new Error("Student tidak punya kelas real untuk diuji");
+
+  const selectedSubmission =
+    history.find((item) => item?.id === ID_OVERRIDES.submissionId) || history[0];
+  if (!selectedSubmission?.id) {
+    throw new Error("Student tidak punya submission real untuk diuji");
+  }
+
+  const assignmentId =
+    ID_OVERRIDES.assignmentId ||
+    selectedSubmission.assignmentId ||
+    selectedSubmission.assignment?.id ||
+    selectedClass.assignments?.[0]?.id;
+  if (!assignmentId) throw new Error("Assignment real untuk student tidak ditemukan");
+
+  return {
+    classId: ID_OVERRIDES.classId || selectedClass.id,
+    assignmentId,
+    submissionId: ID_OVERRIDES.submissionId || selectedSubmission.id,
+    plagiarismSubmissionId:
+      ID_OVERRIDES.submissionId && isUuid(ID_OVERRIDES.submissionId)
+        ? ID_OVERRIDES.submissionId
+        : history.find((item) => isUuid(item?.id) && item?.plagiarismChecks)?.id ||
+          history.find((item) => isUuid(item?.id))?.id ||
+          "",
+  };
+}
+
+async function resolveInstructorData(driver) {
+  const classes = asArray(await apiGet(driver, "/classes"));
+  const selectedClass =
+    classes.find((item) => item?.id === ID_OVERRIDES.classId) ||
+    classes.find((item) => Array.isArray(item?.assignments) && item.assignments.length > 0) ||
+    classes[0];
+  if (!selectedClass?.id) throw new Error("Instructor tidak punya kelas real untuk diuji");
+
+  const classId = ID_OVERRIDES.classId || selectedClass.id;
+  const assignments = asArray(await apiGet(driver, `/classes/${classId}/assignments`));
+  const selectedAssignment =
+    assignments.find((item) => item?.id === ID_OVERRIDES.assignmentId) ||
+    selectedClass.assignments?.find((item) => item?.id === ID_OVERRIDES.assignmentId) ||
+    assignments[0] ||
+    selectedClass.assignments?.[0];
+  if (!selectedAssignment?.id) throw new Error("Instructor tidak punya assignment real untuk diuji");
+
+  const assignmentId = ID_OVERRIDES.assignmentId || selectedAssignment.id;
+  const classHistory = asArray(await apiGet(driver, `/classes/${classId}/history`));
+  const selectedSubmission =
+    classHistory.find((item) => item?.id === ID_OVERRIDES.submissionId) ||
+    classHistory.find((item) => item?.assignment?.id === assignmentId) ||
+    classHistory[0];
+  if (!selectedSubmission?.id) {
+    throw new Error("Instructor tidak punya submission real untuk diuji");
+  }
+
+  const transactionsResponse = await apiGet(driver, "/payments/transactions?page=1&limit=10");
+  const transactions = asArray(transactionsResponse);
+  const selectedTransaction =
+    transactions.find((item) => item?.id === ID_OVERRIDES.transactionId) ||
+    transactions.find((item) => item?.transactionId === ID_OVERRIDES.transactionId) ||
+    transactions[0];
+
+  return {
+    classId,
+    assignmentId,
+    submissionId: ID_OVERRIDES.submissionId || selectedSubmission.id,
+    plagiarismSubmissionId:
+      ID_OVERRIDES.submissionId && isUuid(ID_OVERRIDES.submissionId)
+        ? ID_OVERRIDES.submissionId
+        : classHistory.find((item) => isUuid(item?.id) && item?.plagiarismChecks)?.id ||
+          classHistory.find((item) => isUuid(item?.id))?.id ||
+          "",
+    transactionId:
+      ID_OVERRIDES.transactionId ||
+      selectedTransaction?.id ||
+      selectedTransaction?.transactionId ||
+      "",
+  };
+}
+
 async function runStudentFlows(driver) {
   await clearBrowserSession(driver);
   await loginAsTestStudent(driver);
   ok("login-student", "masuk dashboard");
 
-  const { classId, assignmentId, submissionId } = SEED;
+  const { classId, assignmentId, submissionId, plagiarismSubmissionId } =
+    await resolveStudentData(driver);
 
   await runStep("student-overview", "/dashboard/overview", () =>
     assertPage(driver, "/dashboard/overview", "Dashboard Student", "student-overview")
@@ -271,17 +414,24 @@ async function runStudentFlows(driver) {
     )
   );
 
-  await runStep(
-    "student-plagiarism-report",
-    `/dashboard/submissions/${submissionId}/plagiarism-report`,
-    () =>
-      assertPage(
-        driver,
-        `/dashboard/submissions/${submissionId}/plagiarism-report`,
-        "Laporan Plagiarisme",
-        "student-plagiarism-report"
-      )
-  );
+  if (plagiarismSubmissionId) {
+    await runStep(
+      "student-plagiarism-report",
+      `/dashboard/submissions/${plagiarismSubmissionId}/plagiarism-report`,
+      () =>
+        assertPage(
+          driver,
+          `/dashboard/submissions/${plagiarismSubmissionId}/plagiarism-report`,
+          "Laporan Plagiarisme",
+          "student-plagiarism-report"
+        )
+    );
+  } else {
+    skip(
+      "student-plagiarism-report",
+      `data submission "${submissionId}" bukan UUID, sedangkan endpoint plagiarism mewajibkan UUID`
+    );
+  }
 
   await runStep("student-profile", "/dashboard/profile", () =>
     assertPage(
@@ -296,14 +446,18 @@ async function runStudentFlows(driver) {
     assertPage(driver, "/profile", "Profil Akun Student", "student-profile-standalone")
   );
 
-  await runStep("student-storage-health", "/dashboard/storage-health", () =>
-    assertPage(
+  await runStep("student-storage-health", "/dashboard/storage-health", async () => {
+    await assertPage(
       driver,
       "/dashboard/storage-health",
       "Status Storage Akun",
       "student-storage-health"
-    )
-  );
+    );
+    const text = await getBodyText(driver);
+    if (/Fitur storage usage belum tersedia di BE/i.test(text)) {
+      skip("student-storage-health-data", "endpoint storage usage belum tersedia di backend");
+    }
+  });
 
   await runStep("student-forbidden-instructor-route", "/instructor/dashboard", () =>
     assertPage(driver, "/instructor/dashboard", "Akses Ditolak", "student-forbidden-instructor-route")
@@ -401,7 +555,8 @@ async function runInstructorFlows(driver) {
   await loginAsTestInstructor(driver);
   ok("login-instructor", "masuk dashboard instruktur");
 
-  const { classId, assignmentId, submissionId, transactionId } = SEED;
+  const { classId, assignmentId, submissionId, plagiarismSubmissionId, transactionId } =
+    await resolveInstructorData(driver);
 
   await runStep("instructor-dashboard", "/instructor/dashboard", () =>
     assertPage(
@@ -519,17 +674,24 @@ async function runInstructorFlows(driver) {
       )
   );
 
-  await runStep(
-    "instructor-submission-plagiarism",
-    `/instructor/submissions/${submissionId}/plagiarism`,
-    () =>
-      assertPage(
-        driver,
-        `/instructor/submissions/${submissionId}/plagiarism`,
-        "Analisis Plagiarisme",
-        "instructor-submission-plagiarism"
-      )
-  );
+  if (plagiarismSubmissionId) {
+    await runStep(
+      "instructor-submission-plagiarism",
+      `/instructor/submissions/${plagiarismSubmissionId}/plagiarism`,
+      () =>
+        assertPage(
+          driver,
+          `/instructor/submissions/${plagiarismSubmissionId}/plagiarism`,
+          "Analisis Plagiarisme",
+          "instructor-submission-plagiarism"
+        )
+    );
+  } else {
+    skip(
+      "instructor-submission-plagiarism",
+      `data submission "${submissionId}" bukan UUID, sedangkan endpoint plagiarism mewajibkan UUID`
+    );
+  }
 
   await runStep(
     "instructor-submission-grade",
@@ -551,17 +713,21 @@ async function runInstructorFlows(driver) {
     assertPage(driver, "/instructor/transactions", "Transaksi", "instructor-transactions")
   );
 
-  await runStep(
-    "instructor-transaction-detail",
-    `/instructor/transactions/${transactionId}`,
-    () =>
-      assertPage(
-        driver,
-        `/instructor/transactions/${transactionId}`,
-        "Detail Transaksi",
-        "instructor-transaction-detail"
-      )
-  );
+  if (transactionId) {
+    await runStep(
+      "instructor-transaction-detail",
+      `/instructor/transactions/${transactionId}`,
+      () =>
+        assertPage(
+          driver,
+          `/instructor/transactions/${transactionId}`,
+          "Detail Transaksi",
+          "instructor-transaction-detail"
+        )
+    );
+  } else {
+    console.log("   ✓ transaksi real tidak tersedia; detail transaksi dilewati");
+  }
 
   await runStep("instructor-settings", "/instructor/settings", () =>
     assertPage(
@@ -604,6 +770,12 @@ async function runInstructorFlows(driver) {
   await runStep("instructor-class-edit-form", `/instructor/classes/${classId}/settings`, async () => {
     await openPath(driver, `/instructor/classes/${classId}/settings`);
     await waitForReactApp(driver);
+    await assertPage(
+      driver,
+      `/instructor/classes/${classId}/settings`,
+      "Informasi Dasar",
+      "instructor-class-edit-form"
+    );
     const nameInput = await driver.wait(
       until.elementLocated(By.css('input[name="name"]')),
       20000,
@@ -630,6 +802,19 @@ async function runInstructorFlows(driver) {
   await runStep("instructor-class-delete-modal", `/instructor/classes/${classId}/settings`, async () => {
     await openPath(driver, `/instructor/classes/${classId}/settings`);
     await waitForReactApp(driver);
+    await assertPage(
+      driver,
+      `/instructor/classes/${classId}/settings`,
+      "Danger Zone",
+      "instructor-class-delete-modal"
+    );
+    await driver.executeScript(() => {
+      const buttons = [...document.querySelectorAll("button")];
+      const deleteButton = buttons.find((button) =>
+        /Hapus Kelas Ini/i.test((button.innerText || button.textContent || "").trim())
+      );
+      deleteButton?.scrollIntoView({ block: "center", inline: "nearest" });
+    });
     await clickVisibleButtonByText(
       driver,
       ["Hapus Kelas Ini"],
@@ -699,7 +884,7 @@ async function main() {
   }
 
   console.log(
-    `\n[e2e:auth] Selesai: ${passed} lulus, ${failed} gagal (total ${passed + failed})`
+    `\n[e2e:auth] Selesai: ${passed} lulus, ${failed} gagal, ${skipped} dilewati (total ${passed + failed + skipped})`
   );
   if (failed > 0) {
     process.exitCode = 1;
