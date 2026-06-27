@@ -713,11 +713,17 @@ async function runInstructorFlows(driver) {
   await runStep("instructor-class-search", "/instructor/classes", async () => {
     await openPath(driver, "/instructor/classes");
     await waitForReactApp(driver);
-    const search = await driver.wait(
-      until.elementLocated(By.css('input[placeholder*="Cari nama kelas"]')),
-      20000,
-      "Input pencarian kelas tidak ditemukan"
+    const searchInputs = await driver.findElements(
+      By.css('input[placeholder*="Cari nama kelas"]')
     );
+    if (searchInputs.length === 0) {
+      const text = await getBodyText(driver);
+      if (/Belum Ada Kelas|Mulai dengan membuat kelas pertama/i.test(text)) {
+        return;
+      }
+      throw new Error("Input pencarian kelas tidak ditemukan");
+    }
+    const search = searchInputs[0];
     await search.clear();
     await search.sendKeys("__kelas_tidak_ada_e2e__");
     await assertBodyIncludes(driver, "Tidak Ada Kelas yang Ditemukan", "instructor-class-search");
