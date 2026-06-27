@@ -8,12 +8,19 @@ import { createDriver } from "./lib/driver.mjs";
 import { openPath, waitForReactApp } from "./lib/helpers.mjs";
 
 let driver;
+let passed = 0;
+
+function ok(id, detail = "") {
+  passed += 1;
+  console.log(`[e2e] ✓ ${id}${detail ? ` — ${detail}` : ""}`);
+}
 
 try {
   driver = await createDriver();
   await openPath(driver, "/");
   await waitForReactApp(driver);
   await driver.wait(until.elementLocated(By.css("body")), 15000);
+  ok("smoke-page-open", "halaman utama terbuka");
 
   const title = await driver.getTitle();
   let rootInfo = null;
@@ -77,6 +84,7 @@ try {
   const screenshotPath = "e2e/artifacts/smoke-home.png";
   await mkdir("e2e/artifacts", { recursive: true });
   await writeFile(screenshotPath, await driver.takeScreenshot(), "base64");
+  ok("smoke-home-render", "hero home visible dan screenshot tersimpan");
 
   console.log("[e2e] OK — halaman terbuka");
   console.log("[e2e]   URL:", currentUrl);
@@ -90,7 +98,7 @@ try {
   console.log("[e2e]   Heading:", rootInfo.heading || "(heading tidak terlihat)");
   console.log("[e2e]   Preview:", rootInfo.preview || "(body kosong)");
   console.log("[e2e]   Screenshot:", screenshotPath);
-  console.log("[e2e] Smoke test lulus.");
+  console.log(`\n[e2e] Smoke test lulus: ${passed} lulus, 0 gagal (total ${passed})`);
 } catch (err) {
   console.error("[e2e] Gagal:", err.message);
   process.exitCode = 1;
