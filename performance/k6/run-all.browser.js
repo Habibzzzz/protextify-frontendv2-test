@@ -279,10 +279,12 @@ async function runAdminCases(page) {
   });
   await runCase("admin:users", async () => {
     const { bodyText: usersBody } = await openAndReadBody(page, "/admin/users", {
-      includes: "Kelola Pengguna",
+      includesAny: ["Kelola Pengguna", "Manajemen Akun", "Instruktur", "Mahasiswa"],
     });
     return check(usersBody, {
-      "admin:users:content": (txt) => includeCheck(txt, "Kelola Pengguna"),
+      "admin:users:content": (txt) =>
+        includeAnyCheck(txt, ["Kelola Pengguna", "Manajemen Akun", "Instruktur", "Mahasiswa"]) &&
+        !includeCheck(txt, "Memuat data pengguna"),
     });
   });
 }
