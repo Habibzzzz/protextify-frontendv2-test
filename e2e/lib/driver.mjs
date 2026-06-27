@@ -14,12 +14,19 @@ export async function createDriver() {
   const profileDir = await fs.mkdtemp(path.join(profileRoot, "chrome-"));
 
   const options = new chrome.Options();
+  options.setUserPreferences({
+    credentials_enable_service: false,
+    "profile.password_manager_enabled": false,
+    "profile.password_manager_leak_detection": false,
+  });
   options.addArguments(
     "--disable-background-networking",
     "--disable-application-cache",
     "--disable-component-update",
     "--disable-default-apps",
     "--disable-sync",
+    "--disable-save-password-bubble",
+    "--disable-features=PasswordLeakDetection,PasswordManagerOnboarding,AutofillServerCommunication",
     "--disk-cache-size=1",
     "--media-cache-size=1",
     `--user-data-dir=${profileDir}`,

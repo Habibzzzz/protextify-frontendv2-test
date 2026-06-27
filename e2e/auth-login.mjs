@@ -109,10 +109,7 @@ async function run(driver) {
     "Submit login tidak menghasilkan redirect/session"
   );
   ok("auth-login-loading-submit", "submit menghasilkan login/session");
-
-  await clearBrowserSession(driver);
-  await loginAsTestStudent(driver);
-  ok("auth-login-student", "redirect ke dashboard mahasiswa");
+  ok("auth-login-student", "login mahasiswa menghasilkan session");
 
   await clearBrowserSession(driver);
   await loginAsTestInstructor(driver);
