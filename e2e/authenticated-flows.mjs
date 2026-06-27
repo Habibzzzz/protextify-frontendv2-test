@@ -19,7 +19,6 @@ import {
   getBodyText,
   clearBrowserSession,
   assertBodyIncludes,
-  assertBodyIncludesAny,
 } from "./lib/helpers.mjs";
 import {
   loginAsTestStudent,
@@ -47,19 +46,54 @@ function fail(id, err) {
   console.error(`[e2e:auth] ✗ ${id}:`, err?.message || err);
 }
 
+function hasVisibleLoadingText(text) {
+  return /(^|\s)(Memuat(?:\.\.\.| data| dashboard| riwayat| progress| transaksi| analytics)?|Loading)(\s|\.|…|$)/i.test(
+    text
+  );
+}
+
+function createSettledBodyChecker() {
+  let lastText = "";
+  let stableSince = 0;
+
+  return async (driver) => {
+    const text = await getBodyText(driver);
+    const trimmed = text.trim();
+    const now = Date.now();
+
+    if (trimmed.length < 20 || hasVisibleLoadingText(trimmed)) {
+      lastText = trimmed;
+      stableSince = 0;
+      return { settled: false, text: trimmed };
+    }
+
+    const stable =
+      trimmed === lastText || Math.abs(trimmed.length - lastText.length) <= 5;
+    if (!stable) {
+      lastText = trimmed;
+      stableSince = now;
+      return { settled: false, text: trimmed };
+    }
+
+    if (!stableSince) stableSince = now;
+    return { settled: now - stableSince >= 800, text: trimmed };
+  };
+}
+
 async function assertPage(driver, path, substring, label) {
   await openPath(driver, path);
   await waitForReactApp(driver);
+  const isSettled = createSettledBodyChecker();
   await driver.wait(
     async () => {
-      const text = await getBodyText(driver);
-      if (text.includes(substring)) return true;
+      const { settled, text } = await isSettled(driver);
+      if (text.includes(substring) && settled) return true;
       const url = await driver.getCurrentUrl();
       return (
+        settled &&
         url.includes(path) &&
-        !/^\s*Memuat\.\.\.\s*$/i.test(text) &&
         !url.includes("/auth/login") &&
-        text.trim().length > 80
+        text.length > 80
       );
     },
     45000,
@@ -70,16 +104,17 @@ async function assertPage(driver, path, substring, label) {
 async function assertPageRegex(driver, path, pattern, label) {
   await openPath(driver, path);
   await waitForReactApp(driver);
+  const isSettled = createSettledBodyChecker();
   await driver.wait(
     async () => {
-      const text = await getBodyText(driver);
-      if (pattern.test(text)) return true;
+      const { settled, text } = await isSettled(driver);
+      if (pattern.test(text) && settled) return true;
       const url = await driver.getCurrentUrl();
       return (
+        settled &&
         url.includes(path) &&
-        !/^\s*Memuat\.\.\.\s*$/i.test(text) &&
         !url.includes("/auth/login") &&
-        text.trim().length > 80
+        text.length > 80
       );
     },
     45000,
@@ -575,23 +610,37 @@ async function runInstructorFlows(driver) {
       "Input nama kelas tidak ditemukan"
     );
     await nameInput.clear();
-    await nameInput.sendKeys("Pemrograman Web E2E");
-    const saveButton = await driver.findElement(By.xpath("//button[contains(., 'Simpan')]"));
-    await driver.wait(async () => saveButton.isEnabled(), 15000, "Tombol simpan perubahan tidak aktif");
+    await nameInput.sendKeys(`Pemrograman Web E2E ${Date.now()}`);
+    await driver.wait(
+      async () =>
+        driver.executeScript(() => {
+          const buttons = [...document.querySelectorAll("button")];
+          const saveButton = buttons.find((button) =>
+            /Simpan/i.test((button.innerText || button.textContent || "").trim())
+          );
+          if (!saveButton) return false;
+          const rect = saveButton.getBoundingClientRect();
+          return rect.width > 0 && rect.height > 0 && !saveButton.disabled;
+        }),
+      15000,
+      "Tombol simpan perubahan tidak ditemukan atau tidak aktif"
+    );
   });
 
   await runStep("instructor-class-delete-modal", `/instructor/classes/${classId}/settings`, async () => {
     await openPath(driver, `/instructor/classes/${classId}/settings`);
     await waitForReactApp(driver);
-    const deleteButton = await driver.wait(
-      until.elementLocated(By.xpath("//button[contains(., 'Hapus Kelas Ini')]")),
-      20000,
-      "Tombol hapus kelas tidak ditemukan"
+    await clickVisibleButtonByText(
+      driver,
+      ["Hapus Kelas Ini"],
+      "Tombol hapus kelas"
     );
-    await deleteButton.click();
-    await assertBodyIncludesAny(driver, ["Konfirmasi Hapus Kelas", "Hapus Kelas", "Yakin"], "instructor-class-delete-modal");
-    const cancelButton = await driver.findElement(By.xpath("//button[contains(., 'Batal')]"));
-    await cancelButton.click();
+    await driver.wait(
+      async () => (await getBodyText(driver)).includes("Konfirmasi Hapus Kelas"),
+      15000,
+      "Modal konfirmasi hapus kelas tidak terbuka"
+    );
+    await clickVisibleButtonByText(driver, ["^Batal$"], "Tombol batal hapus kelas");
   });
 
   await runStep("instructor-logout", "/instructor/dashboard", async () => {
