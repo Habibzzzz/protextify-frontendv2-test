@@ -2,9 +2,10 @@
  * Smoke test cepat — hanya halaman utama.
  * Suite penuh: npm run test:e2e
  */
+import { mkdir, writeFile } from "node:fs/promises";
 import { By, until } from "selenium-webdriver";
-import { createDriver, BASE_URL } from "./lib/driver.mjs";
-import { getBodyText, openPath, waitForReactApp } from "./lib/helpers.mjs";
+import { createDriver } from "./lib/driver.mjs";
+import { openPath, waitForReactApp } from "./lib/helpers.mjs";
 
 let driver;
 
@@ -15,25 +16,67 @@ try {
   await driver.wait(until.elementLocated(By.css("body")), 15000);
 
   const title = await driver.getTitle();
+  let rootInfo = null;
   await driver.wait(
     async () => {
-      const text = await getBodyText(driver);
-      return /Protextify|Masuk|Daftar|Dashboard/i.test(text) || text.trim().length > 40;
+      rootInfo = await driver.executeScript(() => {
+        const root = document.getElementById("root");
+        const bodyText = (document.body?.innerText || "")
+          .replace(/\s+/g, " ")
+          .trim();
+        const rootRect = root?.getBoundingClientRect();
+        const visible = (element) => {
+          if (!element) return false;
+          const rect = element.getBoundingClientRect();
+          const style = window.getComputedStyle(element);
+          return (
+            rect.width > 0 &&
+            rect.height > 0 &&
+            style.display !== "none" &&
+            style.visibility !== "hidden" &&
+            Number(style.opacity) !== 0
+          );
+        };
+        const visibleHeadings = [...document.querySelectorAll("h1")]
+          .filter(visible)
+          .map((element) => element.innerText.replace(/\s+/g, " ").trim());
+        const visibleActions = [
+          ...document.querySelectorAll("a[href], button"),
+        ].filter(visible);
+
+        return {
+          rootMounted: Boolean(root && root.children.length > 0),
+          rootChildren: root?.children.length || 0,
+          rootHeight: Math.round(rootRect?.height || 0),
+          bodyHeight: Math.round(document.body?.scrollHeight || 0),
+          bodyTextLength: bodyText.length,
+          heading: visibleHeadings[0] || "",
+          visibleActions: visibleActions.length,
+          preview: bodyText.slice(0, 180),
+        };
+      });
+
+      const hasHomeHero =
+        /Platform Deteksi|Plagiarisme|Dunia Akademik Modern/i.test(
+          rootInfo.heading
+        ) &&
+        /Protextify|Mulai Gratis Sekarang|Lihat Demo/i.test(rootInfo.preview);
+
+      return (
+        rootInfo.rootMounted &&
+        Math.max(rootInfo.rootHeight, rootInfo.bodyHeight) >= 500 &&
+        rootInfo.bodyTextLength >= 120 &&
+        rootInfo.visibleActions >= 2 &&
+        hasHomeHero
+      );
     },
     20000,
-    "Konten halaman utama tidak terdeteksi"
+    "Halaman utama belum benar-benar render"
   );
   const currentUrl = await driver.getCurrentUrl();
-  const rootInfo = await driver.executeScript(() => {
-    const root = document.getElementById("root");
-    const text = (document.body?.innerText || "").replace(/\s+/g, " ").trim();
-    return {
-      rootMounted: Boolean(root && root.children.length > 0),
-      rootChildren: root?.children.length || 0,
-      bodyTextLength: text.length,
-      preview: text.slice(0, 180),
-    };
-  });
+  const screenshotPath = "e2e/artifacts/smoke-home.png";
+  await mkdir("e2e/artifacts", { recursive: true });
+  await writeFile(screenshotPath, await driver.takeScreenshot(), "base64");
 
   console.log("[e2e] OK — halaman terbuka");
   console.log("[e2e]   URL:", currentUrl);
@@ -41,10 +84,12 @@ try {
   console.log(
     "[e2e]   Render:",
     rootInfo.rootMounted
-      ? `OK (#root terisi ${rootInfo.rootChildren} node, ${rootInfo.bodyTextLength} karakter teks)`
+      ? `OK (#root ${rootInfo.rootChildren} node, tinggi ${Math.max(rootInfo.rootHeight, rootInfo.bodyHeight)}px, ${rootInfo.bodyTextLength} karakter teks, ${rootInfo.visibleActions} aksi visible)`
       : "GAGAL (#root kosong)"
   );
+  console.log("[e2e]   Heading:", rootInfo.heading || "(heading tidak terlihat)");
   console.log("[e2e]   Preview:", rootInfo.preview || "(body kosong)");
+  console.log("[e2e]   Screenshot:", screenshotPath);
   console.log("[e2e] Smoke test lulus.");
 } catch (err) {
   console.error("[e2e] Gagal:", err.message);
