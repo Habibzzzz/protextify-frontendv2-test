@@ -46,32 +46,50 @@ export async function loginWithCredentials(
   await submit.click();
   await driver.sleep(150);
 
-  const result = await driver.wait(
-    async () => {
-      const u = await driver.getCurrentUrl();
-      if (urlMustInclude.some((part) => u.includes(part))) {
-        return { ok: true, reason: "url", url: u };
-      }
+  let result;
+  try {
+    result = await driver.wait(
+      async () => {
+        const u = await driver.getCurrentUrl();
+        if (urlMustInclude.some((part) => u.includes(part))) {
+          return { ok: true, reason: "url", url: u };
+        }
 
-      const session = await driver.executeScript(() => ({
-        token: localStorage.getItem("token"),
-        user: localStorage.getItem("user"),
-        sessionId: localStorage.getItem("sessionId"),
-      }));
-      if (session?.token && session?.user) {
-        return { ok: true, reason: "session", url: u };
-      }
+        const session = await driver.executeScript(() => ({
+          token: localStorage.getItem("token"),
+          user: localStorage.getItem("user"),
+          sessionId: localStorage.getItem("sessionId"),
+        }));
+        if (session?.token && session?.user) {
+          return { ok: true, reason: "session", url: u };
+        }
 
-      const text = await getBodyText(driver);
-      if (/Login Gagal|Unauthorized|Invalid|credentials|gagal|salah|berakhir/i.test(text)) {
-        return { ok: false, reason: "error", url: u, text };
-      }
+        const text = await getBodyText(driver);
+        if (/Login Gagal|Unauthorized|Invalid|credentials|gagal|salah|berakhir/i.test(text)) {
+          return { ok: false, reason: "error", url: u, text };
+        }
 
-      return false;
-    },
-    timeout,
-    `Setelah login, URL harus mengandung salah satu: ${urlMustInclude.join(", ")}`
-  );
+        return false;
+      },
+      timeout,
+      `Setelah login, URL harus mengandung salah satu: ${urlMustInclude.join(", ")}`
+    );
+  } catch (error) {
+    const url = await driver.getCurrentUrl().catch(() => "(unknown-url)");
+    const text = await getBodyText(driver).catch(() => "");
+    const session = await driver
+      .executeScript(() => ({
+        hasToken: !!localStorage.getItem("token"),
+        hasUser: !!localStorage.getItem("user"),
+        hasSessionId: !!localStorage.getItem("sessionId"),
+      }))
+      .catch(() => ({}));
+    throw new Error(
+      `${error.message}. Debug login: email=${email}, URL=${url}, session=${JSON.stringify(
+        session
+      )}, body=${String(text).slice(0, 500)}`
+    );
+  }
 
   if (result && result.ok === false) {
     throw new Error(
