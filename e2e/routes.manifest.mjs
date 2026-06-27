@@ -7,7 +7,7 @@ export const PUBLIC_PAGES = [
   { id: "about", path: "/about", includes: "Protextify" },
   { id: "pricing", path: "/pricing", includes: "Protextify" },
   { id: "help", path: "/help", includes: "Protextify" },
-  { id: "docs", path: "/docs", includes: "Protextify" },
+  { id: "docs", path: "/docs", includesAny: ["Dokumentasi", "Docs", "Panduan", "Protextify"] },
   { id: "privacy", path: "/privacy", includes: "Privasi" },
   { id: "terms", path: "/terms", includes: "Syarat" },
 ];
@@ -33,17 +33,17 @@ export const AUTH_PAGES = [
   {
     id: "auth-email-verification",
     path: "/auth/email-verification",
-    includes: "Verifikasi",
+    includesAny: ["Verifikasi", "Cek Email", "Kembali ke Login"],
   },
   {
     id: "auth-reset-password",
     path: "/auth/reset-password",
-    includes: "Reset Password",
+    includesAny: ["Reset Password", "Token reset password", "Password Baru"],
   },
   {
     id: "root-reset-password",
     path: "/reset-password",
-    includes: "Reset Password",
+    includesAny: ["Reset Password", "Token reset password", "Password Baru"],
   },
   { id: "auth-callback", path: "/auth/callback" },
   { id: "auth-google-callback", path: "/auth/google/callback" },

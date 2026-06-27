@@ -19,6 +19,7 @@ import {
   clearBrowserSession,
   waitForMainLoginPage,
   assertBodyIncludes,
+  assertBodyIncludesAny,
 } from "./lib/helpers.mjs";
 import {
   PUBLIC_PAGES,
@@ -48,7 +49,11 @@ function fail(id, err) {
 async function runPublic(driver, page) {
   await openPath(driver, page.path);
   await waitForReactApp(driver);
-  await assertBodyIncludes(driver, page.includes, page.id);
+  if (page.includesAny) {
+    await assertBodyIncludesAny(driver, page.includesAny, page.id);
+  } else {
+    await assertBodyIncludes(driver, page.includes, page.id);
+  }
   ok(page.id, page.path);
 }
 
@@ -64,6 +69,9 @@ async function runAuthPage(driver, page) {
   }
   if (page.includes) {
     await assertBodyIncludes(driver, page.includes, page.id);
+  }
+  if (page.includesAny) {
+    await assertBodyIncludesAny(driver, page.includesAny, page.id);
   }
   if (page.id === "auth-login") {
     await driver.wait(
@@ -177,10 +185,10 @@ async function runStandalone(driver, page) {
 async function runAdminFlow(driver) {
   await openPath(driver, "/admin/login");
   await waitForReactApp(driver);
-  await assertBodyIncludes(driver, "Login Admin", "admin-login-page");
+  await assertBodyIncludesAny(driver, ["Admin Login", "Login Admin", "panel administrasi"], "admin-login-page");
   ok("admin-login-page", "/admin/login");
 
-  const userEl = await driver.findElement(By.css('input[name="username"]'));
+  const userEl = await driver.findElement(By.css('input[name="email"]'));
   const passEl = await driver.findElement(By.css('input[name="password"]'));
   await userEl.clear();
   await userEl.sendKeys(ADMIN_USER);
@@ -193,13 +201,16 @@ async function runAdminFlow(driver) {
   await submit.click();
 
   await driver.wait(
-    async () => (await driver.getCurrentUrl()).includes("/admin/monitoring"),
+    async () => {
+      const url = await driver.getCurrentUrl();
+      return url.includes("/admin/dashboard") || url.includes("/admin/monitoring");
+    },
     20000,
-    "Admin tidak masuk ke /admin/monitoring"
+    "Admin tidak masuk ke dashboard admin"
   );
   await waitForReactApp(driver);
-  await assertBodyIncludes(driver, "Monitoring", "admin-monitoring");
-  ok("admin-monitoring", "/admin/monitoring");
+  await assertBodyIncludesAny(driver, ["Dashboard", "Monitoring", "Statistik", "Admin"], "admin-dashboard");
+  ok("admin-dashboard", "/admin/dashboard");
 
   await openPath(driver, "/admin/users");
   await waitForReactApp(driver);

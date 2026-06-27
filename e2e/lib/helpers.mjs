@@ -89,3 +89,12 @@ export async function assertBodyIncludes(driver, substring, label) {
     );
   }
 }
+
+export async function assertBodyIncludesAny(driver, substrings, label) {
+  const text = await getBodyText(driver);
+  if (!substrings.some((substring) => text.includes(substring))) {
+    throw new Error(
+      `${label}: tidak menemukan salah satu teks: ${substrings.join(", ")}`
+    );
+  }
+}
