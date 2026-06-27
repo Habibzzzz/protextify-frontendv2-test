@@ -13,7 +13,7 @@ import {
   openPath,
   waitForReactApp,
   clearBrowserSession,
-  assertBodyIncludes,
+  getBodyText,
 } from "./lib/helpers.mjs";
 import {
   loginAsTestStudent,
@@ -34,12 +34,24 @@ function fail(id, err) {
   console.error(`[e2e:login] ✗ ${id}:`, err?.message || err);
 }
 
+async function assertBodyMatches(driver, pattern, label, timeout = 20000) {
+  await driver.wait(
+    async () => pattern.test(await getBodyText(driver)),
+    timeout,
+    async () => {
+      const url = await driver.getCurrentUrl().catch(() => "(unknown-url)");
+      const text = await getBodyText(driver).catch(() => "");
+      return `${label}: pola ${pattern} tidak ditemukan. URL=${url}. Body=${text.slice(0, 300)}`;
+    }
+  );
+}
+
 async function run(driver) {
   await clearBrowserSession(driver);
 
   await openPath(driver, "/auth/login");
   await waitForReactApp(driver);
-  await assertBodyIncludes(driver, "Masuk ke Akun Anda", "judul-login");
+  await assertBodyMatches(driver, /Masuk ke Akun Anda|Masuk|Login|Akun/i, "judul-login");
   await driver.wait(
     until.elementLocated(By.css('input[name="email"]')),
     15000

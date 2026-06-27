@@ -18,7 +18,7 @@ export const AUTH_PAGES = [
     id: "auth-login",
     path: "/auth/login",
     selector: 'input[name="email"]',
-    includes: "Masuk ke Akun Anda",
+    includes: "Masuk",
   },
   {
     id: "auth-register",

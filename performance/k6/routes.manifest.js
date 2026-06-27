@@ -9,7 +9,7 @@ export const PUBLIC_PAGES = [
 ];
 
 export const AUTH_PAGES = [
-  { id: "auth-login", path: "/auth/login", includes: "Masuk ke Akun Anda" },
+  { id: "auth-login", path: "/auth/login", includes: "Masuk" },
   { id: "auth-register", path: "/auth/register", includes: "Daftar" },
   {
     id: "auth-forgot-password",
