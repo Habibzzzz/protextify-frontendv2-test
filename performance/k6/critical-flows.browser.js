@@ -67,6 +67,7 @@ export const options = {
   },
   thresholds: {
     checks: ["rate>0.99"],
+    case_pass_rate: ["rate>0.99"],
   },
 };
 
@@ -85,6 +86,15 @@ async function login(page, role) {
   const isInstructor = role === "instructor";
   const email = isInstructor ? INSTRUCTOR_EMAIL : STUDENT_EMAIL;
   const password = isInstructor ? INSTRUCTOR_PASSWORD : STUDENT_PASSWORD;
+
+  await page.goto(`${BASE_URL}/`, {
+    waitUntil: "load",
+    timeout: Number(__ENV.K6_GOTO_TIMEOUT_MS || 60000),
+  });
+  await page.evaluate(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
 
   await page.goto(`${BASE_URL}/auth/login`, {
     waitUntil: "load",
